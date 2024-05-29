@@ -10,15 +10,16 @@ import AccountButton from '../components/AccountButton';
 import CircularProgressBar from '../components/CircularProgressBar';
 import AccountMenu from '../components/AccountMenu';
 
-import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {StyleSheet, Text, View, ScrollView} from 'react-native';
 import React, {useState, useEffect} from 'react';
 import {useSharedValue, withTiming} from 'react-native-reanimated';
 import {useFont} from '@shopify/react-native-skia';
 import {SafeAreaView} from 'react-native-safe-area-context';
+import TaskCard from '../components/TaskCard';
 
 
 const RADIUS = 160;
-const STROKEWIDTH = 30;
+const STROKEWIDTH = 23;
 const SECONDSINDAY = 24 * 60 * 60;
 
 
@@ -77,7 +78,13 @@ export default function App() {
             {/* <AccountMenu active={false}/> */}
             <CircularProgressBar radius={RADIUS} strokeWidth={STROKEWIDTH} currTime={currTimeInSec} todoTime={0.9} dailyTime={1} hour={currHour} minute={currMinute} second={currSecond} font={font}/>
             <StatusBar style="auto" />
-            {/* <Button title="Random" handlePress={handlePress} otherStyles="w-[85%]"/> */}
+
+            <ScrollView
+              stickyHeaderIndices={null} // always try to find index of the headers (use useState array) (always check if you have to update this component when you add (useState might take care of it but who knows))
+              style={styles.listStyle}
+            >
+              <TaskCard />
+            </ScrollView>
         </SafeAreaView>
   );
 }
@@ -102,5 +109,8 @@ const styles = StyleSheet.create({
     position: "absolute",
     right: 0,
     bottom: '-25%',
+  },
+  listStyle: {
+    marginTop: 25
   }
 })

@@ -1,10 +1,25 @@
-import { StyleSheet, View, Text as Texts, ScrollView } from 'react-native'
-import React from 'react'
+import { StyleSheet, View, Text as RNText, ScrollView } from 'react-native'
+import React, { useState } from 'react'
 import {Canvas, Path, Skia, Text, useFont} from '@shopify/react-native-skia'
 import {SharedValue, useDerivedValue} from 'react-native-reanimated';
 
+import InView from 'react-native-component-inview'
 
 const CircularProgressBar = ({radius, strokeWidth, currTime, todoTime, dailyTime, hour, minute, second, font}) => {
+  const [ringColor, setRingColor] = useState('#51CC46')
+
+  const checkVisible = (isVisible, color) => {
+    if (isVisible){
+      setRingColor(color) // todo — test using `useSharedValue` and `withTiming` to get a smooth transition.
+      // Create states to turn off other the other rings...
+      // Create states to change the location of the progress bar
+    }
+    // else {
+    //   setIsInView(isVisible)
+    // }
+  }
+
+
   const innerRadius = radius - strokeWidth/2;
   const path = Skia.Path.Make();
   path.addCircle(radius, radius, innerRadius);
@@ -12,7 +27,10 @@ const CircularProgressBar = ({radius, strokeWidth, currTime, todoTime, dailyTime
   const targetText = useDerivedValue(() => `${Math.round(hour.value * 24)} : ${Math.round(minute.value * 60)} : ${Math.round(second.value * 60)} `, [])
   const targetText2 = useDerivedValue(() => `${Math.round(currTime.value * (24*60*60))}`, [])
 
+  const dateToday = `Tue, 05/23/2024`
+
   const fontMeasure = font.measureText(targetText.value)
+  const fontMeasureDate = font.measureText(dateToday)
 
 
   return (
@@ -58,7 +76,8 @@ const CircularProgressBar = ({radius, strokeWidth, currTime, todoTime, dailyTime
           path={path}
           strokeWidth={strokeWidth}
           style={'stroke'}
-          color={'#e64343'}
+          // color={{isInView ? '#e64343' : 'purple'}}
+          color={ringColor}
           strokeJoin={'round'}
           strokeCap={'round'}
           start={0}
@@ -83,35 +102,49 @@ const CircularProgressBar = ({radius, strokeWidth, currTime, todoTime, dailyTime
             backgroundColor: 'rgba(0, 255, 0, 0.0)',
             width: radius * 2 - strokeWidth*2,
             height: radius * 2 - strokeWidth * 2,
-            ...styles.test, position: 'absolute',
+            ...styles.test,
           }}
-          // contentContainerStyle= {{...styles.timerContainer, ...styles.test, margin: 10}}
         >
-          <View style={{...styles.timerContainer, ...styles.test, width: radius *  2 - strokeWidth * 2}}>
-            <Canvas style={{width: fontMeasure.width, height: fontMeasure.height,}}>
-              <Text
-                x={0}
-                y={fontMeasure.height}
-                text={targetText}
-                color={"black"}
-                font={font}
-              />
-            </Canvas>
-          </View>
+          <InView
+            onChange={(isVisible) => checkVisible(isVisible, "red")}
+            style={{width: radius *  2 - strokeWidth * 2, alignItems: 'center'}}
+          >
+            {/* Date */}
+            <RNText
+              style={{...styles.date, top: radius - strokeWidth - fontMeasureDate.height/2 - fontMeasure.height/2 - 20}}
+            >
+              {`Tue, 05/23/2024`}
+            </RNText>
 
-          <View style={{...styles.timerContainer, ...styles.test, width: radius *  2 - strokeWidth * 2}}>
-            <Canvas style={{width: fontMeasure.width, height: fontMeasure.height,}}>
-              <Text
-                x={0}
-                y={fontMeasure.height}
-                text={"Test Phrase"}
-                color={"black"}
-                font={font}
-              />
-            </Canvas>
-          </View>
+            {/* <View style={{...styles.timerContainer, ...styles.test, width: radius *  2 - strokeWidth * 2}}> */}
+            <View style={{...styles.scrollViewScreens, ...styles.test, width: radius *  2 - strokeWidth * 2, top: radius - strokeWidth - fontMeasure.height/2}}>
+              {/* Current Time */}
+              <Canvas style={{width: fontMeasure.width, height: fontMeasure.height,}}>
+                <Text
+                  x={0}
+                  y={fontMeasure.height}
+                  text={targetText}
+                  color={"black"}
+                  font={font}
+                />
+              </Canvas>
+            </View>
+          </InView>
+
+          <InView onChange={(isVisible) => checkVisible(isVisible, "yellow")}>
+            <View style={{...styles.timerContainer, ...styles.test, width: radius *  2 - strokeWidth * 2}}>
+              <Canvas style={{width: fontMeasure.width, height: fontMeasure.height,}}>
+                <Text
+                  x={0}
+                  y={fontMeasure.height}
+                  text={"Test Phrase"}
+                  color={"black"}
+                  font={font}
+                />
+              </Canvas>
+            </View>
+          </InView>
         </ScrollView>
-
       </View>
 
       {/* <View style={styles.innerTimerContainer}> */}
@@ -135,12 +168,20 @@ const styles = StyleSheet.create({
     flex: 1,
 
   },
-  innerTimerContainer: {
+  innerTimerContainer:{
     position: "absolute",
     // textAlign: "center",
     justifyContent: 'center',
     alignItems: 'center',
     alignSelf: 'center',
+  },
+  scrollViewScreens: {
+    position: "absolute",
+    // textAlign: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
+    alignSelf: 'center',
+    // top: 65
   },
   time: {
   },
@@ -152,5 +193,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     alignSelf: 'center',
+  },
+  scrollViewContainer: {
+    position: 'absolute',
+  },
+  date: {
+    position: "absolute",
+    justifyContent: 'center',
+    alignItems: 'center',
   }
 })

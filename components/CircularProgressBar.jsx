@@ -14,6 +14,8 @@ const CircularProgressBar = ({radius, strokeWidth, currTime, todoTime, dailyTime
       // Create states to turn off other the other rings...
       // Create states to change the location of the progress bar
     }
+
+    console.log(color, isVisible)
     // else {
     //   setIsInView(isVisible)
     // }
@@ -28,9 +30,13 @@ const CircularProgressBar = ({radius, strokeWidth, currTime, todoTime, dailyTime
   const targetText2 = useDerivedValue(() => `${Math.round(currTime.value * (24*60*60))}`, [])
 
   const dateToday = `Tue, 05/23/2024`
+  const todoTimeText = `16:48`
+  const dailyTimeText = `1:18`
 
   const fontMeasure = font.measureText(targetText.value)
   const fontMeasureDate = font.measureText(dateToday)
+  const fontMeasureDaily = font.measureText(dailyTimeText)
+  const fontMeasureTodo = font.measureText(todoTimeText)
 
 
   return (
@@ -93,7 +99,7 @@ const CircularProgressBar = ({radius, strokeWidth, currTime, todoTime, dailyTime
         <ScrollView
           horizontal= {true}
           decelerationRate={0}
-          snapToInterval={radius *  2 - strokeWidth * 2} //your element width
+          snapToInterval={radius *  2 - strokeWidth * 2 + 200} //your element width
           snapToAlignment={"center"}
           showsVerticalScrollIndicator={false}
           showsHorizontalScrollIndicator={false}
@@ -113,7 +119,7 @@ const CircularProgressBar = ({radius, strokeWidth, currTime, todoTime, dailyTime
             <RNText
               style={{...styles.date, top: radius - strokeWidth - fontMeasureDate.height/2 - fontMeasure.height/2 - 20}}
             >
-              {`Tue, 05/23/2024`}
+              {dateToday}
             </RNText>
 
             {/* <View style={{...styles.timerContainer, ...styles.test, width: radius *  2 - strokeWidth * 2}}> */}
@@ -129,6 +135,15 @@ const CircularProgressBar = ({radius, strokeWidth, currTime, todoTime, dailyTime
                 />
               </Canvas>
             </View>
+
+            {/* <View style={{...styles.date, top: radius - strokeWidth + fontMeasureTodo.height}}> */}
+              <RNText style={{...styles.date, top: radius - strokeWidth + fontMeasureTodo.height, left: strokeWidth, width: radius-strokeWidth, textAlign: 'center', fontSize: 26, ...styles.test}}>
+                {todoTimeText}
+              </RNText>
+              <RNText style={{...styles.date, top: radius - strokeWidth + fontMeasureTodo.height, right: strokeWidth, width: radius-strokeWidth, textAlign: 'center', fontSize: 26, ...styles.test}}>
+                {dailyTimeText}
+              </RNText>
+            {/* </View> */}
           </InView>
 
           <InView onChange={(isVisible) => checkVisible(isVisible, "yellow")}>
@@ -201,5 +216,5 @@ const styles = StyleSheet.create({
     position: "absolute",
     justifyContent: 'center',
     alignItems: 'center',
-  }
+  },
 })

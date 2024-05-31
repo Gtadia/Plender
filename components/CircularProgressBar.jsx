@@ -7,6 +7,7 @@ import InView from 'react-native-component-inview'
 
 const CircularProgressBar = ({radius, strokeWidth, currTime, todoTime, dailyTime, hour, minute, second, font, task}) => {
   const [ringColor, setRingColor] = useState('#51CC46')
+  const [scrollPercent, setScrollPercent] = useState(0.0);
 
   const checkVisible = (isVisible, color) => {
     if (isVisible){
@@ -14,12 +15,14 @@ const CircularProgressBar = ({radius, strokeWidth, currTime, todoTime, dailyTime
       // Create states to turn off other the other rings...
       // Create states to change the location of the progress bar
     }
-
-    console.log(color, isVisible)
-    // else {
-    //   setIsInView(isVisible)
-    // }
   }
+
+  const scrollPercentage = ({layoutMeasurement, contentOffset, contentSize}) => {
+    // console.log(1-scrollPercent - 0.5, scrollPercent)
+    console.log(scrollPercent)
+    // setScrollPercent((layoutMeasurement.width + contentOffset.x)/contentSize.width);
+    setScrollPercent(2 * (contentOffset.x)/contentSize.width);
+  };
 
 
   const innerRadius = radius - strokeWidth/2;
@@ -65,148 +68,155 @@ const CircularProgressBar = ({radius, strokeWidth, currTime, todoTime, dailyTime
 
 
   return (
-    <View style={{width: outerDiameter, height: outerDiameter, justifyContent: 'center', alignContent:'center'}}>
-      <Canvas style={{...styles.container}}>
-        <Path
-          path={path}
-          strokeWidth={strokeWidth}
-          style={'stroke'}
-          color={'#333438'}
-          strokeJoin={'round'}
-          strokeCap={'round'}
-          start={0}
-          end={1}
-          />
-
-          {/* Daily Tasks */}
-        {/* <Path
-          path={path}
-          strokeWidth={strokeWidth}
-          style={'stroke'}
-          color={'#e68f40'}
-          strokeJoin={'round'}
-          strokeCap={'round'}
-          start={todoTime}
-          end={dailyTime}
-          /> */}
-
-          {/* To-Dos */}
-        {/* <Path
-          path={path}
-          strokeWidth={strokeWidth}
-          style={'stroke'}
-          color={'#43e643'}
-          strokeJoin={'round'}
-          strokeCap={'round'}
-          start={currTime}
-          end={todoTime}
-          /> */}
-
-          {/* Current Time */}
+    <View style={styles.centerFlex}>
+      <View style={{width: outerDiameter, height: outerDiameter, justifyContent: 'center', alignContent:'center'}}>
+        <Canvas style={{...styles.container}}>
           <Path
-          path={path}
-          strokeWidth={strokeWidth}
-          style={'stroke'}
-          // color={{isInView ? '#e64343' : 'purple'}}
-          color={ringColor}
-          strokeJoin={'round'}
-          strokeCap={'round'}
-          start={0}
-          end={currTime}
-          />
-      </Canvas>
+            path={path}
+            strokeWidth={strokeWidth}
+            style={'stroke'}
+            color={'#333438'}
+            strokeJoin={'round'}
+            strokeCap={'round'}
+            start={0}
+            end={1}
+            />
 
-      {
-        // Todo — Easy Solution, find a font with even spacing and even character width
-        // Block it is also doing it
-      }
-      <View style={additionalStyles.scrollViewCrop}>
-        <ScrollView
-          horizontal= {true}
-          decelerationRate={0}
-          snapToInterval={innerDiameter + spacingBetween} //your element width
-          snapToAlignment={"center"}
-          showsVerticalScrollIndicator={false}
-          showsHorizontalScrollIndicator={false}
-          style={additionalStyles.scrollViewContainer}
-        >
-          <View style={additionalStyles.scrollViewWiderElement}>
-            <InView
-              onChange={(isVisible) => checkVisible(isVisible, "red")}
-              style={additionalStyles.inViewComponent}
-            >
-              {/* Date */}
-              <RNText style={additionalStyles.dateText}>
-                {dateToday}
-              </RNText>
+            {/* Daily Tasks */}
+          {/* <Path
+            path={path}
+            strokeWidth={strokeWidth}
+            style={'stroke'}
+            color={'#e68f40'}
+            strokeJoin={'round'}
+            strokeCap={'round'}
+            start={todoTime}
+            end={dailyTime}
+            /> */}
 
-                {/* Current Time */}
-              <View style={additionalStyles.mainTimer}>
-                <Canvas style={additionalStyles.mainTimerCanvas}>
-                  <Text
-                    x={0}
-                    y={fontMeasure.height}
-                    text={mainTime}
-                    color={"black"}
-                    font={font}
-                  />
-                </Canvas>
-              </View>
+            {/* To-Dos */}
+          {/* <Path
+            path={path}
+            strokeWidth={strokeWidth}
+            style={'stroke'}
+            color={'#43e643'}
+            strokeJoin={'round'}
+            strokeCap={'round'}
+            start={currTime}
+            end={todoTime}
+            /> */}
 
-              <RNText style={{...additionalStyles.smallTimer, ...additionalStyles.smallTimerLeft}}>
-                {todoTimeText}
-              </RNText>
-              <RNText style={{...additionalStyles.smallTimer, ...additionalStyles.smallTimerRight}}>
-                {dailyTimeText}
-              </RNText>
-            </InView>
-          </View>
+            {/* Current Time */}
+            <Path
+            path={path}
+            strokeWidth={strokeWidth}
+            style={'stroke'}
+            // color={{isInView ? '#e64343' : 'purple'}}
+            color={ringColor}
+            strokeJoin={'round'}
+            strokeCap={'round'}
+            start={0}
+            end={currTime}
+            />
+        </Canvas>
 
-          <View style={additionalStyles.scrollViewWiderElement}>
-            <InView
-              onChange={(isVisible) => checkVisible(isVisible, "yellow")}
-              style={additionalStyles.inViewComponent}
-            >
-              <RNText style={additionalStyles.dateText}>
-                {dateToday}
-              </RNText>
+        {
+          // Todo — Easy Solution, find a font with even spacing and even character width
+          // Block it is also doing it
+        }
+        <View style={additionalStyles.scrollViewCrop}>
+          <ScrollView
+            horizontal= {true}
+            decelerationRate={0}
+            snapToInterval={innerDiameter + spacingBetween} //your element width
+            snapToAlignment={"center"}
+            showsVerticalScrollIndicator={false}
+            showsHorizontalScrollIndicator={false}
+            onScroll={({nativeEvent}) => {scrollPercentage(nativeEvent)}}
+            scrollEventThrottle={1}
+            style={additionalStyles.scrollViewContainer}
+          >
+            <View style={additionalStyles.scrollViewWiderElement}>
+              <InView
+                onChange={(isVisible) => checkVisible(isVisible, "red")}
+                style={additionalStyles.inViewComponent}
+              >
+                {/* Date */}
+                <RNText style={additionalStyles.dateText}>
+                  {dateToday}
+                </RNText>
 
-              <View style={additionalStyles.mainTimer}>
-                <Canvas style={additionalStyles.mainTimerCanvas}>
-                  <Text
-                    x={0}
-                    y={fontMeasure.height}
-                    text={mainTime}
-                    color={"black"}
-                    font={font}
-                  />
-                </Canvas>
-              </View>
+                  {/* Current Time */}
+                <View style={additionalStyles.mainTimer}>
+                  <Canvas style={additionalStyles.mainTimerCanvas}>
+                    <Text
+                      x={0}
+                      y={fontMeasure.height}
+                      text={mainTime}
+                      color={"black"}
+                      font={font}
+                    />
+                  </Canvas>
+                </View>
+
+                <RNText style={{...additionalStyles.smallTimer, ...additionalStyles.smallTimerLeft}}>
+                  {todoTimeText}
+                </RNText>
+                <RNText style={{...additionalStyles.smallTimer, ...additionalStyles.smallTimerRight}}>
+                  {dailyTimeText}
+                </RNText>
+              </InView>
+            </View>
+
+            <View style={additionalStyles.scrollViewWiderElement}>
+              <InView
+                onChange={(isVisible) => checkVisible(isVisible, "yellow")}
+                style={additionalStyles.inViewComponent}
+              >
+                <RNText style={additionalStyles.dateText}>
+                  {dateToday}
+                </RNText>
+
+                <View style={additionalStyles.mainTimer}>
+                  <Canvas style={additionalStyles.mainTimerCanvas}>
+                    <Text
+                      x={0}
+                      y={fontMeasure.height}
+                      text={mainTime}
+                      color={"black"}
+                      font={font}
+                    />
+                  </Canvas>
+                </View>
 
 
-              <View style={additionalStyles.percentage}>
-              {/* <View style={additionalStyles.mainTimer}> */}
-                <Canvas style={additionalStyles.percentageCanvas}>
-                  <Text
-                    x={0}
-                    y={fontMeasurePercentage.height}
-                    text={percentage}
-                    color={"black"}
-                    font={font}
-                  />
-                  {/* {console.log(fontMeasurePercentage.height)} */}
-                </Canvas>
-              </View>
+                <View style={additionalStyles.percentage}>
+                {/* <View style={additionalStyles.mainTimer}> */}
+                  <Canvas style={additionalStyles.percentageCanvas}>
+                    <Text
+                      x={0}
+                      y={fontMeasurePercentage.height}
+                      text={percentage}
+                      color={"black"}
+                      font={font}
+                    />
+                    {/* {console.log(fontMeasurePercentage.height)} */}
+                  </Canvas>
+                </View>
 
-            </InView>
-          </View>
+              </InView>
+            </View>
 
-        </ScrollView>
+          </ScrollView>
+        </View>
+
       </View>
 
-      <View style={{width: 50, height: 15, ...styles.test, marginTop:0}}>
-        <View></View>
-        <View></View>
+
+      <View style={{width: 75, height: 15, marginTop:15, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
+        {/* TODO — Use useSharedValue to make the color transition happen */}
+        <View style={{minWidth:15, width: 15+35 * scrollPercent , height: 15, backgroundColor: 'blue', borderRadius: 15/2}}></View>
+        <View style={{minWidth:15, width: 15+35 * (1-scrollPercent) , height: 15, backgroundColor: 'green', borderRadius: 15/2}}></View>
       </View>
     </View>
   )

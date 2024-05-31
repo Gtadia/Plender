@@ -18,8 +18,6 @@ const CircularProgressBar = ({radius, strokeWidth, currTime, todoTime, dailyTime
   }
 
   const scrollPercentage = ({layoutMeasurement, contentOffset, contentSize}) => {
-    // console.log(1-scrollPercent - 0.5, scrollPercent)
-    console.log(scrollPercent)
     // setScrollPercent((layoutMeasurement.width + contentOffset.x)/contentSize.width);
     setScrollPercent(2 * (contentOffset.x)/contentSize.width);
   };
@@ -62,7 +60,11 @@ const CircularProgressBar = ({radius, strokeWidth, currTime, todoTime, dailyTime
     'percentage': {...styles.innerTimerTextCanvas, width: innerDiameter, top: innerDiameter / 2 + fontMeasurePercentage.height},
 
     'mainTimerCanvas': {width: fontMeasure.width, height: fontMeasure.height, },
-    'percentageCanvas': {width: fontMeasurePercentage.width, height: fontMeasurePercentage.height, }
+    'percentageCanvas': {width: fontMeasurePercentage.width, height: fontMeasurePercentage.height, },
+
+    'pageIndicatorContainer': {width: 75, height: 15, marginTop:15, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'},
+    'pageIndicatorElement1': {minWidth:15, width: 15+35 * (1 - scrollPercent), height: 15, backgroundColor: 'blue', borderRadius: 15/2},
+    'pageIndicatorElement2': {minWidth:15, width: 15+35 * (scrollPercent), height: 15, backgroundColor: 'green', borderRadius: 15/2}
   }
 
 
@@ -127,7 +129,7 @@ const CircularProgressBar = ({radius, strokeWidth, currTime, todoTime, dailyTime
         <View style={additionalStyles.scrollViewCrop}>
           <ScrollView
             horizontal= {true}
-            decelerationRate={0}
+            // decelerationRate={20}
             snapToInterval={innerDiameter + spacingBetween} //your element width
             snapToAlignment={"center"}
             showsVerticalScrollIndicator={false}
@@ -213,10 +215,10 @@ const CircularProgressBar = ({radius, strokeWidth, currTime, todoTime, dailyTime
       </View>
 
 
-      <View style={{width: 75, height: 15, marginTop:15, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
+      <View style={additionalStyles.pageIndicatorContainer}>
         {/* TODO — Use useSharedValue to make the color transition happen */}
-        <View style={{minWidth:15, width: 15+35 * scrollPercent , height: 15, backgroundColor: 'blue', borderRadius: 15/2}}></View>
-        <View style={{minWidth:15, width: 15+35 * (1-scrollPercent) , height: 15, backgroundColor: 'green', borderRadius: 15/2}}></View>
+        <View style={additionalStyles.pageIndicatorElement1}></View>
+        <View style={additionalStyles.pageIndicatorElement2}></View>
       </View>
     </View>
   )

@@ -1,7 +1,7 @@
 import { StyleSheet, Text, View, Dimensions } from 'react-native'
 import React from 'react'
 
-const TaskCard = () => {
+const TaskCard = ({  }) => {
   return (
     // todo — should I add a border style or not?
     <View style={{...styles.container, ...styles.borderStyle}}>
@@ -17,9 +17,10 @@ const styles = StyleSheet.create({
     width: Dimensions.get('window').width * 0.9,
     height: 70,
     justifyContent: "center",
+
     backgroundColor: "gray",
   },
   borderStyle: {
-    borderRadius: "15px"
+    mainTime: 15
   }
 })

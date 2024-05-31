@@ -4,6 +4,7 @@ import {Canvas, Path, Skia, Text, useFont} from '@shopify/react-native-skia'
 import {SharedValue, useDerivedValue} from 'react-native-reanimated';
 
 import InView from 'react-native-component-inview'
+import { StoreContext } from 'nativewind/dist/style-sheet';
 
 const CircularProgressBar = ({radius, strokeWidth, currTime, todoTime, dailyTime, hour, minute, second, font, task}) => {
   const [ringColor, setRingColor] = useState('#51CC46')
@@ -23,13 +24,15 @@ const CircularProgressBar = ({radius, strokeWidth, currTime, todoTime, dailyTime
   };
 
 
+  // Skia Path
   const innerRadius = radius - strokeWidth/2;
   const outerBuffer = strokeWidth / 2;
   const path = Skia.Path.Make();
-  path.addCircle(radius, radius, innerRadius);
-
+  path.addCircle(radius + outerBuffer, radius + outerBuffer, innerRadius);
   const path2 = Skia.Path.Make();
-  path2.addCircle(radius+outerBuffer, radius+outerBuffer, radius)
+  path2.addCircle(radius + outerBuffer, radius + outerBuffer, radius + outerBuffer / 2)
+
+
 
   const mainTime = useDerivedValue(() => `${Math.round(hour.value * 24)} : ${Math.round(minute.value * 60)} : ${Math.round(second.value * 60)} `, [])
   // const percentage = useDerivedValue(() => `${task.percentage.value}%`)  Todo — or something like that...
@@ -74,10 +77,10 @@ const CircularProgressBar = ({radius, strokeWidth, currTime, todoTime, dailyTime
 
 
   return (
-    <View style={styles.centerFlex}>
-      <View style={{width: outerDiameter + outerBuffer * 2, height: outerDiameter + outerBuffer * 2, justifyContent: 'center', alignItems:'center',}}>
+    <View style={{...styles.centerFlex,}}>
+      <View style={{width: outerDiameter, height: outerDiameter, justifyContent: 'center', alignItems:'center'}}>
 {/* Move this canvas down to scrollView (DON'T USE A useSTATE (then the components won't render properly) — or you could use a useState but just add a transition (this might work)) */}
-        <View style={{width: outerDiameter, height: outerDiameter}}>
+        <View style={{width: outerDiameter + strokeWidth, height: outerDiameter + strokeWidth}}>
           <Canvas style={{...styles.container}}>
             <Path
               path={path}
@@ -126,14 +129,28 @@ const CircularProgressBar = ({radius, strokeWidth, currTime, todoTime, dailyTime
               start={0}
               end={currTime}
               />
+
+
+<Path path={path2} strokeWidth={strokeWidth / 2} style={'stroke'} color={'#747474'} strokeJoin={'round'} strokeCap={'round'} start={0} end={1}/>
+              <Path
+                path={path2}
+                strokeWidth={strokeWidth / 4}
+                style={'stroke'}
+                // color={{isInView ? '#e64343' : 'purple'}}
+                color={ringColor}
+                strokeJoin={'round'}
+                strokeCap={'round'}
+                start={0}
+                end={0.4}
+              />
           </Canvas>
         </View>
 
                   {/* Progress Bar */}
           {/* <View style={additionalStyles.outerProgressBar}> */}
-          <View style={{width: outerDiameter + outerBuffer * 2, height: outerDiameter + outerBuffer * 2, position: 'absolute', top: 0, left: 0, ...styles.test}}>
+          {/* <View style={{width: outerDiameter + strokeWidth, height: outerDiameter + strokeWidth , position: 'absolute',}}> */}
             {/* <Canvas style={additionalStyles.outerProgressBarCanvas}> */}
-            <Canvas style={styles.container}>
+            {/* <Canvas style={styles.container}>
               <Path path={path2} strokeWidth={strokeWidth / 2} style={'stroke'} color={'#333438'} strokeJoin={'round'} strokeCap={'round'} start={0} end={1}/>
               <Path
                 path={path2}
@@ -147,7 +164,7 @@ const CircularProgressBar = ({radius, strokeWidth, currTime, todoTime, dailyTime
                 end={0.4}
               />
             </Canvas>
-          </View>
+          </View> */}
 
         {
           // Todo — Easy Solution, find a font with even spacing and even character width

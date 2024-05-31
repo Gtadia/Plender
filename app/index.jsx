@@ -44,11 +44,18 @@ export default function App() {
       let secTimer = setInterval( () => {
         setDt(new Date().getHours() * 60 * 60 + new Date().getMinutes() * 60 + new Date().getSeconds())
 
-        currTimeInSec.value = withTiming(dt/SECONDSINDAY, {duration: 1000})
+        // currTimeInSec.value = withTiming(dt/SECONDSINDAY, {duration: 1000})
 
-        currHour.value = withTiming(new Date().getHours()/24, {duration: 1000})
-        currMinute.value = withTiming(new Date().getMinutes()/60, {duration: 1000})
-        currSecond.value = withTiming(new Date().getSeconds()/60, {duration: 1000})
+        // currHour.value = withTiming(new Date().getHours()/24, {duration: 1000})
+        // currMinute.value = withTiming(new Date().getMinutes()/60, {duration: 1000})
+        // currSecond.value = withTiming(new Date().getSeconds()/60, {duration: 1000})
+
+        // TEST VALUES
+        currTimeInSec.value = withTiming(34000/SECONDSINDAY, {duration: 1000})
+
+        currHour.value = withTiming(9/24, {duration: 1000})
+        currMinute.value = withTiming(32/60, {duration: 1000})
+        currSecond.value = withTiming(5/60, {duration: 1000})
       },1000)
 
 
@@ -76,7 +83,7 @@ export default function App() {
               <AccountButton handlePress={accountHandler} style={styles.accountButton}/>
             </View>
             {/* <AccountMenu active={false}/> */}
-            <CircularProgressBar radius={RADIUS} strokeWidth={STROKEWIDTH} currTime={currTimeInSec} todoTime={0.9} dailyTime={1} hour={currHour} minute={currMinute} second={currSecond} font={font}/>
+            <CircularProgressBar radius={RADIUS} strokeWidth={STROKEWIDTH} currTime={currTimeInSec} todoTime={0.5} dailyTime={0.75} hour={currHour} minute={currMinute} second={currSecond} font={font}/>
             <StatusBar style="auto" />
 
             <ScrollView

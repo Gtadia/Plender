@@ -24,8 +24,12 @@ const CircularProgressBar = ({radius, strokeWidth, currTime, todoTime, dailyTime
 
 
   const innerRadius = radius - strokeWidth/2;
+  const outerBuffer = strokeWidth / 2;
   const path = Skia.Path.Make();
   path.addCircle(radius, radius, innerRadius);
+
+  const path2 = Skia.Path.Make();
+  path2.addCircle(radius+outerBuffer, radius+outerBuffer, radius)
 
   const mainTime = useDerivedValue(() => `${Math.round(hour.value * 24)} : ${Math.round(minute.value * 60)} : ${Math.round(second.value * 60)} `, [])
   // const percentage = useDerivedValue(() => `${task.percentage.value}%`)  Todo — or something like that...
@@ -71,56 +75,79 @@ const CircularProgressBar = ({radius, strokeWidth, currTime, todoTime, dailyTime
 
   return (
     <View style={styles.centerFlex}>
-      <View style={{width: outerDiameter, height: outerDiameter, justifyContent: 'center', alignContent:'center'}}>
-        <Canvas style={{...styles.container}}>
-          <Path
-            path={path}
-            strokeWidth={strokeWidth}
-            style={'stroke'}
-            color={'#333438'}
-            strokeJoin={'round'}
-            strokeCap={'round'}
-            start={0}
-            end={1}
-            />
-
-            {/* Daily Tasks */}
-          {/* <Path
-            path={path}
-            strokeWidth={strokeWidth}
-            style={'stroke'}
-            color={'#e68f40'}
-            strokeJoin={'round'}
-            strokeCap={'round'}
-            start={todoTime}
-            end={dailyTime}
-            /> */}
-
-            {/* To-Dos */}
-          {/* <Path
-            path={path}
-            strokeWidth={strokeWidth}
-            style={'stroke'}
-            color={'#43e643'}
-            strokeJoin={'round'}
-            strokeCap={'round'}
-            start={currTime}
-            end={todoTime}
-            /> */}
-
-            {/* Current Time */}
+      <View style={{width: outerDiameter + outerBuffer * 2, height: outerDiameter + outerBuffer * 2, justifyContent: 'center', alignItems:'center',}}>
+{/* Move this canvas down to scrollView (DON'T USE A useSTATE (then the components won't render properly) — or you could use a useState but just add a transition (this might work)) */}
+        <View style={{width: outerDiameter, height: outerDiameter}}>
+          <Canvas style={{...styles.container}}>
             <Path
-            path={path}
-            strokeWidth={strokeWidth}
-            style={'stroke'}
-            // color={{isInView ? '#e64343' : 'purple'}}
-            color={ringColor}
-            strokeJoin={'round'}
-            strokeCap={'round'}
-            start={0}
-            end={currTime}
-            />
-        </Canvas>
+              path={path}
+              strokeWidth={strokeWidth}
+              style={'stroke'}
+              color={'#333438'}
+              strokeJoin={'round'}
+              strokeCap={'round'}
+              start={0}
+              end={1}
+              />
+
+              {/* Daily Tasks */}
+            <Path
+              path={path}
+              strokeWidth={strokeWidth}
+              style={'stroke'}
+              color={'#e68f40'}
+              strokeJoin={'round'}
+              strokeCap={'round'}
+              start={todoTime}
+              end={dailyTime}
+              />
+
+              {/* To-Dos */}
+            <Path
+              path={path}
+              strokeWidth={strokeWidth}
+              style={'stroke'}
+              color={'#43e643'}
+              strokeJoin={'round'}
+              strokeCap={'round'}
+              start={currTime}
+              end={todoTime}
+              />
+
+              {/* Current Time */}
+              <Path
+              path={path}
+              strokeWidth={strokeWidth}
+              style={'stroke'}
+              // color={{isInView ? '#e64343' : 'purple'}}
+              color={ringColor}
+              strokeJoin={'round'}
+              strokeCap={'round'}
+              start={0}
+              end={currTime}
+              />
+          </Canvas>
+        </View>
+
+                  {/* Progress Bar */}
+          {/* <View style={additionalStyles.outerProgressBar}> */}
+          <View style={{width: outerDiameter + outerBuffer * 2, height: outerDiameter + outerBuffer * 2, position: 'absolute', top: 0, left: 0, ...styles.test}}>
+            {/* <Canvas style={additionalStyles.outerProgressBarCanvas}> */}
+            <Canvas style={styles.container}>
+              <Path path={path2} strokeWidth={strokeWidth / 2} style={'stroke'} color={'#333438'} strokeJoin={'round'} strokeCap={'round'} start={0} end={1}/>
+              <Path
+                path={path2}
+                strokeWidth={strokeWidth / 4}
+                style={'stroke'}
+                // color={{isInView ? '#e64343' : 'purple'}}
+                color={ringColor}
+                strokeJoin={'round'}
+                strokeCap={'round'}
+                start={0}
+                end={0.4}
+              />
+            </Canvas>
+          </View>
 
         {
           // Todo — Easy Solution, find a font with even spacing and even character width
@@ -143,6 +170,23 @@ const CircularProgressBar = ({radius, strokeWidth, currTime, todoTime, dailyTime
                 onChange={(isVisible) => checkVisible(isVisible, "red")}
                 style={additionalStyles.inViewComponent}
               >
+                {/* Progress Bar */}
+                <View style={additionalStyles.outerProgressBar}>
+                  <Canvas style={additionalStyles.outerProgressBarCanvas}>
+                    <Path
+                      path={path2}
+                      strokeWidth={strokeWidth / 2}
+                      style={'stroke'}
+                      // color={{isInView ? '#e64343' : 'purple'}}
+                      color={ringColor}
+                      strokeJoin={'round'}
+                      strokeCap={'round'}
+                      start={0}
+                      end={0.4}
+                    />
+                  </Canvas>
+                </View>
+
                 {/* Date */}
                 <RNText style={additionalStyles.dateText}>
                   {dateToday}

@@ -185,6 +185,7 @@ const CircularProgressBar = ({radius, strokeWidth, currTime, todoTime, dailyTime
             <View style={additionalStyles.scrollViewWiderElement}>
               <InView
                 onChange={(isVisible) => checkVisible(isVisible, "red")}
+                removeClippedSubviews={false}   // NECESSARY FOR ANDROID!!!
                 style={additionalStyles.inViewComponent}
               >
                 {/* Progress Bar */}
@@ -234,6 +235,7 @@ const CircularProgressBar = ({radius, strokeWidth, currTime, todoTime, dailyTime
             <View style={additionalStyles.scrollViewWiderElement}>
               <InView
                 onChange={(isVisible) => checkVisible(isVisible, "yellow")}
+                removeClippedSubviews={false}   // NECESSARY FOR ANDROID!!! 
                 style={additionalStyles.inViewComponent}
               >
                 <RNText style={additionalStyles.dateText}>

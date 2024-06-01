@@ -6,6 +6,11 @@ import {SharedValue, useDerivedValue, useSharedValue, interpolateColor, useAnima
 import InView from 'react-native-component-inview'
 import { StoreContext } from 'nativewind/dist/style-sheet';
 
+const colorLeft = {backgroundColor: ''}
+const colorRight = {backgroundColor: ''}
+let colorSecondaryWheel = 'blue'
+let colorSecondaryWheelBackground = '#747474'
+
 const CircularProgressBar = ({radius, strokeWidth, currTime, todoTime, dailyTime, hour, minute, second, font, task=2}) => {
   const [ringColor, setRingColor] = useState('#51CC46')
   const [scrollPercent, setScrollPercent] = useState(0.0);
@@ -52,11 +57,6 @@ const CircularProgressBar = ({radius, strokeWidth, currTime, todoTime, dailyTime
   const outerDiameter = radius * 2
   const innerDiameter = radius * 2 - strokeWidth * 2
 
-  const colorLeft = {backgroundColor: ''}
-  const colorRight = {backgroundColor: ''}
-  let colorSecondaryWheel = 'transparent'
-  let colorSecondaryWheelBackground = 'transparent'
-
   useMemo(() => {
     const backgroundColor = interpolateColor(
       Math.abs(scrollPercent),
@@ -71,13 +71,13 @@ const CircularProgressBar = ({radius, strokeWidth, currTime, todoTime, dailyTime
     );
 
     const secondaryTaskWheelColor = interpolateColor(
-      Math.abs(scrollPercent),
+      Math.abs(1-scrollPercent),
       [0, 1],
       ['transparent', ringColor]
     );
 
     const secondaryTaskWheelColorBackground = interpolateColor(
-      Math.abs(scrollPercent),
+      Math.abs(1-scrollPercent),
       [0, 1],
       ['transparent', '#747474']
     )
@@ -114,7 +114,7 @@ const CircularProgressBar = ({radius, strokeWidth, currTime, todoTime, dailyTime
 
 
   return (
-    <View style={{...styles.centerFlex,}}>
+    <View style={{...styles.centerFlex, ...styles.test}}>
       <View style={{width: outerDiameter, height: outerDiameter, justifyContent: 'center', alignItems:'center'}}>
 {/* Move this canvas down to scrollView (DON'T USE A useSTATE (then the components won't render properly) — or you could use a useState but just add a transition (this might work)) */}
         <View style={{width: outerDiameter + strokeWidth, height: outerDiameter + strokeWidth}}>
@@ -288,14 +288,10 @@ const CircularProgressBar = ({radius, strokeWidth, currTime, todoTime, dailyTime
 
       </View>
 
-      {
-        task !== null &&
-          <View style={additionalStyles.pageIndicatorContainer}>
-            {/* TODO — Use useSharedValue to make the color transition happen */}
-            <View style={[additionalStyles.pageIndicatorElement1, colorLeft]}></View>
-            <View style={[additionalStyles.pageIndicatorElement2, colorRight]}></View>
-          </View>
-      }
+      <View style={additionalStyles.pageIndicatorContainer}>
+      {task !== null && <View style={[additionalStyles.pageIndicatorElement1, colorLeft]}></View> }
+      {task !== null && <View style={[additionalStyles.pageIndicatorElement2, colorRight]}></View>}
+      </View>
     </View>
   )
 }

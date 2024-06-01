@@ -114,7 +114,7 @@ const CircularProgressBar = ({radius, strokeWidth, currTime, todoTime, dailyTime
 
 
   return (
-    <View style={{...styles.centerFlex, ...styles.test}}>
+    <View style={{...styles.centerFlex,}}>
       <View style={{width: outerDiameter, height: outerDiameter, justifyContent: 'center', alignItems:'center'}}>
 {/* Move this canvas down to scrollView (DON'T USE A useSTATE (then the components won't render properly) — or you could use a useState but just add a transition (this might work)) */}
         <View style={{width: outerDiameter + strokeWidth, height: outerDiameter + strokeWidth}}>

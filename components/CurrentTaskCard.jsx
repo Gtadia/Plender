@@ -9,7 +9,7 @@ const CurrentTaskCard = ({ task }) => {
     <View style={{...styles.container, ...styles.borderStyle}}>
         <View style={{position: 'absolute', width: '50%', height: '100%', backgroundColor: 'green', left: 0, top: 0, ...styles.borderStyle}}></View>
 
-        <View style={{justifyContent: 'center', marginLeft: 15}}>
+        <View style={{justifyContent: 'center', marginLeft: 30}}>
           <Text>
             {"test text"}
           </Text>

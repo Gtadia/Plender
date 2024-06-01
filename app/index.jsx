@@ -16,6 +16,7 @@ import {useSharedValue, withTiming} from 'react-native-reanimated';
 import {useFont} from '@shopify/react-native-skia';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import TaskCard from '../components/TaskCard';
+import CurrentTaskCard from '../components/CurrentTaskCard';
 
 
 const RADIUS = 160;
@@ -24,6 +25,7 @@ const SECONDSINDAY = 24 * 60 * 60;
 
 
 export default function App() {
+  const [tasks, setTasks] = useState({'dailyLabel': 'Daily', 'daily': ['test', 'test', 'test',], 'todoLabel': 'ToDo', 'todo': ['test', 'test', 'test', 'test', 'test', 'test', 'test', 'test',]})
   const currTimeInSec = useSharedValue(0);
   const currHour = useSharedValue(0);
   const currMinute = useSharedValue(0);
@@ -86,11 +88,33 @@ export default function App() {
             <CircularProgressBar radius={RADIUS} strokeWidth={STROKEWIDTH} currTime={currTimeInSec} todoTime={0.5} dailyTime={0.75} hour={currHour} minute={currMinute} second={currSecond} font={font}/>
             <StatusBar style="auto" />
 
+
             <ScrollView
-              stickyHeaderIndices={null} // always try to find index of the headers (use useState array) (always check if you have to update this component when you add (useState might take care of it but who knows))
-              style={styles.listStyle}
+              stickyHeaderIndices={[1, 5]} // always try to find index of the headers (use useState array) (always check if you have to update this component when you add (useState might take care of it but who knows))
+              style={styles.listStyle}  // this can be a list of keys, I think (or use a function that counts the number of tasks between each category)
             >
-              <TaskCard />
+              {/* TODO — I need keys for each item */}
+              <CurrentTaskCard />
+              {
+                Object.values(tasks).map((value) => {
+                  // console.log(key.slice(key.length - 5, key.length))
+                  if(typeof value == 'string') {
+                    return (
+                      <View>
+                        <Text>
+                          {value}
+                        </Text>
+                      </View>
+                    )
+                  } else {
+                    return (
+                      value.map((task) => (
+                        <TaskCard />
+                      ))
+                    )
+                  }
+                })
+              }
             </ScrollView>
         </SafeAreaView>
   );

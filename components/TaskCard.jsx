@@ -1,11 +1,30 @@
 import { StyleSheet, Text, View, Dimensions } from 'react-native'
-import React from 'react'
+import React, { useState } from 'react'
 
-const TaskCard = ({  }) => {
+const TaskCard = ({ task }) => {
+  const [tags, setTags] = useState(['hi', 'bye']);
+
   return (
     // todo — should I add a border style or not?
     <View style={{...styles.container, ...styles.borderStyle}}>
-      <Text>Hi</Text>
+      <View>
+        <Text>
+          {"test text"}
+        </Text>
+
+        <View style={{backgroundColor: 'transparent', width: 150, height: 40, flexDirection: 'row'}}>
+          {
+            tags.map((tag) => (
+              <View>
+                <Text>{tag}</Text>
+              </View>
+            ))
+          }
+          <View>
+            <Text>Hello</Text>
+          </View>
+        </View>
+      </View>
     </View>
   )
 }
@@ -16,11 +35,13 @@ const styles = StyleSheet.create({
   container: {
     width: Dimensions.get('window').width * 0.9,
     height: 70,
+
     justifyContent: "center",
 
     backgroundColor: "gray",
+
   },
   borderStyle: {
-    mainTime: 15
+    borderRadius: 12
   }
 })

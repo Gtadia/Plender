@@ -1,12 +1,12 @@
 import { StyleSheet, View, Text as RNText, ScrollView } from 'react-native'
-import React, { useState } from 'react'
-import {Canvas, Path, Skia, Text, useFont} from '@shopify/react-native-skia'
-import {SharedValue, useDerivedValue} from 'react-native-reanimated';
+import React, { useState, useMemo } from 'react'
+import {Canvas, Path, Skia, Text,} from '@shopify/react-native-skia'
+import {SharedValue, useDerivedValue, useSharedValue, interpolateColor, useAnimatedStyle} from 'react-native-reanimated';
 
 import InView from 'react-native-component-inview'
 import { StoreContext } from 'nativewind/dist/style-sheet';
 
-const CircularProgressBar = ({radius, strokeWidth, currTime, todoTime, dailyTime, hour, minute, second, font, task}) => {
+const CircularProgressBar = ({radius, strokeWidth, currTime, todoTime, dailyTime, hour, minute, second, font, task=2}) => {
   const [ringColor, setRingColor] = useState('#51CC46')
   const [scrollPercent, setScrollPercent] = useState(0.0);
 
@@ -51,6 +51,43 @@ const CircularProgressBar = ({radius, strokeWidth, currTime, todoTime, dailyTime
   const spacingBetween = 80;
   const outerDiameter = radius * 2
   const innerDiameter = radius * 2 - strokeWidth * 2
+
+  const colorLeft = {backgroundColor: ''}
+  const colorRight = {backgroundColor: ''}
+  let colorSecondaryWheel = 'transparent'
+  let colorSecondaryWheelBackground = 'transparent'
+
+  useMemo(() => {
+    const backgroundColor = interpolateColor(
+      Math.abs(scrollPercent),
+      [0, 1],
+      ['blue', 'green']
+    );
+
+    const backgroundColorRight = interpolateColor(
+      Math.abs(1 - scrollPercent),
+      [0, 1],
+      ['transparent', 'green']
+    );
+
+    const secondaryTaskWheelColor = interpolateColor(
+      Math.abs(scrollPercent),
+      [0, 1],
+      ['transparent', ringColor]
+    );
+
+    const secondaryTaskWheelColorBackground = interpolateColor(
+      Math.abs(scrollPercent),
+      [0, 1],
+      ['transparent', '#747474']
+    )
+
+    colorLeft.backgroundColor = backgroundColor
+    colorRight.backgroundColor = backgroundColorRight
+    colorSecondaryWheel = secondaryTaskWheelColor
+    colorSecondaryWheelBackground = secondaryTaskWheelColorBackground
+
+  }, [scrollPercent])
 
   const additionalStyles = {
     'scrollViewCrop': {...styles.innerTimerContainer, width: innerDiameter, height: innerDiameter, overflow: 'hidden', borderRadius: innerDiameter / 2},
@@ -118,53 +155,27 @@ const CircularProgressBar = ({radius, strokeWidth, currTime, todoTime, dailyTime
               />
 
               {/* Current Time */}
-              <Path
-              path={path}
-              strokeWidth={strokeWidth}
-              style={'stroke'}
+              <Path path={path} strokeWidth={strokeWidth} style={'stroke'}
               // color={{isInView ? '#e64343' : 'purple'}}
-              color={ringColor}
-              strokeJoin={'round'}
-              strokeCap={'round'}
-              start={0}
-              end={currTime}
-              />
+              color={ringColor} strokeJoin={'round'} strokeCap={'round'} start={0} end={currTime}/>
 
 
-<Path path={path2} strokeWidth={strokeWidth / 2} style={'stroke'} color={'#747474'} strokeJoin={'round'} strokeCap={'round'} start={0} end={1}/>
+              {task !== null && <Path path={path2} strokeWidth={strokeWidth / 2} style={'stroke'} color={colorSecondaryWheelBackground} strokeJoin={'round'} strokeCap={'round'} start={0} end={1}/>}
+              {task !== null &&
               <Path
                 path={path2}
                 strokeWidth={strokeWidth / 4}
                 style={'stroke'}
-                // color={{isInView ? '#e64343' : 'purple'}}
-                color={ringColor}
+                color={colorSecondaryWheel}
                 strokeJoin={'round'}
                 strokeCap={'round'}
                 start={0}
-                end={0.4}
+                end={ 0.4 } // todo — pass in a function that maybe CHANGES THE COLOR!!! (fade out)
               />
+              }
           </Canvas>
         </View>
 
-                  {/* Progress Bar */}
-          {/* <View style={additionalStyles.outerProgressBar}> */}
-          {/* <View style={{width: outerDiameter + strokeWidth, height: outerDiameter + strokeWidth , position: 'absolute',}}> */}
-            {/* <Canvas style={additionalStyles.outerProgressBarCanvas}> */}
-            {/* <Canvas style={styles.container}>
-              <Path path={path2} strokeWidth={strokeWidth / 2} style={'stroke'} color={'#333438'} strokeJoin={'round'} strokeCap={'round'} start={0} end={1}/>
-              <Path
-                path={path2}
-                strokeWidth={strokeWidth / 4}
-                style={'stroke'}
-                // color={{isInView ? '#e64343' : 'purple'}}
-                color={ringColor}
-                strokeJoin={'round'}
-                strokeCap={'round'}
-                start={0}
-                end={0.4}
-              />
-            </Canvas>
-          </View> */}
 
         {
           // Todo — Easy Solution, find a font with even spacing and even character width
@@ -235,7 +246,7 @@ const CircularProgressBar = ({radius, strokeWidth, currTime, todoTime, dailyTime
             <View style={additionalStyles.scrollViewWiderElement}>
               <InView
                 onChange={(isVisible) => checkVisible(isVisible, "yellow")}
-                removeClippedSubviews={false}   // NECESSARY FOR ANDROID!!! 
+                removeClippedSubviews={false}   // NECESSARY FOR ANDROID!!!
                 style={additionalStyles.inViewComponent}
               >
                 <RNText style={additionalStyles.dateText}>
@@ -277,12 +288,14 @@ const CircularProgressBar = ({radius, strokeWidth, currTime, todoTime, dailyTime
 
       </View>
 
-
-      <View style={additionalStyles.pageIndicatorContainer}>
-        {/* TODO — Use useSharedValue to make the color transition happen */}
-        <View style={additionalStyles.pageIndicatorElement1}></View>
-        <View style={additionalStyles.pageIndicatorElement2}></View>
-      </View>
+      {
+        task !== null &&
+          <View style={additionalStyles.pageIndicatorContainer}>
+            {/* TODO — Use useSharedValue to make the color transition happen */}
+            <View style={[additionalStyles.pageIndicatorElement1, colorLeft]}></View>
+            <View style={[additionalStyles.pageIndicatorElement2, colorRight]}></View>
+          </View>
+      }
     </View>
   )
 }

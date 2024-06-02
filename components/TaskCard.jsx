@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, Dimensions } from 'react-native'
+import { StyleSheet, Text, View, Dimensions, TouchableOpacity } from 'react-native'
 import React, { useState } from 'react'
 import {Canvas, Path, Skia, Text as SkiaText,} from '@shopify/react-native-skia'
 import {SharedValue, useDerivedValue, useSharedValue, interpolateColor, useAnimatedStyle} from 'react-native-reanimated';
@@ -14,10 +14,12 @@ const TaskCard = ({ task, style }) => {
   path.addCircle(radius, radius, innerRadius);
 
   return (
+    // TODO — Maybe have another view so that the opacity behind the button is a bit darker (or bg to TouchableOpacity)
+    <TouchableOpacity>
     <View style={{...styles.container, ...styles.borderStyle, ...style}}>
       <View style={{flexDirection: 'row'}}>
 
-        <View style={{width: radius * 2, height: radius * 2, marginLeft: 15, marginRight: 8}}>
+        <View style={{width: radius * 2, height: radius * 2, marginLeft: 15, marginRight: 8,}}>
           <Canvas style={{flex: 1}}>
             <Path
               path={path}
@@ -30,6 +32,14 @@ const TaskCard = ({ task, style }) => {
               end={0.6}
               />
           </Canvas>
+
+          <TouchableOpacity
+            style={[
+              styles.pausePlayButton,
+              {position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, justifyContent: 'center', alignItems: 'center'}
+            ]}>
+            <View style={{height: 10, width: 10, backgroundColor: 'blue'}} />
+          </TouchableOpacity>
         </View>
 
           <View style={{justifyContent: 'center', backgroundColor: 'transparent'}}>
@@ -64,6 +74,7 @@ const TaskCard = ({ task, style }) => {
           </View>
         </View>
     </View>
+    </TouchableOpacity>
   )
 }
 
@@ -87,5 +98,8 @@ const styles = StyleSheet.create({
   test: {
     borderWidth: 2,
     borderColor: 'red'
+  },
+  pausePlayButton: {
+    zIndex: 10,
   }
 })

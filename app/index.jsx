@@ -120,7 +120,8 @@ export default function App() {
   return (
         <SafeAreaView edges={['top']} style={{...styles.container, ...styles.test, overflow: 'visible'}}>
             <View style={styles.header}>
-              <Text style={styles.headerLogo}>Image Text Logo </Text>
+              {/* <Text style={styles.headerLogo}>Image Text Logo </Text> */}
+              <Text style={styles.headerLogo}>Home</Text>
               <Text>{dt}</Text>
               <AccountButton handlePress={accountHandler} style={styles.accountButton}/>
             </View>
@@ -170,6 +171,8 @@ export default function App() {
                 {height: PROGRESSBARDIMENSION.total, borderWidth: 2, borderColor: 'red'},
                 { transform: [{ scale: translateList }] },
                 ]} />
+
+              {/* Maybe remove current task cards for now... */}
               <CurrentTaskCard />
               {
 

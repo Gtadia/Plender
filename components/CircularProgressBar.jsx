@@ -191,6 +191,7 @@ const CircularProgressBar = ({radius, strokeWidth, currTime, todoTime, dailyTime
             showsHorizontalScrollIndicator={false}
             onScroll={({nativeEvent}) => {scrollPercentage(nativeEvent)}}
             scrollEventThrottle={1}
+            overScrollMode="always"
             style={additionalStyles.scrollViewContainer}
           >
             <View style={additionalStyles.scrollViewWiderElement}>
@@ -289,8 +290,8 @@ const CircularProgressBar = ({radius, strokeWidth, currTime, todoTime, dailyTime
       </View>
 
       <View style={additionalStyles.pageIndicatorContainer}>
-      {task !== null && <View style={[additionalStyles.pageIndicatorElement1, colorLeft]}></View> }
-      {task !== null && <View style={[additionalStyles.pageIndicatorElement2, colorRight]}></View>}
+        {task !== null && <View style={[additionalStyles.pageIndicatorElement1, colorLeft]}></View> }
+        {task !== null && <View style={[additionalStyles.pageIndicatorElement2, colorRight]}></View>}
       </View>
     </View>
   )

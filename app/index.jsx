@@ -45,7 +45,11 @@ export default function App() {
     extrapolate: 'clamp',
   });
 
-  const [tasks, setTasks] = useState({'dailyLabel': 'Daily', 'daily': ['test', 'test', 'test',], 'todoLabel': 'ToDo', 'todo': ['test', 'test', 'test', 'test', 'test', 'test', 'test', 'test',]})
+  const [tasks, setTasks] = useState([
+    {title: 'Daily', body: ['test', 'test', 'test']},
+    {title: 'ToDo', body: ['test', 'test', 'test', 'test', 'test', 'test', 'test', 'test',]}
+  ])
+  const [taskHeaderIndex, setTaskHeaderIndex] = useState([]);
   const currTimeInSec = useSharedValue(0);
   const currHour = useSharedValue(0);
   const currMinute = useSharedValue(0);
@@ -87,6 +91,28 @@ export default function App() {
   // useEffect(() => {
   //   console.log(currTimeInSec.value)
   // }, [dt])
+
+  useEffect(() => {
+    let result = []
+    let index = 0
+
+    tasks.map((task) => {
+
+      console.log(task)
+      if(typeof task == 'string' ) {
+        result.push(index)
+      }
+
+      index++
+    })
+
+    setTaskHeaderIndex(result)
+
+    console.log(taskHeaderIndex)
+  },
+  []
+  // [tasks]
+)
 
   const accountHandler = () => {
 
@@ -138,7 +164,7 @@ export default function App() {
           { ...styles.test, borderColor: 'black'}
           // { marginTop: PROGRESSBARDIMENSION.total}
         ]}
-        stickyHeaderIndices={[1, 5]}
+        // stickyHeaderIndices={stickyHeaderIndices}
         >
 
             {/* <ScrollView
@@ -150,26 +176,28 @@ export default function App() {
                 {height: PROGRESSBARDIMENSION.total, borderWidth: 2, borderColor: 'red'},
                 { transform: [{ scale: translateList }] },
                 ]} />
-              {/* <CurrentTaskCard /> */}
+              <CurrentTaskCard />
               {
-                Object.values(tasks).map((value) => {
-                  // console.log(key.slice(key.length - 5, key.length))
-                  if(typeof value == 'string') {
-                    return (
-                      <Animated.View style={{ transform: [{ translateY: translateList }] }}>
-                        <Text>
-                          {value}
-                        </Text>
-                      </Animated.View>
-                    )
-                  } else {
-                    return (
-                      value.map((task) => (
-                        <TaskCard />
-                      ))
-                    )
-                  }
-                })
+
+                tasks.map((task) => (
+                  Object.values(task).map((value) => {
+                    if(typeof value == 'string') {
+                          return (
+                            <Animated.View style={{ transform: [{ translateY: translateList }] }}>
+                              <Text>
+                                {value}
+                              </Text>
+                            </Animated.View>
+                          )
+                        } else {
+                          return (
+                            value.map((t) => (
+                              <TaskCard />
+                            ))
+                          )
+                        }
+                  })
+                ))
               }
             {/* </ScrollView> */}
           </Animated.ScrollView>

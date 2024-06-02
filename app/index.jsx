@@ -92,26 +92,20 @@ export default function App() {
   //   console.log(currTimeInSec.value)
   // }, [dt])
 
+  // Stores the indices of the headers
   useEffect(() => {
-    let result = []
+    const result = []
     let index = 0
 
     tasks.map((task) => {
-
-      console.log(task)
-      if(typeof task == 'string' ) {
-        result.push(index)
-      }
-
-      index++
+      // result.push(index)
+      result.push(index + 2)    // TODO REMEMBER TO FIX THIS SOMEHOW
+      index = index + task.body.length + 1
     })
 
     setTaskHeaderIndex(result)
-
-    console.log(taskHeaderIndex)
   },
-  []
-  // [tasks]
+  [tasks]
 )
 
   const accountHandler = () => {
@@ -164,7 +158,7 @@ export default function App() {
           { ...styles.test, borderColor: 'black'}
           // { marginTop: PROGRESSBARDIMENSION.total}
         ]}
-        // stickyHeaderIndices={stickyHeaderIndices}
+        stickyHeaderIndices={taskHeaderIndex}
         >
 
             {/* <ScrollView

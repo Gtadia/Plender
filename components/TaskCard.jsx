@@ -6,7 +6,7 @@ import {SharedValue, useDerivedValue, useSharedValue, interpolateColor, useAnima
 const strokeWidth = 8;
 const radius = 30;
 
-const TaskCard = ({ task }) => {
+const TaskCard = ({ task, style }) => {
   const [tags, setTags] = useState([]);
 
   const innerRadius = radius - strokeWidth/2;
@@ -14,7 +14,7 @@ const TaskCard = ({ task }) => {
   path.addCircle(radius, radius, innerRadius);
 
   return (
-    <View style={{...styles.container, ...styles.borderStyle}}>
+    <View style={{...styles.container, ...styles.borderStyle, ...style}}>
       <View style={{flexDirection: 'row'}}>
 
         <View style={{width: radius * 2, height: radius * 2, marginLeft: 15, marginRight: 8}}>

@@ -1,12 +1,12 @@
 import { StyleSheet, Text, View, Dimensions } from 'react-native'
 import React, { useState } from 'react'
 
-const CurrentTaskCard = ({ task }) => {
+const CurrentTaskCard = ({ task, style }) => {
   const [tags, setTags] = useState([]);
 
   return (
     // todo — should I add a border style or not?
-    <View style={{...styles.container, ...styles.borderStyle}}>
+    <View style={{...styles.container, ...styles.borderStyle, ...style}}>
         <View style={{position: 'absolute', width: '50%', height: '100%', backgroundColor: 'green', left: 0, top: 0, ...styles.borderStyle}}></View>
 
         <View style={{justifyContent: 'center', marginLeft: 30}}>

@@ -10,8 +10,8 @@ import AccountButton from '../components/AccountButton';
 import CircularProgressBar from '../components/CircularProgressBar';
 import AccountMenu from '../components/AccountMenu';
 
-import {StyleSheet, Text, View, ScrollView} from 'react-native';
-import React, {useState, useEffect} from 'react';
+import {StyleSheet, Text, View, ScrollView, Animated} from 'react-native';
+import React, {useState, useEffect, useRef} from 'react';
 import {useSharedValue, withTiming} from 'react-native-reanimated';
 import {useFont} from '@shopify/react-native-skia';
 import {SafeAreaView} from 'react-native-safe-area-context';
@@ -21,10 +21,30 @@ import CurrentTaskCard from '../components/CurrentTaskCard';
 
 const RADIUS = 160;
 const STROKEWIDTH = 23;
+
+const PROGRESSBARDIMENSION = {"radius": RADIUS, "strokeWidth": STROKEWIDTH, "secondaryStrokeWidth": STROKEWIDTH/2, "secondaryRadius": RADIUS + STROKEWIDTH/2, "mavMargin": 15, "navHeight": 15, "navWidth": 75, "total": RADIUS * 2 + STROKEWIDTH * 1.5 + 30}
 const SECONDSINDAY = 24 * 60 * 60;
 
 
 export default function App() {
+  const scrollY = useRef(new Animated.Value(0)).current;
+
+  const translateHeader = scrollY.interpolate({
+    inputRange: [0, 200],
+    outputRange: [0, -200],
+    extrapolate: 'clamp',
+  });
+  const opacityTitle = scrollY.interpolate({
+    inputRange: [0, 50],
+    outputRange: [1, 0],
+    extrapolate: 'clamp',
+  });
+  const translateList = scrollY.interpolate({
+    inputRange: [0, PROGRESSBARDIMENSION.total],
+    outputRange: [0, -PROGRESSBARDIMENSION.total],
+    extrapolate: 'clamp',
+  });
+
   const [tasks, setTasks] = useState({'dailyLabel': 'Daily', 'daily': ['test', 'test', 'test',], 'todoLabel': 'ToDo', 'todo': ['test', 'test', 'test', 'test', 'test', 'test', 'test', 'test',]})
   const currTimeInSec = useSharedValue(0);
   const currHour = useSharedValue(0);
@@ -78,33 +98,69 @@ export default function App() {
   }
 
   return (
-        <SafeAreaView style={styles.container}>
+        <SafeAreaView edges={['top']} style={{...styles.container, ...styles.test, overflow: 'visible'}}>
             <View style={styles.header}>
               <Text style={styles.headerLogo}>Image Text Logo </Text>
               <Text>{dt}</Text>
               <AccountButton handlePress={accountHandler} style={styles.accountButton}/>
             </View>
+          <View style={[
+            {width: "100%"}
+          ]}>
             {/* <AccountMenu active={false}/> */}
-            <CircularProgressBar radius={RADIUS} strokeWidth={STROKEWIDTH} currTime={currTimeInSec} todoTime={0.5} dailyTime={0.75} hour={currHour} minute={currMinute} second={currSecond} font={font}/>
+            <>
+            <Animated.View
+           style={[
+            styles.header2,
+            { transform: [{ translateY: translateHeader }] },
+            {opacity: opacityTitle},
+            { height: PROGRESSBARDIMENSION.total }
+          ]}>
+              <CircularProgressBar radius={RADIUS} strokeWidth={STROKEWIDTH} currTime={currTimeInSec} todoTime={0.5} dailyTime={0.75} hour={currHour} minute={currMinute} second={currSecond} font={font}/>
+            </Animated.View>
+            </>
+            </View>
+
+
             <StatusBar style="auto" />
 
+            <Animated.ScrollView
+            // onScroll={({nativeEvent}) => {console.log(nativeEvent.contentOffset.y)}}
+        onScroll={Animated.event(
+          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+          {
+            useNativeDriver: true,
+          },
+        )}
+        scrollEventThrottle={1}
+        style={[
+          // { transform: [{ translateY: translateList }] },
+          { ...styles.test, borderColor: 'black'}
+          // { marginTop: PROGRESSBARDIMENSION.total}
+        ]}
+        stickyHeaderIndices={[1, 5]}
+        >
 
-            <ScrollView
-              stickyHeaderIndices={[1, 5]} // always try to find index of the headers (use useState array) (always check if you have to update this component when you add (useState might take care of it but who knows))
+            {/* <ScrollView
+              // stickyHeaderIndices={[1, 5]} // always try to find index of the headers (use useState array) (always check if you have to update this component when you add (useState might take care of it but who knows))
               style={styles.listStyle}  // this can be a list of keys, I think (or use a function that counts the number of tasks between each category)
-            >
+            > */}
               {/* TODO — I need keys for each item */}
-              <CurrentTaskCard />
+              <Animated.View style={[
+                {height: PROGRESSBARDIMENSION.total, borderWidth: 2, borderColor: 'red'},
+                { transform: [{ scale: translateList }] },
+                ]} />
+              {/* <CurrentTaskCard /> */}
               {
                 Object.values(tasks).map((value) => {
                   // console.log(key.slice(key.length - 5, key.length))
                   if(typeof value == 'string') {
                     return (
-                      <View>
+                      <Animated.View style={{ transform: [{ translateY: translateList }] }}>
                         <Text>
                           {value}
                         </Text>
-                      </View>
+                      </Animated.View>
                     )
                   } else {
                     return (
@@ -115,23 +171,39 @@ export default function App() {
                   }
                 })
               }
-            </ScrollView>
+            {/* </ScrollView> */}
+          </Animated.ScrollView>
         </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flex: 0,
     backgroundColor: 'white',
     alignItems: 'center',
-    paddingTop: 15
+    paddingTop: 15,
   },
   header: {
     width: "95%",
     // backgroundColor: 'pink',
     alignItems: "center",
     marginBottom: 25
+  },
+  header2: {
+    position: 'absolute',
+    width: '100%',
+    zIndex: 1,
+    // paddingHorizontal: 24,
+    // paddingVertical: 12,
+    top: 0,
+    left: 0,
+    right: 0,
+    alignItems: 'stretch',
+    justifyContent: 'flex-end',
+
+    borderWidth: 2,
+    borderColor:'blue'
   },
   headerLogo: {
     fontSize: 30
@@ -142,6 +214,11 @@ const styles = StyleSheet.create({
     bottom: '-25%',
   },
   listStyle: {
-    marginTop: 25
-  }
+    // marginTop: 25
+    height: '100%',
+  },
+  test: {
+    borderWidth: 2,
+    borderColor: 'red'
+  },
 })

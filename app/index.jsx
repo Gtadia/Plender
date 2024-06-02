@@ -8,7 +8,7 @@ import { StatusBar } from 'expo-status-bar';
 import Button from '../components/GeneralButton'
 import AccountButton from '../components/AccountButton';
 import CircularProgressBar from '../components/CircularProgressBar';
-import AccountMenu from '../components/AccountMenu';
+import TaskMenu from '../components/TaskMenu';
 
 import {StyleSheet, Text, View, ScrollView, Animated} from 'react-native';
 import React, {useState, useEffect, useRef} from 'react';
@@ -27,6 +27,7 @@ const SECONDSINDAY = 24 * 60 * 60;
 
 
 export default function App() {
+  const [openTaskMenu, setOpenTaskMenu] = useState(false);
   const scrollY = useRef(new Animated.Value(0)).current;
 
   const translateHeader = scrollY.interpolate({
@@ -46,8 +47,8 @@ export default function App() {
   });
 
   const [tasks, setTasks] = useState([
-    {title: 'Daily', body: ['test', 'test', 'test']},
-    {title: 'ToDo', body: ['test', 'test', 'test', 'test', 'test', 'test', 'test', 'test',]}
+    {title: 'Daily', body: ['test1', 'test', 'test']},
+    {title: 'ToDo', body: ['test', 'test2', 'test', 'test', 'test', 'test', 'test', 'test',]}
   ])
   const [taskHeaderIndex, setTaskHeaderIndex] = useState([]);
   const currTimeInSec = useSharedValue(0);
@@ -66,6 +67,9 @@ export default function App() {
   //   setDt(1)
   // }
 
+  // TODO — This useEffect is making EVERYTHING rerender (I guess that's fine but just make sure it is)
+  // OR, Create a separate file (like index2.jsx) that just has all the components that REQUIRE a timer
+  // The Current task and the progressbar need timer BUT everything else doesn't
   useEffect(() => {
       let secTimer = setInterval( () => {
         setDt(new Date().getHours() * 60 * 60 + new Date().getMinutes() * 60 + new Date().getSeconds())
@@ -108,8 +112,12 @@ export default function App() {
   [tasks]
 )
 
-  const accountHandler = () => {
+  const accountHandler =() => {}
 
+  const taskClickHandler = (task) => {
+    // task ==> task object of the task that was clicked on.
+    setOpenTaskMenu(prev => !prev)
+    console.log(task, openTaskMenu)
   }
 
   if (!font) {
@@ -128,20 +136,21 @@ export default function App() {
           <View style={[
             {width: "100%"}
           ]}>
-            {/* <AccountMenu active={false}/> */}
             <>
             <Animated.View
-           style={[
-            styles.header2,
-            { transform: [{ translateY: translateHeader }] },
-            {opacity: opacityTitle},
-            { height: PROGRESSBARDIMENSION.total }
-          ]}>
+            style={[
+              styles.header2,
+              { transform: [{ translateY: translateHeader }] },
+              {opacity: opacityTitle},
+              { height: PROGRESSBARDIMENSION.total }
+            ]}>
               <CircularProgressBar radius={RADIUS} strokeWidth={STROKEWIDTH} currTime={currTimeInSec} todoTime={0.5} dailyTime={0.75} hour={currHour} minute={currMinute} second={currSecond} font={font}/>
             </Animated.View>
             </>
             </View>
 
+            {/* Shape of task to menu and then close */}
+            { openTaskMenu && <TaskMenu closeHandler={() => {setOpenTaskMenu(false)}}/>}
 
             <StatusBar style="auto" />
 
@@ -189,7 +198,7 @@ export default function App() {
                         } else {
                           return (
                             value.map((t) => (
-                              <TaskCard />
+                              <TaskCard taskClick={() => taskClickHandler(t)}/>
                             ))
                           )
                         }

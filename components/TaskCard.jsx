@@ -6,7 +6,7 @@ import {SharedValue, useDerivedValue, useSharedValue, interpolateColor, useAnima
 const strokeWidth = 8;
 const radius = 30;
 
-const TaskCard = ({ task, style }) => {
+const TaskCard = ({ task, style, taskClick }) => {
   const [tags, setTags] = useState([]);
 
   const innerRadius = radius - strokeWidth/2;
@@ -15,7 +15,9 @@ const TaskCard = ({ task, style }) => {
 
   return (
     // TODO — Maybe have another view so that the opacity behind the button is a bit darker (or bg to TouchableOpacity)
-    <TouchableOpacity>
+    <TouchableOpacity
+      onPress={taskClick}
+    >
     <View style={{...styles.container, ...styles.borderStyle, ...style}}>
       <View style={{flexDirection: 'row'}}>
 

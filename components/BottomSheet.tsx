@@ -13,6 +13,9 @@ const MAX_TRANSLATE_Y = -SCREEN_HEIGHT + 50
 const BottomSheet = () => {
     const translateY = useSharedValue(0)
 
+    const swipeUpContext = useSharedValue({ y: 0 })
+    // TODO  — Output translateY to MMKV (not presistent storage) (to move radialProgressBar)
+
     const scrollTo = useCallback((destination: number) => {
         "worklet";
         translateY.value = withSpring(destination, { damping: 50 })
@@ -38,10 +41,30 @@ const BottomSheet = () => {
             }
         } else if (translateY.value > -SCREEN_HEIGHT / 2) {
             if (context.value.y < translateY.value - 100) {
-                scrollTo(-50)
+                scrollTo(10)
+            } else if (context.value.y > translateY.value + 100) {
+                scrollTo(-SCREEN_HEIGHT / 2)
             } else {
                 scrollTo(context.value.y)
             }
+        }
+
+        console.log(translateY.value)
+    })
+
+    const swipeUpGesture = Gesture.Pan().onStart((event) => {
+        swipeUpContext.value = {y:event.y}
+        console.log("swipe up", swipeUpContext.value.y)
+    })
+    .onUpdate((event) => {
+        // TODO — We can even get the velocity of the event (.velocityX .velocityY)
+        translateY.value = event.translationY * 1.5
+    })
+    .onEnd(() => {
+        if (translateY.value < -125) {
+            scrollTo(-SCREEN_HEIGHT / 2)
+        } else {
+            scrollTo(10)
         }
     })
 
@@ -64,26 +87,21 @@ const BottomSheet = () => {
     }, [])
 
     return (
-        // <GestureDetector gesture={gesture}>
-        //     <View style={{position: 'absolute', height: SCREEN_HEIGHT, width: '100%', top: 0}}>
-        //         {/* { (context.value.y > -100) && <Animated.View style={styles.swipeUpFromZero}></Animated.View>} */}
-        //         { <Animated.View style={styles.swipeUpFromZero}></Animated.View>}
+        <Animated.View style={{position: 'absolute', height: SCREEN_HEIGHT, width: '100%', top: 0}}>
+                <GestureDetector gesture={swipeUpGesture}>
+                    <View style={styles.swipeUpFromZero}></View>
+                </GestureDetector>
 
-        //         <Animated.View style={[styles.container, rBottomSheetStyle]}>
-        //             <View style={styles.line} />
-        //         </Animated.View>
-        //     </View>
-        // </GestureDetector>
-
-        <View style={{position: 'absolute', height: SCREEN_HEIGHT, width: '100%', top: 0}}>
             <Animated.View style={[styles.container, rBottomSheetStyle]}>
                 <GestureDetector gesture={gesture}>
-                    <View style={{width: "100%", height: 50}}>
+                    <View style={{width: "100%", height: 50,
+                        // backgroundColor: 'green'
+                        }}>
                         <View style={styles.line} />
                     </View>
                 </GestureDetector>
             </Animated.View>
-        </View>
+        </Animated.View>
     )
 }
 
@@ -110,7 +128,8 @@ const styles = StyleSheet.create({
         height: SCREEN_HEIGHT / 3,
         width: '100%',
         position: 'absolute',
+
         bottom: 0,
-        backgroundColor: 'blue'
+        // backgroundColor: 'blue'
     }
 })

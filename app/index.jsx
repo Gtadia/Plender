@@ -1,3 +1,4 @@
+import "react-native-gesture-handler"
 import { StatusBar } from 'expo-status-bar';
 // import { Text, View, StyleSheet } from 'react-native';
 // import { useEffect, useState } from 'react';
@@ -9,14 +10,15 @@ import Button from '../components/GeneralButton'
 import AccountButton from '../components/AccountButton';
 import CircularProgressBar from '../components/CircularProgressBar';
 import TaskMenu from '../components/TaskMenu';
+import TaskCard from '../components/TaskCard';
+import CurrentTaskCard from '../components/CurrentTaskCard';
 
 import {StyleSheet, Text, View, ScrollView, Animated} from 'react-native';
 import React, {useState, useEffect, useRef} from 'react';
 import {useSharedValue, withTiming} from 'react-native-reanimated';
 import {useFont} from '@shopify/react-native-skia';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import TaskCard from '../components/TaskCard';
-import CurrentTaskCard from '../components/CurrentTaskCard';
+import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
 
 
 const RADIUS = 160;
@@ -25,10 +27,14 @@ const STROKEWIDTH = 23;
 const PROGRESSBARDIMENSION = {"radius": RADIUS, "strokeWidth": STROKEWIDTH, "secondaryStrokeWidth": STROKEWIDTH/2, "secondaryRadius": RADIUS + STROKEWIDTH/2, "mavMargin": 15, "navHeight": 15, "navWidth": 75, "total": RADIUS * 2 + STROKEWIDTH * 1.5 + 30}
 const SECONDSINDAY = 24 * 60 * 60;
 
+const snapPoints = ["40%", "90%"]    // Can I do both percentage and pixel count?
+
 
 export default function App() {
   const [openTaskMenu, setOpenTaskMenu] = useState(false);
   const scrollY = useRef(new Animated.Value(0)).current;
+  const bottomSheetRef = useRef<BottomSheet>(null);
+  const [isOpen, setIsOpen] = useState(true);
 
   const translateHeader = scrollY.interpolate({
     inputRange: [0, 200],
@@ -40,15 +46,10 @@ export default function App() {
     outputRange: [1, 0],
     extrapolate: 'clamp',
   });
-  const translateList = scrollY.interpolate({
-    inputRange: [0, PROGRESSBARDIMENSION.total],
-    outputRange: [0, -PROGRESSBARDIMENSION.total],
-    extrapolate: 'clamp',
-  });
 
   const [tasks, setTasks] = useState([
     {title: 'Daily', body: ['test1', 'test', 'test']},
-    {title: 'ToDo', body: ['test', 'test2', 'test', 'test', 'test', 'test', 'test', 'test',]}
+    {title: 'ToDo', body: ['test', 'test2', 'test', 'test', 'test', 'test', 'test', 'test', 'test', 'test2', 'test', 'test', 'test', 'test', 'test', 'test',]}
   ])
   const [taskHeaderIndex, setTaskHeaderIndex] = useState([]);
   const currTimeInSec = useSharedValue(0);
@@ -133,10 +134,15 @@ export default function App() {
               <Text>{dt}</Text>
               <AccountButton handlePress={accountHandler} style={styles.accountButton}/>
             </View>
+
+            <StatusBar style="auto" />
+            {/* Shape of task to menu and then close */}
+            { openTaskMenu && <TaskMenu closeHandler={() => {setOpenTaskMenu(false)}}/>}
+
+
           <View style={[
             {width: "100%"}
           ]}>
-            <>
             <Animated.View
             style={[
               styles.header2,
@@ -146,15 +152,15 @@ export default function App() {
             ]}>
               <CircularProgressBar radius={RADIUS} strokeWidth={STROKEWIDTH} currTime={currTimeInSec} todoTime={0.5} dailyTime={0.75} hour={currHour} minute={currMinute} second={currSecond} font={font}/>
             </Animated.View>
-            </>
             </View>
 
-            {/* Shape of task to menu and then close */}
-            { openTaskMenu && <TaskMenu closeHandler={() => {setOpenTaskMenu(false)}}/>}
-
-            <StatusBar style="auto" />
-
-            <Animated.ScrollView
+            <BottomSheet
+              // ref={bottomSheetRef}
+              snapPoints={snapPoints}
+            >
+              <Text>Hi</Text>
+              </BottomSheet>
+            <ScrollView
             // onScroll={({nativeEvent}) => {console.log(nativeEvent.contentOffset.y)}}
         onScroll={Animated.event(
           [{ nativeEvent: { contentOffset: { y: scrollY } } }],
@@ -177,8 +183,7 @@ export default function App() {
             > */}
               {/* TODO — I need keys for each item */}
               <Animated.View style={[
-                {height: PROGRESSBARDIMENSION.total, borderWidth: 2, borderColor: 'red'},
-                { transform: [{ scale: translateList }] },
+                // {height: PROGRESSBARDIMENSION.total, borderWidth: 2, borderColor: 'red'},
                 ]} />
 
               {/* Maybe remove current task cards for now... */}
@@ -189,11 +194,9 @@ export default function App() {
                   Object.values(task).map((value) => {
                     if(typeof value == 'string') {
                           return (
-                            <Animated.View style={{ transform: [{ translateY: translateList }] }}>
                               <Text>
                                 {value}
                               </Text>
-                            </Animated.View>
                           )
                         } else {
                           return (
@@ -206,7 +209,7 @@ export default function App() {
                 ))
               }
             {/* </ScrollView> */}
-          </Animated.ScrollView>
+          </ScrollView>
         </SafeAreaView>
   );
 }
@@ -225,7 +228,7 @@ const styles = StyleSheet.create({
     marginBottom: 25
   },
   header2: {
-    position: 'absolute',
+    // position: 'absolute',
     width: '100%',
     zIndex: 1,
     // paddingHorizontal: 24,

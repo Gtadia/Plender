@@ -98,8 +98,8 @@ const CircularProgressBar = ({radius, strokeWidth, currTime, todoTime, dailyTime
     'dateText': {...styles.smallTimer, top: innerDiameter/2 - fontMeasureDate.height/2 - fontMeasure.height/2 - 20, },
     'mainTimer': {...styles.innerTimerTextCanvas, width: innerDiameter, top: innerDiameter / 2 - fontMeasure.height/2},
     'smallTimer': {...styles.smallTimer, top: innerDiameter / 2 + fontMeasureTodo.height, width: fontMeasureTodo.width, textAlign: 'center', fontSize: 26,},
-    'smallTimerLeft': {left: strokeWidth + 20},
-    'smallTimerRight': {right: strokeWidth + 20},
+    'smallTimerLeft': {top: strokeWidth + 20},
+    'smallTimerRight': {top: strokeWidth + 20},
 
     'percentage': {...styles.innerTimerTextCanvas, width: innerDiameter, top: innerDiameter / 2 + fontMeasurePercentage.height},
 

@@ -4,7 +4,19 @@ import React, { Component, ReactNode } from 'react'
 import { radialProgressState$ } from '../db/LegendApp';
 import { View } from 'react-native';
 
-export default class Timer extends Component {
+interface TimerProps {
+    // props
+}
+type TimerState = {
+    timer: ReturnType<typeof setInterval>,
+}
+
+export default class Timer extends Component<TimerProps, TimerState> {
+
+    // TODO — props: any (for now...)
+    constructor(props: any) {
+        super(props);
+    }
 
     componentWillMount() {
         this.getCurrentTime();

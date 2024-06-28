@@ -6,7 +6,6 @@ import { Dimensions, StyleSheet, Text, View } from 'react-native'
 import React, { useEffect, useCallback } from 'react'
 import { Gesture, GestureDetector } from 'react-native-gesture-handler'
 import Animated, { Extrapolation, interpolate, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
-import { ScreenContainer } from 'react-native-screens';
 
 const {height: SCREEN_HEIGHT} = Dimensions.get('window')
 const MAX_TRANSLATE_Y = -SCREEN_HEIGHT + 50
@@ -65,11 +64,26 @@ const BottomSheet = () => {
     }, [])
 
     return (
-        <GestureDetector gesture={gesture}>
+        // <GestureDetector gesture={gesture}>
+        //     <View style={{position: 'absolute', height: SCREEN_HEIGHT, width: '100%', top: 0}}>
+        //         {/* { (context.value.y > -100) && <Animated.View style={styles.swipeUpFromZero}></Animated.View>} */}
+        //         { <Animated.View style={styles.swipeUpFromZero}></Animated.View>}
+
+        //         <Animated.View style={[styles.container, rBottomSheetStyle]}>
+        //             <View style={styles.line} />
+        //         </Animated.View>
+        //     </View>
+        // </GestureDetector>
+
+        <View style={{position: 'absolute', height: SCREEN_HEIGHT, width: '100%', top: 0}}>
             <Animated.View style={[styles.container, rBottomSheetStyle]}>
-                <View style={styles.line} />
+                <GestureDetector gesture={gesture}>
+                    <View style={{width: "100%", height: 50}}>
+                        <View style={styles.line} />
+                    </View>
+                </GestureDetector>
             </Animated.View>
-        </GestureDetector>
+        </View>
     )
 }
 
@@ -91,5 +105,12 @@ const styles = StyleSheet.create({
         alignSelf: 'center',
         marginVertical: 15,
         borderRadius: 2,
+    },
+    swipeUpFromZero: {
+        height: SCREEN_HEIGHT / 3,
+        width: '100%',
+        position: 'absolute',
+        bottom: 0,
+        backgroundColor: 'blue'
     }
 })

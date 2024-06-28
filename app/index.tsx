@@ -1,6 +1,3 @@
-/*
-THIS NEEDS TO BE A TYPESCRIPT IN ORDER TO WORK0
-*/
 import { StatusBar } from 'expo-status-bar';
 import { Button, Platform, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -22,8 +19,6 @@ export default function App() {
         return <View />;
     }
 
-
-    // TODO — Check why this runs twice
     radialProgressState$.sumTasks.get()
 
   return (

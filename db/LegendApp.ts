@@ -1,5 +1,6 @@
 import { batch, Observable, observable, observe } from '@legendapp/state';
 import { tasks } from '../types';
+import { useSharedValue } from 'react-native-reanimated';
 
 interface tasksState {
     upcoming: tasks[],
@@ -65,4 +66,7 @@ export const radialProgressState$ = observable<radialProgressState>({
             })
         })
     }
+})
+
+export const fontState$ = observable<any>({
 })

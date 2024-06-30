@@ -15,11 +15,9 @@ const TaskList = () => {
     <SectionList
       sections={settingsState$.orderList.get()}
       keyExtractor={(item, index) => item + index}
-      // renderItem={({item, index, section}) => <TaskListItem task={item} index={index} db={section.title}/>}
-      renderItem={({item, index, section}) => <TaskListItem index={index}/>}
-      // renderItem={({item}) => <Text>{typeof item}</Text>}
+      renderItem={({ index }) => <TaskListItem index={index}/>}
       ListEmptyComponent={<Text>Empty List</Text>}
-      renderSectionHeader={({section}) => (
+      renderSectionHeader={({ section }) => (
         <Text>{section.title}</Text>
       )}
       stickySectionHeadersEnabled

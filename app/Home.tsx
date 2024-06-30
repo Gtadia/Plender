@@ -93,6 +93,7 @@ export default function Home() {
       Extrapolation.CLAMP     // without CLAMP, if the value is less than MAX_TRANSLATE_Y, the borderRadius won't be clamped to 25, but greater
     )
     return {
+      // TODO — Instead of moving things down, resize the component
       borderRadius,
       transform: [{translateY: translateY.value}]
     }

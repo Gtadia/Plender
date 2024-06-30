@@ -209,7 +209,7 @@ const CircularProgressBar = ({radius, strokeWidth, font}: CircularProgressProps)
                 end={times.now.percentage}/>
 
 
-              {radialProgressState$.current.get() !== null &&
+              {radialProgressState$.current.get().data !== null &&
                 <Path
                     path={path2}
                     strokeWidth={strokeWidth / 2}
@@ -221,7 +221,7 @@ const CircularProgressBar = ({radius, strokeWidth, font}: CircularProgressProps)
                     end={1}
                 />
               }
-              {radialProgressState$.current.get() !== null &&
+              {radialProgressState$.current.get().data !== null &&
                 <Path
                     path={path2}
                     strokeWidth={strokeWidth / 4}
@@ -251,7 +251,7 @@ const CircularProgressBar = ({radius, strokeWidth, font}: CircularProgressProps)
             onScroll={({nativeEvent}) => {scrollPercent.value = (2 * (nativeEvent.contentOffset.x)/nativeEvent.contentSize.width)}}
             scrollEventThrottle={1}
             overScrollMode='always'
-            scrollEnabled={radialProgressState$.current.get() !== null}
+            scrollEnabled={radialProgressState$.current.get().data !== null}
             style={additionalStyles.scrollViewContainer}
           >
             <View style={[additionalStyles.scrollViewWiderElement]}>

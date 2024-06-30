@@ -17,6 +17,7 @@ import { fontState$ } from '../db/LegendApp';
 import Timer from '../components/Timer';
 import Home from './Home';
 import Settings from './Settings';
+import TestPanel from './TestPanel';
 
 
 // ----------
@@ -60,6 +61,16 @@ export default function RootLayout() {
               headerShown: false
             }}
             component={Settings}
+            />
+
+          <Tab.Screen
+            name="TestPanel"
+            options={{
+              // @ts-ignore
+              tabBarIcon: ({ ref }) => <Lottie ref={ref} loop={false} source={require('../assets/chat.icon.json')} style={styles.icon} />,
+              headerShown: false
+            }}
+            component={TestPanel}
             />
         </Tab.Navigator>
     </>

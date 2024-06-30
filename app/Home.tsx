@@ -11,6 +11,8 @@ import Timer from '../components/Timer';
 import { fontState$, radialProgressState$, tasksState$ } from '../db/LegendApp';
 import CircularProgressBar from '../components/RadialProgressBar';
 import { SkFont, useFont } from '@shopify/react-native-skia';
+import BottomSheet from '../components/BottomSheet';
+import TaskList from '../components/TaskList';
 
 const RADIUS = 160
 const STROKEWIDTH = 25
@@ -131,6 +133,8 @@ export default function Home() {
                 <View style={styles.line} />
             </View>
         </GestureDetector>
+
+        <TaskList />
       </Animated.View>
     </GestureHandlerRootView>
   )

@@ -28,7 +28,7 @@ export default class Timer extends Component<TimerProps, TimerState> {
         const todayTime = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
         radialProgressState$.now.set(todayTime);
 
-        console.log(radialProgressState$.now.get())
+        // console.log(radialProgressState$.now.get())
     }
 
     componentDidMount(): void {

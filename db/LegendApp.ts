@@ -3,15 +3,15 @@ import { tasks } from '../types';
 import { useSharedValue } from 'react-native-reanimated';
 
 interface tasksState {
-    upcoming: tasks[],
-    current: tasks | null,
-    today: tasks[],
-    completed: tasks[],
-    overdue: tasks[]
+    upcoming: {title: string, data: tasks[]},
+    current: {title: string, data: tasks[]},
+    today: {title: string, data: tasks[]},
+    completed: {title: string, data: tasks[]},
+    overdue: {title: string, data: tasks[]},
 }
 
 interface radialProgressState {
-    current: Observable<tasks | null>,
+    current: Observable<{title: string, data: tasks[]}>,
     todo: number,
     daily: number,
     now: number,
@@ -20,15 +20,18 @@ interface radialProgressState {
 
 
 export const tasksState$ = observable<tasksState>({
-    upcoming: [],
-    current: null, // only exists in MMKV and google sheets
-    today: [
-        {label: 'test', created_at: new Date(), due: new Date(), time_goal: 2 * 3600, time_remaining: 1800, description: 'nothing', num_breaks: 5, is_daily: true},
-        {label: 'test2', created_at: new Date(), due: new Date(), time_goal: 2 * 3600, time_remaining: 1800, description: 'nothing2', num_breaks: 5, is_daily: true},
-        {label: 'test3', created_at: new Date(), due: new Date(), time_goal: 2 * 3600, time_remaining: 1800, description: 'nothing3', num_breaks: 5, is_daily: false},
-    ],
-    completed: [],
-    overdue: [],
+    upcoming: {title: 'Upcoming', data: []},
+    current: {title: 'Current', data: []}, // only exists in MMKV and google sheets
+    today: {
+        title: "Today",
+        data:[
+            {label: 'test', created_at: new Date(), due: new Date(), time_goal: 2 * 3600, time_remaining: 1800, description: 'nothing', num_breaks: 5, is_daily: true},
+            {label: 'test2', created_at: new Date(), due: new Date(), time_goal: 2 * 3600, time_remaining: 1800, description: 'nothing2', num_breaks: 5, is_daily: true},
+            {label: 'test3', created_at: new Date(), due: new Date(), time_goal: 2 * 3600, time_remaining: 1800, description: 'nothing3', num_breaks: 5, is_daily: false},
+        ]
+    },
+    completed: {title: "Completed", data: []},
+    overdue: {title: "Overdue", data: []},
     // additional: {},  // Maybe later in an update
 })
 
@@ -45,7 +48,6 @@ export const radialProgressState$ = observable<radialProgressState>({
     sumTasks: () => {
         observe(() => {
             batch(() => {
-                console.log('running')
                 // if(radialProgressState$.current.get()) {
                 //     if(radialProgressState$.current.get()?.is_daily) {
                 //         radialProgressState$.daily.set((prev) => prev + radialProgressState$.current.get().time_remaining)
@@ -54,8 +56,7 @@ export const radialProgressState$ = observable<radialProgressState>({
                 //     }
                 // }
 
-                console.log(tasksState$.today.get().lengthc)
-                for(const task of tasksState$.today.get()) {
+                for(const task of tasksState$.today.get().data) {
                     console.log("Calculating: ", task);
                     if(task.is_daily) {
                         radialProgressState$.daily.set((prev) => prev + task.time_remaining)
@@ -69,4 +70,10 @@ export const radialProgressState$ = observable<radialProgressState>({
 })
 
 export const fontState$ = observable<any>({
+})
+
+export const settingsState$ = observable<any>({
+    // orderList: [tasksState$.current.get(), tasksState$.today.get(), tasksState$.upcoming.get(), tasksState$.overdue.get()],
+    orderList: [tasksState$.current, tasksState$.today, tasksState$.upcoming, tasksState$.overdue],
+    // orderList: [{title: 'today', data: tasksState$.today.get()}],
 })

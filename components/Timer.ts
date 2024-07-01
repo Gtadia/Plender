@@ -27,7 +27,7 @@ export default class Timer extends Component<TimerProps, TimerState> {
         // const now = new Date(1719514598);
         const todayTime = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
         radialProgressState$.now.set(todayTime);
-        radialProgressState$.todayDate.set(now)
+        radialProgressState$.todayDate.set(now.toLocaleDateString())    // Getting just the date to prevent continually updating the date...
 
         // console.log(radialProgressState$.now.get())
     }

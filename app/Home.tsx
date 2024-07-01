@@ -112,8 +112,31 @@ export default function Home() {
       translateY.value = withSpring(MAX_TRANSLATE_Y/2, { damping: 50 })
       radialTranslate.value = withSpring(0, {damping: 50})
       radialProgressState$.sumTasks.get()
-      tasksState$.dateUpdate.get()
+      // tasksState$.dateUpdate.get()
     }, [])
+
+  observe(() => {
+    console.log("observe ran on ", radialProgressState$.todayDate.get())
+    console.log("batch ran")
+    for (const [index, task] of tasksState$.today.data.get().entries()) {
+        console.log("today loop", task.label)
+        if(task.due.toLocaleDateString() !== radialProgressState$.todayDate.get()) {
+            console.log(task, " is overdue")
+            tasksState$.overdue.data.push(task)
+            tasksState$.today.data[index].delete()
+        }
+    }
+
+
+    for (const [index, task] of tasksState$.upcoming.data.get().entries()) {
+        console.log(task.label, ' is due today')
+        if (task.due.toLocaleDateString() === radialProgressState$.todayDate.get()) {
+            console.log('The Dates Match')
+            tasksState$.today.data.push(task)
+            tasksState$.upcoming.data[index].delete()
+        }
+    }
+  })
 
 
   return (

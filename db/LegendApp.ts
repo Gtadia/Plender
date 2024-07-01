@@ -36,31 +36,6 @@ export const tasksState$ = observable<tasksState>({
     completed: {title: "Completed", data: []},
     overdue: {title: "Overdue", data: []},
     // additional: {},  // Maybe later in an update
-
-    dateUpdate: () => {
-        // TODO — Check if it automatically updates when the day switches over
-        // TODO — Is observe necessary
-        console.log("observe ran on ", radialProgressState$.todayDate.get().toLocaleDateString())
-        console.log("batch ran")
-        for (const [index, task] of tasksState$.today.data.get().entries()) {
-            console.log("today loop", task.label)
-            if(task.due.toLocaleDateString() !== radialProgressState$.todayDate.get().toLocaleDateString()) {
-                console.log(task, " is overdue")
-                tasksState$.overdue.data.push(task)
-                tasksState$.today.data[index].delete()
-            }
-        }
-
-
-        for (const [index, task] of tasksState$.upcoming.data.get().entries()) {
-            console.log(task.label, ' is due today')
-            if (task.due.toLocaleDateString() === radialProgressState$.todayDate.get().toLocaleDateString()) {
-                console.log('The Dates Match')
-                tasksState$.today.data.push(task)
-                tasksState$.upcoming.data[index].delete()
-            }
-        }
-    }
 })
 
 export const radialProgressState$ = observable<radialProgressState>({
@@ -87,6 +62,7 @@ export const radialProgressState$ = observable<radialProgressState>({
                 // }
 
                 for(const task of tasksState$.today.data.get()) {
+                    // NOTE: THIS will load 2 times because tasksState$ was updated 2 times
                     // console.log("Calculating: ", task);
                     if(task.is_daily) {
                         radialProgressState$.daily.set((prev) => prev + task.time_remaining)

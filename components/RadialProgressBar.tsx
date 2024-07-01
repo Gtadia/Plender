@@ -5,6 +5,7 @@ import {Canvas, Path, SkFont, Skia, Text} from '@shopify/react-native-skia'
 import Animated,{interpolate, useDerivedValue, useSharedValue, interpolateColor, useAnimatedStyle, withTiming, Extrapolation} from 'react-native-reanimated';
 import { radialProgressState$, tasksState$ } from '../db/LegendApp';
 import { observe } from '@legendapp/state';
+import { observer } from '@legendapp/state/react';
 
 const SECONDS_IN_DAY = 24 * 60 * 60;
 const mainRingColor = '#51CC46';
@@ -17,29 +18,8 @@ interface CircularProgressProps {
 }
 
 const CircularProgressBar = ({radius, strokeWidth, font}: CircularProgressProps) => {
-  console.log("Hello")
-// ------------------------------------------------------------------------------------------------
+  // ------------------------------------------------------------------------------------------------
   const scrollPercent = useSharedValue(0.0);
-
-  const backgroundColor = useAnimatedStyle(() => {
-    return {
-      backgroundColor: interpolateColor(
-        scrollPercent.value,
-        [0, 1],
-        ['blue', 'green']
-      )
-    }
-  })
-
-  const backgroundColorRight = useAnimatedStyle(() => {
-    return {
-      backgroundColor: interpolateColor(
-      Math.abs(1 - scrollPercent.value),
-      [0, 1],
-      ['transparent', 'green']
-      )
-    }
-  })
 
   const mainWheelColor = useDerivedValue(() => {
     return interpolateColor(
@@ -63,6 +43,25 @@ const CircularProgressBar = ({radius, strokeWidth, font}: CircularProgressProps)
         [0, 1],
         ['transparent', '#747474']
       )
+  })
+  const backgroundColor = useAnimatedStyle(() => {
+    return {
+      backgroundColor: interpolateColor(
+        scrollPercent.value,
+        [0, 1],
+        ['blue', 'green']
+      )
+    }
+  })
+
+  const backgroundColorRight = useAnimatedStyle(() => {
+    return {
+      backgroundColor: interpolateColor(
+      Math.abs(1 - scrollPercent.value),
+      [0, 1],
+      ['transparent', 'green']
+      )
+    }
   })
 
   const pageIndicatorLeft = useAnimatedStyle(() => ({
@@ -109,6 +108,7 @@ const CircularProgressBar = ({radius, strokeWidth, font}: CircularProgressProps)
     times.daily.seconds.value = withTiming(radialProgressState$.daily.get(), { duration: 1000 });
   })
 
+  // TODO — Is this being observed (IT WON'T MATTER SINCE IT'S GOING INTO A FUNCTION LATER)
   const stringTimes = {
     now: useDerivedValue(() => `${Math.floor(times.now.seconds.value / 3600)} : ${("00" + Math.floor(times.now.seconds.value % 3600 / 60)).slice(-2)} : ${("00" + Math.floor(times.now.seconds.value % 60)).slice(-2)} `, [])
   }
@@ -122,10 +122,10 @@ const CircularProgressBar = ({radius, strokeWidth, font}: CircularProgressProps)
 // Skia Path
   const innerRadius = radius - strokeWidth/2;
   const outerBuffer = strokeWidth / 2;
-  const path = Skia.Path.Make();
-  path.addCircle(radius + outerBuffer, radius + outerBuffer, innerRadius);
-  const path2 = Skia.Path.Make();
-  path2.addCircle(radius + outerBuffer, radius + outerBuffer, radius + outerBuffer / 2)
+  const primaryPath = Skia.Path.Make();
+  primaryPath.addCircle(radius + outerBuffer, radius + outerBuffer, innerRadius);
+  const secondaryPath = Skia.Path.Make();
+  secondaryPath.addCircle(radius + outerBuffer, radius + outerBuffer, radius + outerBuffer / 2)
 // ------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------
 // ADDITIONAL STYLES
@@ -149,10 +149,11 @@ const CircularProgressBar = ({radius, strokeWidth, font}: CircularProgressProps)
     scrollViewWiderElement: {width: innerDiameter + spacingBetween, alignItems: 'center', },
     inViewComponent: {width: innerDiameter, alignItems: 'center',},
 
+    // percentage: {...styles.innerTimerTextCanvas, width: innerDiameter, top: innerDiameter / 2 + fontMeasurePercentage.height},
+
     mainTimer: {...styles.innerTimerTextCanvas, width: innerDiameter, top: innerDiameter / 2 - measureStringTimes.now.height/2},
-
     mainTimerCanvas: [{height: measureStringTimes.now.height, width: innerDiameter,} ],
-
+    // percentageCanvas: {width: fontMeasurePercentage.width, height: fontMeasurePercentage.height, },
   }
 // ------------------------------------------------------------------------------------------------
 
@@ -161,79 +162,80 @@ const CircularProgressBar = ({radius, strokeWidth, font}: CircularProgressProps)
       <View style={{width: outerDiameter, height: outerDiameter, justifyContent: 'center', alignItems:'center'}}>
 {/* Move this canvas down to scrollView (DON'T USE A useSTATE (then the components won't render properly) — or you could use a useState but just add a transition (this might work)) */}
         <View style={{width: outerDiameter + strokeWidth, height: outerDiameter + strokeWidth, transform: [{rotate: '-90deg'}]}}>
+          {/* <RoundProgBar path={path} path2={path2} strokeWidth={strokeWidth} scrollPercent={scrollPercent} /> */}
           <Canvas style={{...styles.container}}>
-            <Path
-              path={path}
-              strokeWidth={strokeWidth}
+      <Path
+        path={primaryPath}
+        strokeWidth={strokeWidth}
+        style={'stroke'}
+        color={'#333438'}
+        strokeJoin={'round'}
+        strokeCap={'round'}
+        start={0}
+        end={1}
+        />
+
+        {/* To-Dos */}
+      <Path
+        path={primaryPath}
+        strokeWidth={strokeWidth}
+        style={'stroke'}
+        color={'#e68f40'}
+        strokeJoin={'round'}
+        strokeCap={'round'}
+        start={times.daily.percentage}
+        end={times.todo.percentage}
+        />
+
+        {/* Daily Tasks */}
+      <Path
+        path={primaryPath}
+        strokeWidth={strokeWidth}
+        style={'stroke'}
+        color={'#43e643'}
+        strokeJoin={'round'}
+        strokeCap={'round'}
+        start={times.now.percentage}
+        end={times.daily.percentage}
+        />
+
+        {/* Current Time */}
+        <Path
+          path={primaryPath}
+          strokeWidth={strokeWidth}
+          style={'stroke'}
+          color={mainWheelColor}
+          strokeJoin={'round'}
+          strokeCap={'round'}
+          start={0}
+          end={times.now.percentage}/>
+
+
+        {radialProgressState$.current.data.get().length !== 0 &&
+          <Path
+              path={secondaryPath}
+              strokeWidth={strokeWidth / 2}
               style={'stroke'}
-              color={'#333438'}
+              color={secondaryTaskWheelColorBackground}
               strokeJoin={'round'}
               strokeCap={'round'}
               start={0}
               end={1}
-              />
-
-              {/* To-Dos */}
-            <Path
-              path={path}
-              strokeWidth={strokeWidth}
+          />
+        }
+        {radialProgressState$.current.data.get().length !== 0 &&
+          <Path
+              path={secondaryPath}
+              strokeWidth={strokeWidth / 4}
               style={'stroke'}
-              color={'#e68f40'}
+              color={secondaryTaskWheelColor}
               strokeJoin={'round'}
               strokeCap={'round'}
-              start={times.daily.percentage}
-              end={times.todo.percentage}
-              />
-
-              {/* Daily Tasks */}
-            <Path
-              path={path}
-              strokeWidth={strokeWidth}
-              style={'stroke'}
-              color={'#43e643'}
-              strokeJoin={'round'}
-              strokeCap={'round'}
-              start={times.now.percentage}
-              end={times.daily.percentage}
-              />
-
-              {/* Current Time */}
-              <Path
-                path={path}
-                strokeWidth={strokeWidth}
-                style={'stroke'}
-                color={mainWheelColor}
-                strokeJoin={'round'}
-                strokeCap={'round'}
-                start={0}
-                end={times.now.percentage}/>
-
-
-              {radialProgressState$.current.get().data !== null &&
-                <Path
-                    path={path2}
-                    strokeWidth={strokeWidth / 2}
-                    style={'stroke'}
-                    color={secondaryTaskWheelColorBackground}
-                    strokeJoin={'round'}
-                    strokeCap={'round'}
-                    start={0}
-                    end={1}
-                />
-              }
-              {radialProgressState$.current.get().data !== null &&
-                <Path
-                    path={path2}
-                    strokeWidth={strokeWidth / 4}
-                    style={'stroke'}
-                    color={secondaryTaskWheelColor}
-                    strokeJoin={'round'}
-                    strokeCap={'round'}
-                    start={0}
-                    end={ times.curr.percentage } // todo — pass in a function that maybe CHANGES THE COLOR!!! (fade out)
-                />
-              }
-          </Canvas>
+              start={0}
+              end={ times.curr.percentage } // todo — pass in a function that maybe CHANGES THE COLOR!!! (fade out)
+          />
+        }
+    </Canvas>
         </View>
 
 
@@ -254,21 +256,41 @@ const CircularProgressBar = ({radius, strokeWidth, font}: CircularProgressProps)
             scrollEnabled={radialProgressState$.current.get().data !== null}
             style={additionalStyles.scrollViewContainer}
           >
-            <View style={[additionalStyles.scrollViewWiderElement]}>
+            { /*Current Time */ }
+            <Animated.View style={[additionalStyles.scrollViewWiderElement]}>
+              <View style={additionalStyles.mainTimer}>
+                <Canvas style={additionalStyles.mainTimerCanvas}>
+                  <Text
+                    x={mainTextWidth}
+                    y={measureStringTimes.now.height}
+                    text={stringTimes.now}
+                    color={"black"}
+                    font={font}
+                  />
+                </Canvas>
+              </View>
+            </Animated.View>
 
-                { /*Current Time */ }
-                <Animated.View style={additionalStyles.mainTimer}>
+            {
+            // TODO — MOVE THIS TO A FUNCTION (observer)
+          }
+                {
+                tasksState$.today.data[0].get() !== null && <Animated.View style={additionalStyles.scrollViewWiderElement}>
+
+                <View style={additionalStyles.mainTimer}>
                   <Canvas style={additionalStyles.mainTimerCanvas}>
                     <Text
-                      x={mainTextWidth}
-                      y={measureStringTimes.now.height}
-                      text={stringTimes.now}
+                      x={font.measureText(String(tasksState$.today.data[0].get().time_remaining)).x}
+                      y={font.measureText(String(tasksState$.today.data[0].get().time_remaining)).y}
+                      text={String(tasksState$.today.data[0].get().time_remaining)}
                       color={"black"}
                       font={font}
                     />
                   </Canvas>
-                </Animated.View>
-            </View>
+                </View>
+              </Animated.View>
+              }
+
           </ScrollView>
         </View>
 

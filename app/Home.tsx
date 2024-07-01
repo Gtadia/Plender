@@ -60,7 +60,7 @@ export default function Home() {
       } else if (translateY.value < MAX_TRANSLATE_Y / 2) {
           if (context.value.y > translateY.value + scrollSensitivity) {
               scrollTo(10)
-              radialScrollTo(MAX_TRANSLATE_Y / 4)
+              radialScrollTo(MAX_TRANSLATE_Y / 2 - (RADIUS + STROKEWIDTH))  // TODO — Find how to find the height of the circle (including current task bar and how strokewidth affects the size)
               console.log("3")
           } else if (context.value.y < translateY.value - scrollSensitivity) {
             // (This doesn't (correction: it SHOULDN'T) ever run)
@@ -126,10 +126,10 @@ export default function Home() {
         <View style={styles.swipeUpFromZero}></View>
       </GestureDetector>
 
-      <Animated.View style={[styles.container, rBottomSheetStyle, {backgroundColor: 'red'}]}>
+      <Animated.View style={[styles.container, rBottomSheetStyle]}>
         <GestureDetector gesture={gesture}>
             <View style={{width: "100%", height: 50,
-                backgroundColor: 'green'
+                // backgroundColor: 'green'
               }}>
                 <View style={styles.line} />
             </View>

@@ -7,10 +7,11 @@ import { Dimensions, SafeAreaView, StyleSheet, View } from 'react-native'
 import React, { useEffect, useCallback } from 'react'
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler'
 import Animated, { Extrapolation, interpolate, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
-import { fontState$, radialProgressState$ } from '../db/LegendApp';
+import { fontState$, radialProgressState$, tasksState$ } from '../db/LegendApp';
 import CircularProgressBar from '../components/RadialProgressBar';
 import TaskList from '../components/TaskList';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { observe } from '@legendapp/state';
 
 
 const RADIUS = 160
@@ -110,9 +111,12 @@ export default function Home() {
       // TODO — origin point ==> SCREEN_HEIGHT - <Height of header> - <height of radial wheel> - <some padding>
       translateY.value = withSpring(MAX_TRANSLATE_Y/2, { damping: 50 })
       radialTranslate.value = withSpring(0, {damping: 50})
+      radialProgressState$.sumTasks.get();
+      tasksState$.dateUpdate.get()
+    }, [])
 
-      radialProgressState$.sumTasks.get()
-  }, [])
+  observe(() => {
+})
 
   return (
     <GestureHandlerRootView style={{flex: 1}}>

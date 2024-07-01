@@ -20,19 +20,41 @@ interface radialProgressState {
 
 
 export const tasksState$ = observable<tasksState>({
-    upcoming: {title: 'Upcoming', data: []},
+    upcoming: {title: 'Upcoming', data: [
+        {label: 'test4', created_at: new Date(), due: new Date(1717262502), time_goal: 2 * 3600, time_remaining: 1800, description: 'nothing', num_breaks: 5, is_daily: true},
+        {label: 'test5', created_at: new Date(), due: new Date(), time_goal: 2 * 3600, time_remaining: 1800, description: 'nothing', num_breaks: 5, is_daily: true},
+    ]},
     current: {title: 'Current', data: []}, // only exists in MMKV and google sheets
     today: {
         title: "Today",
         data:[
-            {label: 'test', created_at: new Date(), due: new Date(), time_goal: 2 * 3600, time_remaining: 1800, description: 'nothing', num_breaks: 5, is_daily: true},
-            {label: 'test2', created_at: new Date(), due: new Date(), time_goal: 2 * 3600, time_remaining: 1800, description: 'nothing2', num_breaks: 5, is_daily: true},
+            {label: 'test', created_at: new Date(), due: new Date(1717262502), time_goal: 2 * 3600, time_remaining: 1800, description: 'nothing', num_breaks: 5, is_daily: true},
+            {label: 'test2', created_at: new Date(), due: new Date(1717262502), time_goal: 2 * 3600, time_remaining: 1800, description: 'nothing2', num_breaks: 5, is_daily: true},
             {label: 'test3', created_at: new Date(), due: new Date(), time_goal: 2 * 3600, time_remaining: 1800, description: 'nothing3', num_breaks: 5, is_daily: false},
         ]
     },
     completed: {title: "Completed", data: []},
     overdue: {title: "Overdue", data: []},
     // additional: {},  // Maybe later in an update
+
+    dateUpdate: () => {
+        // TODO — Is observe necessary
+        console.log("observe ran on ", radialProgressState$.todayDate.get().toLocaleDateString())
+        console.log("batch ran")
+        for (const task of tasksState$.today.data.get()) {
+            console.log(task.label, " is overdue")
+            tasksState$.overdue.data.push(task)
+        }
+        tasksState$.today.data.set([])
+
+        for (const task of tasksState$.upcoming.data.get()) {
+            console.log(task.label, ' is due today')
+            if (task.due.toLocaleDateString() === radialProgressState$.todayDate.get().toLocaleDateString()) {
+                console.log('The Dates Match')
+                tasksState$.today.data.push(task)
+            }
+        }
+    }
 })
 
 export const radialProgressState$ = observable<radialProgressState>({
@@ -40,12 +62,14 @@ export const radialProgressState$ = observable<radialProgressState>({
     now: 0,
     todo: 0,
     daily: 0,
+    todayDate: new Date(),
 
     radialDaily: () => radialProgressState$.now.get() + radialProgressState$.daily.get(),
     radialTodo: () => radialProgressState$.radialDaily.get() + radialProgressState$.todo.get(),
 
     // TODO — try moving sumTasks to tasksState$
     sumTasks: () => {
+        // TODO — is observe necessary?
         observe(() => {
             batch(() => {
                 // if(radialProgressState$.current.get()) {
@@ -56,8 +80,8 @@ export const radialProgressState$ = observable<radialProgressState>({
                 //     }
                 // }
 
-                for(const task of tasksState$.today.get().data) {
-                    console.log("Calculating: ", task);
+                for(const task of tasksState$.today.data.get()) {
+                    // console.log("Calculating: ", task);
                     if(task.is_daily) {
                         radialProgressState$.daily.set((prev) => prev + task.time_remaining)
                     } else {
@@ -68,6 +92,7 @@ export const radialProgressState$ = observable<radialProgressState>({
         })
     }
 })
+
 
 export const fontState$ = observable<any>({
 })

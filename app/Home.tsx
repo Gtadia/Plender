@@ -3,30 +3,29 @@ From this tutorial:
 https://www.youtube.com/watch?v=KvRqsRwpwhY&t=77s
 */
 import { StatusBar } from 'expo-status-bar';
-import { Button, Dimensions, SafeAreaView, StyleSheet, Text, View } from 'react-native'
+import { Dimensions, SafeAreaView, StyleSheet, View } from 'react-native'
 import React, { useEffect, useCallback } from 'react'
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler'
 import Animated, { Extrapolation, interpolate, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
-import Timer from '../components/Timer';
-import { fontState$, radialProgressState$, tasksState$ } from '../db/LegendApp';
+import { fontState$, radialProgressState$ } from '../db/LegendApp';
 import CircularProgressBar from '../components/RadialProgressBar';
-import { SkFont, useFont } from '@shopify/react-native-skia';
 import TaskList from '../components/TaskList';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 
 const RADIUS = 160
 const STROKEWIDTH = 25
-
 const {height: SCREEN_HEIGHT} = Dimensions.get('window')
+
+const scrollSensitivity = 100;
 
 export default function Home() {
   const insets = useSafeAreaInsets();
   const MAX_TRANSLATE_Y = SCREEN_HEIGHT - insets.top - 100
+
   const translateY = useSharedValue(0)
   const radialTranslate = useSharedValue(0)
-
-  const swipeUpContext = useSharedValue({ y: 0 })
+  const context = useSharedValue({ y: 0})     // to keep context of the previous scroll position
 
   const scrollTo = useCallback((destination: number) => {
       "worklet";
@@ -38,58 +37,50 @@ export default function Home() {
     radialTranslate.value = withSpring(destination, { damping: 50 })
   }, [])
 
-  const context = useSharedValue({ y: 0})     // to keep context of the previous scroll position
   const gesture = Gesture.Pan().onStart(() => {
       context.value = {y:translateY.value}
   })
   .onUpdate((event) => {
-      const min = 0
-      const max = MAX_TRANSLATE_Y
-      console.log(event.translationY)
       translateY.value = -event.translationY + context.value.y   // adding previous scroll position
-      translateY.value = Math.max(min, Math.min(translateY.value, max))
+      // translateY.value = Math.max(0, Math.min(translateY.value, MAX_TRANSLATE_Y))  // Clamps value between min and max
   })
   .onEnd(() => {
-
-      console.log(translateY.value, MAX_TRANSLATE_Y, context.value.y)
       if (translateY.value > MAX_TRANSLATE_Y / 2) {
           // TODO — maybe add a scroll sensitivity
-          if (context.value.y < translateY.value) {
+          if (context.value.y < translateY.value - scrollSensitivity) {
               scrollTo(MAX_TRANSLATE_Y)
               console.log("1")
               console.log(insets.top)
-          } else if (context.value.y > translateY.value) {
+          } else if (context.value.y > translateY.value + scrollSensitivity) {
               scrollTo(MAX_TRANSLATE_Y / 2)
               console.log("2")
           } else {
               scrollTo(context.value.y)
           }
       } else if (translateY.value < MAX_TRANSLATE_Y / 2) {
-          if (context.value.y > translateY.value) {
+          if (context.value.y > translateY.value + scrollSensitivity) {
               scrollTo(10)
-              radialScrollTo(MAX_TRANSLATE_Y / 2 - (2 * RADIUS + STROKEWIDTH))
+              radialScrollTo(MAX_TRANSLATE_Y / 4)
               console.log("3")
-          } else if (context.value.y < translateY.value) {
-            // TODO — DELETE IT (This doesn't ever run)
-            // TODO — I might need this just in case some weird animation glitch happens...
+          } else if (context.value.y < translateY.value - scrollSensitivity) {
+            // (This doesn't (correction: it SHOULDN'T) ever run)
             scrollTo(MAX_TRANSLATE_Y / 2)
           } else {
               scrollTo(context.value.y)
           }
+      } else {
+        scrollTo(context.value.y)
       }
   })
 
-  const swipeUpGesture = Gesture.Pan().onStart((event) => {
-      swipeUpContext.value = {y:event.y}
-  })
-  .onUpdate((event) => {
+  const swipeUpGesture = Gesture.Pan().onUpdate((event) => {
       // TODO — We can even get the velocity of the event (.velocityX .velocityY)
-      translateY.value = event.translationY * 1.5
-      radialScrollTo(0)
-  })
-  .onEnd(() => {
-      if (translateY.value < -125) {
-          scrollTo(MAX_TRANSLATE_Y / 2)
+      translateY.value = -event.translationY
+    })
+    .onEnd(() => {
+      if (translateY.value > scrollSensitivity) {
+        scrollTo(MAX_TRANSLATE_Y / 2)
+        radialScrollTo(0)
       } else {
           scrollTo(10)
       }
@@ -106,7 +97,6 @@ export default function Home() {
       // TODO — Instead of moving things down, resize the component
       borderRadius,
       height: translateY.value,
-      // transform: [{translateY: translateY.value}]
     }
   })
 
@@ -147,7 +137,7 @@ export default function Home() {
 
         <TaskList />
       </Animated.View>
-                  </SafeAreaView>
+      </SafeAreaView>
     </GestureHandlerRootView>
   )
 }

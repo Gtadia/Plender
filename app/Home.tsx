@@ -111,12 +111,10 @@ export default function Home() {
       // TODO — origin point ==> SCREEN_HEIGHT - <Height of header> - <height of radial wheel> - <some padding>
       translateY.value = withSpring(MAX_TRANSLATE_Y/2, { damping: 50 })
       radialTranslate.value = withSpring(0, {damping: 50})
-      radialProgressState$.sumTasks.get();
+      radialProgressState$.sumTasks.get()
       tasksState$.dateUpdate.get()
     }, [])
 
-  observe(() => {
-})
 
   return (
     <GestureHandlerRootView style={{flex: 1}}>

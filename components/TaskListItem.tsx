@@ -11,7 +11,8 @@ import { observer } from '@legendapp/state/react'
 import { useSharedValue } from "react-native-reanimated";
 
 interface taskType {
-  index: number
+  index: number,
+  taskType: String,
 }
 
 interface timeType {
@@ -23,8 +24,13 @@ interface mainBodyType {
   label: ObservablePrimitive<string>
 }
 
-const TaskListItem = ({ index }: taskType ) => {
-  const task = tasksState$.today.data[index]
+const TaskListItem = ({ index, taskType }: taskType ) => {
+  let task = tasksState$.today.data[index]
+  if (taskType === 'Upcoming') {
+    task = tasksState$.upcoming.data[index]
+  } else if (taskType === 'Overdue') {
+    task = tasksState$.overdue.data[index]
+  }
   return (
       <Card style={{ flexDirection: 'row'}}>
           <RadialProgressBar time_remaining={task.time_remaining} time_goal={task.time_goal} />

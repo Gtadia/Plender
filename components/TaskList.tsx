@@ -15,7 +15,7 @@ const TaskList = () => {
     <SectionList
       sections={settingsState$.orderList.get()}
       keyExtractor={(item, index) => item + index}
-      renderItem={({ index }) => <TaskListItem index={index}/>}
+      renderItem={({ index, section }) => <TaskListItem index={index} taskType={section.title} />}
       ListEmptyComponent={<Text>Empty List</Text>}
       renderSectionHeader={({ section }) => (
         <Text>{section.title}</Text>

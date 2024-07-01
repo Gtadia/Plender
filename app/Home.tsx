@@ -11,16 +11,18 @@ import Timer from '../components/Timer';
 import { fontState$, radialProgressState$, tasksState$ } from '../db/LegendApp';
 import CircularProgressBar from '../components/RadialProgressBar';
 import { SkFont, useFont } from '@shopify/react-native-skia';
-import BottomSheet from '../components/BottomSheet';
 import TaskList from '../components/TaskList';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
 
 const RADIUS = 160
 const STROKEWIDTH = 25
 
 const {height: SCREEN_HEIGHT} = Dimensions.get('window')
-const MAX_TRANSLATE_Y = -SCREEN_HEIGHT + 25
 
 export default function Home() {
+  const insets = useSafeAreaInsets();
+  const MAX_TRANSLATE_Y = SCREEN_HEIGHT - insets.top - 100
   const translateY = useSharedValue(0)
   const radialTranslate = useSharedValue(0)
 
@@ -41,28 +43,36 @@ export default function Home() {
       context.value = {y:translateY.value}
   })
   .onUpdate((event) => {
-      translateY.value = event.translationY + context.value.y   // adding previous scroll position
-      translateY.value = Math.max(translateY.value, MAX_TRANSLATE_Y)
+      const min = 0
+      const max = MAX_TRANSLATE_Y
+      console.log(event.translationY)
+      translateY.value = -event.translationY + context.value.y   // adding previous scroll position
+      translateY.value = Math.max(min, Math.min(translateY.value, max))
   })
   .onEnd(() => {
-      if (translateY.value < -SCREEN_HEIGHT / 2) {
+
+      console.log(translateY.value, MAX_TRANSLATE_Y, context.value.y)
+      if (translateY.value > MAX_TRANSLATE_Y / 2) {
           // TODO — maybe add a scroll sensitivity
-          if (context.value.y > translateY.value + 100) {
+          if (context.value.y < translateY.value) {
               scrollTo(MAX_TRANSLATE_Y)
               console.log("1")
-          } else if (context.value.y < translateY.value - 100) {
-              scrollTo(-SCREEN_HEIGHT / 2)
+              console.log(insets.top)
+          } else if (context.value.y > translateY.value) {
+              scrollTo(MAX_TRANSLATE_Y / 2)
               console.log("2")
           } else {
               scrollTo(context.value.y)
           }
-      } else if (translateY.value > -SCREEN_HEIGHT / 2) {
-          if (context.value.y < translateY.value - 100) {
+      } else if (translateY.value < MAX_TRANSLATE_Y / 2) {
+          if (context.value.y > translateY.value) {
               scrollTo(10)
-              radialScrollTo(SCREEN_HEIGHT / 2 - (2 * RADIUS + STROKEWIDTH))
+              radialScrollTo(MAX_TRANSLATE_Y / 2 - (2 * RADIUS + STROKEWIDTH))
               console.log("3")
-          } else if (context.value.y > translateY.value + 100) {
+          } else if (context.value.y < translateY.value) {
             // TODO — DELETE IT (This doesn't ever run)
+            // TODO — I might need this just in case some weird animation glitch happens...
+            scrollTo(MAX_TRANSLATE_Y / 2)
           } else {
               scrollTo(context.value.y)
           }
@@ -79,7 +89,7 @@ export default function Home() {
   })
   .onEnd(() => {
       if (translateY.value < -125) {
-          scrollTo(-SCREEN_HEIGHT / 2)
+          scrollTo(MAX_TRANSLATE_Y / 2)
       } else {
           scrollTo(10)
       }
@@ -95,7 +105,8 @@ export default function Home() {
     return {
       // TODO — Instead of moving things down, resize the component
       borderRadius,
-      transform: [{translateY: translateY.value}]
+      height: translateY.value,
+      // transform: [{translateY: translateY.value}]
     }
   })
 
@@ -107,7 +118,7 @@ export default function Home() {
 
   useEffect(() => {
       // TODO — origin point ==> SCREEN_HEIGHT - <Height of header> - <height of radial wheel> - <some padding>
-      translateY.value = withSpring(-SCREEN_HEIGHT/2, { damping: 50 })
+      translateY.value = withSpring(MAX_TRANSLATE_Y/2, { damping: 50 })
       radialTranslate.value = withSpring(0, {damping: 50})
 
       radialProgressState$.sumTasks.get()
@@ -120,23 +131,23 @@ export default function Home() {
         <Animated.View style={[radialStyle]}>
             <CircularProgressBar radius={RADIUS} strokeWidth={STROKEWIDTH} font={fontState$.font.get()}/>
         </Animated.View>
-      </SafeAreaView>
 
       <GestureDetector gesture={swipeUpGesture}>
         <View style={styles.swipeUpFromZero}></View>
       </GestureDetector>
 
-      <Animated.View style={[styles.container, rBottomSheetStyle]}>
+      <Animated.View style={[styles.container, rBottomSheetStyle, {backgroundColor: 'red'}]}>
         <GestureDetector gesture={gesture}>
             <View style={{width: "100%", height: 50,
-                // backgroundColor: 'green'
-                }}>
+                backgroundColor: 'green'
+              }}>
                 <View style={styles.line} />
             </View>
         </GestureDetector>
 
         <TaskList />
       </Animated.View>
+                  </SafeAreaView>
     </GestureHandlerRootView>
   )
 }
@@ -147,7 +158,8 @@ const styles = StyleSheet.create({
         width: "100%",
         backgroundColor: "white",
         position: "absolute",
-        top: SCREEN_HEIGHT / 1,
+        // top: SCREEN_HEIGHT / 1,
+        bottom: 0,
         borderRadius: 25
     },
     line: {

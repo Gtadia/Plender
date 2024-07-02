@@ -36,43 +36,10 @@ const TaskListItem = ({ index, taskType }: taskType ) => {
   }
 
   const moveToCurrent = () => {
-    // console.log("task label", task.label)
-    // const currTask = tasksState$.current.data.get()
-    // if (currTask.length >= 1) {
-    //   // TODO — Implement a warning popup window to verify switching
-    //   const currDate = new Date(currTask[0].due.getFullYear(), currTask[0].due.getMonth(), currTask[0].due.getDate())
-
-    //   tasksState$.current.data[0].num_breaks.set(prev => prev + 1)  // Increase Num Breaks
-
-    //   if (currDate > radialProgressState$.todayDate.get()) {
-    //     tasksState$.upcoming.data.push(currTask[0])
-    //   } else if (currDate < radialProgressState$.todayDate.get()) {
-    //     tasksState$.overdue.data.push(currTask[0])
-    //   } else {
-    //     tasksState$.today.data.push(currTask[0])
-    //   }
-    // }
-    // tasksState$.current.data.push(task)
-    // task.delete()
-    // console.log('current data', tasksState$.current.data.get());
-
     const currTask = tasksState$.current.data.get()
     if (currTask.length >= 1) {
       // TODO — Implement a warning popup window to verify switching
-      const currDate = new Date(currTask[0].due.getFullYear(), currTask[0].due.getMonth(), currTask[0].due.getDate())
-
       tasksState$.current.data[0].num_breaks.set(prev => prev + 1)  // Increase Num Breaks
-
-      // if (currDate > radialProgressState$.todayDate.get()) {
-        //   tasksState$.upcoming.data.push(currTask[0])
-        // } else if (currDate < radialProgressState$.todayDate.get()) {
-          //   tasksState$.overdue.data.push(currTask[0])
-          // } else {
-            //   tasksState$.today.data.push(currTask[0])
-            // }
-
-            // console.log(tasksState$.current.data[0].get())
-            // tasksState$.current.data[0].delete()
     }
     tasksState$.current.data.set([])
     tasksState$.current.data.push(task)

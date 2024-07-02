@@ -1,14 +1,15 @@
 import { AntDesign } from "@expo/vector-icons";
-import { Button, StyleSheet, Text, View } from 'react-native'
+import { Button, TouchableOpacity, StyleSheet, Text, View } from 'react-native'
 import React from 'react'
 import { AutoSizeText, ResizeTextMode } from "react-native-auto-size-text";
 import Card from './ui/Card';
 import { tasks } from "../types";
 import { Canvas, Path, Skia } from "@shopify/react-native-skia";
-import { tasksState$ } from "../db/LegendApp";
-import { ObservablePrimitive, observe } from "@legendapp/state";
+import { radialProgressState$, tasksState$ } from "../db/LegendApp";
+import { batch, ObservablePrimitive, observe } from "@legendapp/state";
 import { observer } from '@legendapp/state/react'
-import { useSharedValue } from "react-native-reanimated";
+import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
+
 
 interface taskType {
   index: number,
@@ -30,17 +31,64 @@ const TaskListItem = ({ index, taskType }: taskType ) => {
     task = tasksState$.upcoming.data[index]
   } else if (taskType === 'Overdue') {
     task = tasksState$.overdue.data[index]
+  } else if (taskType === 'Current') {
+    task = tasksState$.current.data[index]
   }
+
+  const moveToCurrent = () => {
+    // console.log("task label", task.label)
+    // const currTask = tasksState$.current.data.get()
+    // if (currTask.length >= 1) {
+    //   // TODO — Implement a warning popup window to verify switching
+    //   const currDate = new Date(currTask[0].due.getFullYear(), currTask[0].due.getMonth(), currTask[0].due.getDate())
+
+    //   tasksState$.current.data[0].num_breaks.set(prev => prev + 1)  // Increase Num Breaks
+
+    //   if (currDate > radialProgressState$.todayDate.get()) {
+    //     tasksState$.upcoming.data.push(currTask[0])
+    //   } else if (currDate < radialProgressState$.todayDate.get()) {
+    //     tasksState$.overdue.data.push(currTask[0])
+    //   } else {
+    //     tasksState$.today.data.push(currTask[0])
+    //   }
+    // }
+    // tasksState$.current.data.push(task)
+    // task.delete()
+    // console.log('current data', tasksState$.current.data.get());
+
+    const currTask = tasksState$.current.data.get()
+    if (currTask.length >= 1) {
+      // TODO — Implement a warning popup window to verify switching
+      const currDate = new Date(currTask[0].due.getFullYear(), currTask[0].due.getMonth(), currTask[0].due.getDate())
+
+      tasksState$.current.data[0].num_breaks.set(prev => prev + 1)  // Increase Num Breaks
+
+      // if (currDate > radialProgressState$.todayDate.get()) {
+        //   tasksState$.upcoming.data.push(currTask[0])
+        // } else if (currDate < radialProgressState$.todayDate.get()) {
+          //   tasksState$.overdue.data.push(currTask[0])
+          // } else {
+            //   tasksState$.today.data.push(currTask[0])
+            // }
+
+            // console.log(tasksState$.current.data[0].get())
+            // tasksState$.current.data[0].delete()
+    }
+    tasksState$.current.data.set([])
+    tasksState$.current.data.push(task)
+  }
+
+
   return (
       <Card style={{ flexDirection: 'row'}}>
-          <RadialProgressBar time_remaining={task.time_remaining} time_goal={task.time_goal} />
-          <MainBody label={task.label} />
+          <RadialProgressBar time_remaining={task.time_remaining} time_goal={task.time_goal} currentHandler={moveToCurrent} />
+          <MainBody label={task.label} num_breaks={task.num_breaks} />
           <TimeBody time_remaining={task.time_remaining} time_goal={task.time_goal} />
       </Card>
   )
 }
 
-const RadialProgressBar = observer(({ time_remaining, time_goal }: timeType) => {
+const RadialProgressBar = observer(({ time_remaining, time_goal, currentHandler }: timeType) => {
   const color = '#e68f40'  // TODO — gradient change based on percentage completed
   const radius = 50
   const strokeWidth = 10
@@ -51,7 +99,6 @@ const RadialProgressBar = observer(({ time_remaining, time_goal }: timeType) => 
 
   const path = Skia.Path.Make();
   path.addCircle(radius + outerBuffer, radius + outerBuffer, innerRadius)
-
 
   return (
     <View>
@@ -81,15 +128,22 @@ const RadialProgressBar = observer(({ time_remaining, time_goal }: timeType) => 
           </Canvas>
         </View>
 
-        <View>
-          {/* Pressable Play/Pause Button */}
+
+        <View style={{
+          position: 'absolute',
+top: 0, left: 0, right: 0, bottom: 0, justifyContent: 'center', alignItems: 'center'
+
+        }}>
+          <TouchableOpacity onPress={currentHandler}>
+            <FontAwesome5 name="play" size={24} color="black" />
+          </TouchableOpacity>
         </View>
       </View>
     </View>
   )
 })
 
-const MainBody = observer(({ label }: mainBodyType) => {
+const MainBody = observer(({ label, num_breaks }: mainBodyType) => {
   return (
     <View>
       <AutoSizeText
@@ -99,6 +153,15 @@ const MainBody = observer(({ label }: mainBodyType) => {
           style={[styles.amount, { maxWidth: "80%" }]}
       >
         {label.get()}
+      </AutoSizeText>
+
+      <AutoSizeText
+          fontSize={32}
+          mode={ResizeTextMode.max_lines}
+          numberOfLines={1}
+          style={[styles.amount, { maxWidth: "80%" }]}
+      >
+        {num_breaks.get()}
       </AutoSizeText>
 
       <View style={styles.tags}>

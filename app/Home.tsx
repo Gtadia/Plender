@@ -112,15 +112,15 @@ export default function Home() {
       translateY.value = withSpring(MAX_TRANSLATE_Y/2, { damping: 50 })
       radialTranslate.value = withSpring(0, {damping: 50})
       radialProgressState$.sumTasks.get()
-      // tasksState$.dateUpdate.get()
     }, [])
 
   observe(() => {
-    console.log("observe ran on ", radialProgressState$.todayDate.get())
+    // If I make this in tasksState$ itself, it will run 3 times (once for each update) (infiniti radialProgressState$)
+    console.log("observe ran on ", radialProgressState$.todayDate.get().toLocaleDateString())
     console.log("batch ran")
     for (const [index, task] of tasksState$.today.data.get().entries()) {
         console.log("today loop", task.label)
-        if(task.due.toLocaleDateString() !== radialProgressState$.todayDate.get()) {
+        if(task.due.toLocaleDateString() !== radialProgressState$.todayDate.get().toLocaleDateString()) {
             console.log(task, " is overdue")
             tasksState$.overdue.data.push(task)
             tasksState$.today.data[index].delete()
@@ -130,7 +130,7 @@ export default function Home() {
 
     for (const [index, task] of tasksState$.upcoming.data.get().entries()) {
         console.log(task.label, ' is due today')
-        if (task.due.toLocaleDateString() === radialProgressState$.todayDate.get()) {
+        if (task.due.toLocaleDateString() === radialProgressState$.todayDate.get().toLocaleDateString()) {
             console.log('The Dates Match')
             tasksState$.today.data.push(task)
             tasksState$.upcoming.data[index].delete()

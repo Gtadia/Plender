@@ -3,8 +3,9 @@ import React from 'react'
 import { ScrollView } from 'react-native-gesture-handler'
 import { settingsState$ } from '../db/LegendApp'
 import TaskListItem from './TaskListItem'
+import { observer } from '@legendapp/state/react'
 
-const TaskList = () => {
+const TaskList = observer(() => {
   // todo — check if .get() is observable
 
   console.log("what", settingsState$.orderList.get())
@@ -14,7 +15,7 @@ const TaskList = () => {
   return (
     <SectionList
       sections={settingsState$.orderList.get()}
-      keyExtractor={(item, index) => item + index}
+      keyExtractor={(item, index) => item + index + Math.floor(Math.random() * 120909123123)}
       renderItem={({ index, section }) => <TaskListItem index={index} taskType={section.title} />}
       ListEmptyComponent={<Text>Empty List</Text>}
       renderSectionHeader={({ section }) => (
@@ -23,7 +24,7 @@ const TaskList = () => {
       stickySectionHeadersEnabled
     />
   )
-}
+})
 
 export default TaskList
 

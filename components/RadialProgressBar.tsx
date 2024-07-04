@@ -5,7 +5,7 @@ import {Canvas, Path, SkFont, Skia, Text} from '@shopify/react-native-skia'
 import Animated,{interpolate, useDerivedValue, useSharedValue, interpolateColor, useAnimatedStyle, withTiming, Extrapolation} from 'react-native-reanimated';
 import { radialProgressState$, tasksState$ } from '../db/LegendApp';
 import { observe } from '@legendapp/state';
-import { observer } from '@legendapp/state/react';
+import { observer, Show } from '@legendapp/state/react';
 
 const SECONDS_IN_DAY = 24 * 60 * 60;
 const mainRingColor = '#51CC46';
@@ -100,21 +100,25 @@ const CircularProgressBar = ({radius, strokeWidth, font}: CircularProgressProps)
 
   observe(() => {
     times.now.percentage.value = withTiming(radialProgressState$.now.get() / SECONDS_IN_DAY, { duration: 1000 });
+    times.curr.percentage.value = withTiming(tasksState$.current.data[0].time_remaining.get() / SECONDS_IN_DAY, { duration: 1000 });
     times.todo.percentage.value = withTiming(radialProgressState$.radialTodo.get() / SECONDS_IN_DAY, { duration: 1000 });
     times.daily.percentage.value = withTiming(radialProgressState$.radialDaily.get() / SECONDS_IN_DAY, { duration: 1000 });
 
     times.now.seconds.value = withTiming(radialProgressState$.now.get(), { duration: 1000 });
+    times.curr.seconds.value = withTiming(tasksState$.current.data[0].time_remaining.get(), { duration: 1000 })
     times.todo.seconds.value = withTiming(radialProgressState$.todo.get(), { duration: 1000 });
     times.daily.seconds.value = withTiming(radialProgressState$.daily.get(), { duration: 1000 });
   })
 
   // TODO — Is this being observed (IT WON'T MATTER SINCE IT'S GOING INTO A FUNCTION LATER)
   const stringTimes = {
-    now: useDerivedValue(() => `${Math.floor(times.now.seconds.value / 3600)} : ${("00" + Math.floor(times.now.seconds.value % 3600 / 60)).slice(-2)} : ${("00" + Math.floor(times.now.seconds.value % 60)).slice(-2)} `, [])
+    now: useDerivedValue(() => `${Math.floor(times.now.seconds.value / 3600)} : ${("00" + Math.floor(times.now.seconds.value % 3600 / 60)).slice(-2)} : ${("00" + Math.floor(times.now.seconds.value % 60)).slice(-2)} `, []),
+    curr: useDerivedValue(() => `${Math.floor(times.curr.seconds.value / 3600)} : ${("00" + Math.floor(times.curr.seconds.value % 3600 / 60)).slice(-2)} : ${("00" + Math.floor(times.curr.seconds.value % 60)).slice(-2)} `, []),
   }
 
   const measureStringTimes = {
-    now: font.measureText(stringTimes.now.value)
+    now: font.measureText(stringTimes.now.value),
+    curr: font.measureText(stringTimes.curr.value),
   }
 
 // ------------------------------------------------------------------------------------------------
@@ -138,9 +142,9 @@ const CircularProgressBar = ({radius, strokeWidth, font}: CircularProgressProps)
     return (innerDiameter - measureStringTimes.now.width)/2
   })
 
-  // const taskTextWidth = useDerivedValue(() => {
-  //   return (innerDiameter - font.measureText(taskTime.value).width)/2
-  // })
+  const taskTextWidth = useDerivedValue(() => {
+    return (innerDiameter - measureStringTimes.curr.width)/2
+  })
   // ----- text width -----
 
   const additionalStyles = {
@@ -153,6 +157,9 @@ const CircularProgressBar = ({radius, strokeWidth, font}: CircularProgressProps)
 
     mainTimer: {...styles.innerTimerTextCanvas, width: innerDiameter, top: innerDiameter / 2 - measureStringTimes.now.height/2},
     mainTimerCanvas: [{height: measureStringTimes.now.height, width: innerDiameter,} ],
+
+    taskTimer: {...styles. innerTimerTextCanvas, innerDiameter, top: innerDiameter / 2 - measureStringTimes.curr.height/2},
+    taskTimerCanvas: [{ height: measureStringTimes.curr.height, width: innerDiameter }],
     // percentageCanvas: {width: fontMeasurePercentage.width, height: fontMeasurePercentage.height, },
   }
 // ------------------------------------------------------------------------------------------------
@@ -211,7 +218,10 @@ const CircularProgressBar = ({radius, strokeWidth, font}: CircularProgressProps)
           end={times.now.percentage}/>
 
 
-        {radialProgressState$.current.data.get().length !== 0 &&
+        <Show
+          if={() => radialProgressState$.current.data.get().length > 0}
+          else={() => null}
+        >
           <Path
               path={secondaryPath}
               strokeWidth={strokeWidth / 2}
@@ -222,8 +232,6 @@ const CircularProgressBar = ({radius, strokeWidth, font}: CircularProgressProps)
               start={0}
               end={1}
           />
-        }
-        {radialProgressState$.current.data.get().length !== 0 &&
           <Path
               path={secondaryPath}
               strokeWidth={strokeWidth / 4}
@@ -233,10 +241,10 @@ const CircularProgressBar = ({radius, strokeWidth, font}: CircularProgressProps)
               strokeCap={'round'}
               start={0}
               end={ times.curr.percentage } // todo — pass in a function that maybe CHANGES THE COLOR!!! (fade out)
-          />
-        }
-    </Canvas>
-        </View>
+              />
+          </Show>
+        </Canvas>
+      </View>
 
 
         {
@@ -273,23 +281,25 @@ const CircularProgressBar = ({radius, strokeWidth, font}: CircularProgressProps)
 
             {
             // TODO — MOVE THIS TO A FUNCTION (observer)
-          }
-                {
-                tasksState$.today.data[0].get() !== null && <Animated.View style={additionalStyles.scrollViewWiderElement}>
-
-                <View style={additionalStyles.mainTimer}>
-                  <Canvas style={additionalStyles.mainTimerCanvas}>
+            }
+            <Show
+              if={() => tasksState$.current.data.get().length > 0}
+              else={() => null}
+            >
+              <Animated.View style={additionalStyles.scrollViewWiderElement}>
+                <View style={additionalStyles.taskTimer}>
+                  <Canvas style={[additionalStyles.taskTimerCanvas, { backgroundColor: 'red'}]}>
                     <Text
-                      x={font.measureText(String(tasksState$.today.data[0].get().time_remaining)).x}
-                      y={font.measureText(String(tasksState$.today.data[0].get().time_remaining)).y}
-                      text={String(tasksState$.today.data[0].get().time_remaining)}
+                      x={taskTextWidth}
+                      y={measureStringTimes.curr.height}
+                      text={stringTimes.curr}
                       color={"black"}
                       font={font}
                     />
                   </Canvas>
                 </View>
               </Animated.View>
-              }
+            </Show>
 
           </ScrollView>
         </View>

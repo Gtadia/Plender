@@ -51,6 +51,7 @@ const TaskListItem = ({ index, taskType }: taskType ) => {
           <RadialProgressBar time_remaining={task.time_remaining} time_goal={task.time_goal} currentHandler={moveToCurrent} />
           <MainBody label={task.label} num_breaks={task.num_breaks} />
           <TimeBody time_remaining={task.time_remaining} time_goal={task.time_goal} />
+          <Button title="Delete" onPress={() => tasksState$.current.data.set([])} />
       </Card>
   )
 }

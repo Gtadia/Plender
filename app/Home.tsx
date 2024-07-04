@@ -13,7 +13,6 @@ import TaskList from '../components/TaskList';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { observe } from '@legendapp/state';
 
-
 const RADIUS = 160
 const STROKEWIDTH = 25
 const {height: SCREEN_HEIGHT} = Dimensions.get('window')
@@ -127,7 +126,6 @@ export default function Home() {
         }
     }
 
-
     for (const [index, task] of tasksState$.upcoming.data.get().entries()) {
         console.log(task.label, ' is due today')
         if (task.due.toLocaleDateString() === radialProgressState$.todayDate.get().toLocaleDateString()) {
@@ -137,7 +135,6 @@ export default function Home() {
         }
     }
   })
-
 
   return (
     <GestureHandlerRootView style={{flex: 1}}>

@@ -127,6 +127,21 @@ const CircularProgressBar = ({radius, strokeWidth, font}: CircularProgressProps)
     curr: useDerivedValue(() => font.measureText(stringTimes.curr.value)),
   }
 
+  // ----- text width -----
+  const centerStringTimes = {
+    now: useDerivedValue(() => (innerDiameter - measureStringTimes.now.value.width)/2),
+    curr: useDerivedValue(() => (innerDiameter - measureStringTimes.curr.value.width)/2),
+    date:
+  }
+  // ----- text width -----
+
+  // ----- Date --------
+  let date = radialProgressState$.todayDate.get().toLocaleDateString()
+  observe(() => {
+    let date = radialProgressState$.todayDate.get().toLocaleDateString()
+  })
+  // ----- Date --------
+
 // ------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------
 // Skia Path
@@ -301,6 +316,14 @@ const CircularProgressBar = ({radius, strokeWidth, font}: CircularProgressProps)
                       text={stringTimes.curr}
                       color={"black"}
                       font={font}
+                    />
+                  </Canvas>
+                </View>
+
+                <View>
+                  <Canvas>
+                    <Text
+                      x={}
                     />
                   </Canvas>
                 </View>

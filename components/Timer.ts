@@ -30,6 +30,10 @@ export default class Timer extends Component<TimerProps, TimerState> {
         // radialProgressState$.todayDate.set(now.toLocaleDateString())    // Getting just the date to prevent continually updating the date...
         radialProgressState$.todayDate.set(new Date(now.getFullYear(), now.getMonth(), now.getDate()))    // Getting just the date to prevent continually updating the date...
 
+        const currentTask = radialProgressState$.current.data
+        if (currentTask.get().length > 0) {
+            currentTask[0].time_remaining.set((prev) => prev - 1)
+        }
         // console.log(radialProgressState$.now.get())
     }
 

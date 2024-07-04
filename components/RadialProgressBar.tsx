@@ -100,14 +100,20 @@ const CircularProgressBar = ({radius, strokeWidth, font}: CircularProgressProps)
 
   observe(() => {
     times.now.percentage.value = withTiming(radialProgressState$.now.get() / SECONDS_IN_DAY, { duration: 1000 });
-    times.curr.percentage.value = withTiming(tasksState$.current.data[0].time_remaining.get() / SECONDS_IN_DAY, { duration: 1000 });
     times.todo.percentage.value = withTiming(radialProgressState$.radialTodo.get() / SECONDS_IN_DAY, { duration: 1000 });
     times.daily.percentage.value = withTiming(radialProgressState$.radialDaily.get() / SECONDS_IN_DAY, { duration: 1000 });
 
     times.now.seconds.value = withTiming(radialProgressState$.now.get(), { duration: 1000 });
-    times.curr.seconds.value = withTiming(tasksState$.current.data[0].time_remaining.get(), { duration: 1000 })
     times.todo.seconds.value = withTiming(radialProgressState$.todo.get(), { duration: 1000 });
     times.daily.seconds.value = withTiming(radialProgressState$.daily.get(), { duration: 1000 });
+
+    try {
+      const task = tasksState$.current.data[0].get()
+      times.curr.percentage.value = withTiming(task.time_remaining / task.time_goal, { duration: 1000 });
+      times.curr.seconds.value = withTiming(task.time_remaining, { duration: 1000 })
+    } catch {
+      null
+    }
   })
 
   // TODO — Is this being observed (IT WON'T MATTER SINCE IT'S GOING INTO A FUNCTION LATER)
@@ -117,8 +123,8 @@ const CircularProgressBar = ({radius, strokeWidth, font}: CircularProgressProps)
   }
 
   const measureStringTimes = {
-    now: font.measureText(stringTimes.now.value),
-    curr: font.measureText(stringTimes.curr.value),
+    now: useDerivedValue(() => font.measureText(stringTimes.now.value)),
+    curr: useDerivedValue(() => font.measureText(stringTimes.curr.value)),
   }
 
 // ------------------------------------------------------------------------------------------------
@@ -139,11 +145,11 @@ const CircularProgressBar = ({radius, strokeWidth, font}: CircularProgressProps)
 
   // ----- text width -----
   const mainTextWidth = useDerivedValue(() => {
-    return (innerDiameter - measureStringTimes.now.width)/2
+    return (innerDiameter - measureStringTimes.now.value.width)/2
   })
 
   const taskTextWidth = useDerivedValue(() => {
-    return (innerDiameter - measureStringTimes.curr.width)/2
+    return (innerDiameter - measureStringTimes.curr.value.width)/2
   })
   // ----- text width -----
 
@@ -155,11 +161,11 @@ const CircularProgressBar = ({radius, strokeWidth, font}: CircularProgressProps)
 
     // percentage: {...styles.innerTimerTextCanvas, width: innerDiameter, top: innerDiameter / 2 + fontMeasurePercentage.height},
 
-    mainTimer: {...styles.innerTimerTextCanvas, width: innerDiameter, top: innerDiameter / 2 - measureStringTimes.now.height/2},
-    mainTimerCanvas: [{height: measureStringTimes.now.height, width: innerDiameter,} ],
+    mainTimer: {...styles.innerTimerTextCanvas, width: innerDiameter, top: innerDiameter / 2 - measureStringTimes.now.value.height/2},
+    mainTimerCanvas: [{height: measureStringTimes.now.value.height, width: innerDiameter,} ],
 
-    taskTimer: {...styles. innerTimerTextCanvas, innerDiameter, top: innerDiameter / 2 - measureStringTimes.curr.height/2},
-    taskTimerCanvas: [{ height: measureStringTimes.curr.height, width: innerDiameter }],
+    taskTimer: {...styles. innerTimerTextCanvas, innerDiameter, top: innerDiameter / 2 - measureStringTimes.curr.value.height/2},
+    taskTimerCanvas: [{ height: measureStringTimes.curr.value.height, width: innerDiameter }],
     // percentageCanvas: {width: fontMeasurePercentage.width, height: fontMeasurePercentage.height, },
   }
 // ------------------------------------------------------------------------------------------------
@@ -270,7 +276,7 @@ const CircularProgressBar = ({radius, strokeWidth, font}: CircularProgressProps)
                 <Canvas style={additionalStyles.mainTimerCanvas}>
                   <Text
                     x={mainTextWidth}
-                    y={measureStringTimes.now.height}
+                    y={measureStringTimes.now.value.height}
                     text={stringTimes.now}
                     color={"black"}
                     font={font}
@@ -288,10 +294,10 @@ const CircularProgressBar = ({radius, strokeWidth, font}: CircularProgressProps)
             >
               <Animated.View style={additionalStyles.scrollViewWiderElement}>
                 <View style={additionalStyles.taskTimer}>
-                  <Canvas style={[additionalStyles.taskTimerCanvas, { backgroundColor: 'red'}]}>
+                  <Canvas style={[additionalStyles.taskTimerCanvas]}>
                     <Text
                       x={taskTextWidth}
-                      y={measureStringTimes.curr.height}
+                      y={measureStringTimes.curr.value.height}
                       text={stringTimes.curr}
                       color={"black"}
                       font={font}

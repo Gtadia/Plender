@@ -113,20 +113,25 @@ export default function Home() {
       radialProgressState$.sumTasks.get()
     }, [])
 
+  // ----------
   observe(() => {
     // If I make this in tasksState$ itself, it will run 3 times (once for each update) (infiniti radialProgressState$)
     console.log("observe ran on ", radialProgressState$.todayDate.get().toLocaleDateString())
     console.log("batch ran")
-    for (const [index, task] of tasksState$.today.data.get().entries()) {
-        console.log("today loop", task.label)
-        if(task.due.toLocaleDateString() !== radialProgressState$.todayDate.get().toLocaleDateString()) {
+    // TODO — because today.data is being updated (counted down), this observer runs...
+    // TODO — I think we can solve this issue NOT .get() (trust that the code works and just .set())
+      // TODO — NOT POSSIBLE (you have to .get() the data so that you can .set() it)...
+      // TODO — I might have fixed it (just .peek())
+    for (const [index, task] of tasksState$.today.data.peek().entries()) {
+      console.log("today loop", task.label)
+        if(task.due.toLocaleDateString() !== radialProgressState$.todayDate.get().toLocaleDateString()) { // todo — change to dayjs
             console.log(task, " is overdue")
             tasksState$.overdue.data.push(task)
             tasksState$.today.data[index].delete()
         }
     }
 
-    for (const [index, task] of tasksState$.upcoming.data.get().entries()) {
+    for (const [index, task] of tasksState$.upcoming.data.peek().entries()) {
         console.log(task.label, ' is due today')
         if (task.due.toLocaleDateString() === radialProgressState$.todayDate.get().toLocaleDateString()) {
             console.log('The Dates Match')

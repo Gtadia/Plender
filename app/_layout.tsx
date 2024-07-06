@@ -12,7 +12,7 @@ import Svg, { Path } from 'react-native-svg'
 import Animated, { useAnimatedStyle, withTiming, useDerivedValue } from 'react-native-reanimated'
 // lottie
 import Lottie from 'lottie-react-native'
-import { useFont } from '@shopify/react-native-skia';
+import { useFont, useFonts } from '@shopify/react-native-skia';
 import { fontState$ } from '../db/LegendApp';
 import Timer from '../components/Timer';
 import Home from './Home';
@@ -28,13 +28,30 @@ const AnimatedSvg = Animated.createAnimatedComponent(Svg)
 
 export default function RootLayout() {
   const font = useFont(require("../assets/fonts/fffforward.ttf"), 32);
-  if (!font) {
-      // prevent rendering without fonts being rendered
-      console.log("did this run?")
-      return <View />;
+
+  const otherFonts = useFonts({
+    Rubik: [
+      require("../assets/fonts/Rubik_Mono_One/RubikMonoOne-Regular.ttf")
+    ],
+    Azeret: [
+      require("../assets/fonts/Azeret_Mono/AzeretMono-Italic-VariableFont_wght.ttf"),
+      require("../assets/fonts/Azeret_Mono/AzeretMono-VariableFont_wght.ttf"),
+      require("../assets/fonts/Azeret_Mono/static/AzeretMono-Black.ttf"),
+      require("../assets/fonts/Azeret_Mono/static/AzeretMono-Bold.ttf"),
+      require("../assets/fonts/Azeret_Mono/static/AzeretMono-ExtraBold.ttf"),
+    ],
+    AlfaSlab: [
+      require("../assets/fonts/Alfa_Slab_One/AlfaSlabOne-Regular.ttf"),
+    ]
+  })
+  if (!otherFonts) {
+    console.log("other fonts loading...")
+    return null;
   }
 
   fontState$.font.set(font)
+  fontState$.otherFonts.set(otherFonts)
+
   return (
     <>
       {/* Start Timer */}

@@ -1,11 +1,12 @@
-import { StyleSheet, View, Text as RNText, ScrollView } from 'react-native'
+import { StyleSheet, View, Text as RNText, ScrollView, Platform } from 'react-native'
 import React, { useState, useMemo, useEffect, useRef } from 'react'
-import {Canvas, Path, SkFont, Skia, Text} from '@shopify/react-native-skia'
+import {add, Canvas, center, matchFont, Path, SkFont, Skia, Text} from '@shopify/react-native-skia'
 
 import Animated,{interpolate, useDerivedValue, useSharedValue, interpolateColor, useAnimatedStyle, withTiming, Extrapolation} from 'react-native-reanimated';
-import { radialProgressState$, tasksState$ } from '../db/LegendApp';
+import { fontState$, radialProgressState$, tasksState$ } from '../db/LegendApp';
 import { observe } from '@legendapp/state';
 import { observer, Show } from '@legendapp/state/react';
+import dayjs from 'dayjs';
 
 const SECONDS_IN_DAY = 24 * 60 * 60;
 const mainRingColor = '#51CC46';
@@ -18,6 +19,18 @@ interface CircularProgressProps {
 }
 
 const CircularProgressBar = ({radius, strokeWidth, font}: CircularProgressProps) => {
+  const fonts = {
+    time: matchFont({
+      fontFamily: "Azeret",
+      fontWeight: '900',
+      fontSize: 48
+      } as const, fontState$.otherFonts.get()),
+    date: matchFont({
+      fontFamily: "AlfaSlab",
+      fontWeight: "normal",
+      fontSize: 12
+    } as const, fontState$.otherFonts.get()),
+  }
   // ------------------------------------------------------------------------------------------------
   const scrollPercent = useSharedValue(0.0);
 
@@ -44,43 +57,6 @@ const CircularProgressBar = ({radius, strokeWidth, font}: CircularProgressProps)
         ['transparent', '#747474']
       )
   })
-  const backgroundColor = useAnimatedStyle(() => {
-    return {
-      backgroundColor: interpolateColor(
-        scrollPercent.value,
-        [0, 1],
-        ['blue', 'green']
-      )
-    }
-  })
-
-  const backgroundColorRight = useAnimatedStyle(() => {
-    return {
-      backgroundColor: interpolateColor(
-      Math.abs(1 - scrollPercent.value),
-      [0, 1],
-      ['transparent', 'green']
-      )
-    }
-  })
-
-  const pageIndicatorLeft = useAnimatedStyle(() => ({
-    width: interpolate(
-      Math.abs(1 - scrollPercent.value),
-      [0, 1],
-      [15, 15+35 * (1 - scrollPercent.value)],
-      Extrapolation.CLAMP
-    )
-  }))
-
-  const pageIndicatorRight = useAnimatedStyle(() => ({
-    width: interpolate(
-      (scrollPercent.value),
-      [0, 1],
-      [15, 15+35 * scrollPercent.value],
-      Extrapolation.CLAMP
-    )
-  }))
 
 
   console.log(scrollPercent.value)
@@ -116,31 +92,25 @@ const CircularProgressBar = ({radius, strokeWidth, font}: CircularProgressProps)
     }
   })
 
+  // ----- Date --------
+  let date = dayjs(radialProgressState$.todayDate.get())
+  observe(() => {
+    let date = dayjs(radialProgressState$.todayDate.get())
+  })
+  // ----- Date --------
+
   // TODO — Is this being observed (IT WON'T MATTER SINCE IT'S GOING INTO A FUNCTION LATER)
   const stringTimes = {
-    now: useDerivedValue(() => `${Math.floor(times.now.seconds.value / 3600)} : ${("00" + Math.floor(times.now.seconds.value % 3600 / 60)).slice(-2)} : ${("00" + Math.floor(times.now.seconds.value % 60)).slice(-2)} `, []),
-    curr: useDerivedValue(() => `${Math.floor(times.curr.seconds.value / 3600)} : ${("00" + Math.floor(times.curr.seconds.value % 3600 / 60)).slice(-2)} : ${("00" + Math.floor(times.curr.seconds.value % 60)).slice(-2)} `, []),
+    now: useDerivedValue(() => `${Math.floor(times.now.seconds.value / 3600)}:${("00" + Math.floor(times.now.seconds.value % 3600 / 60)).slice(-2)}:${("00" + Math.floor(times.now.seconds.value % 60)).slice(-2)}`, []),
+    curr: useDerivedValue(() => `${Math.floor(times.curr.seconds.value / 3600)}:${("00" + Math.floor(times.curr.seconds.value % 3600 / 60)).slice(-2)}:${("00" + Math.floor(times.curr.seconds.value % 60)).slice(-2)}`, []),
+    date: date.format('ddd, MM/DD/YYYY').toString(),
   }
 
   const measureStringTimes = {
-    now: useDerivedValue(() => font.measureText(stringTimes.now.value)),
-    curr: useDerivedValue(() => font.measureText(stringTimes.curr.value)),
+    now: useDerivedValue(() => fonts.time.measureText(stringTimes.now.value)),
+    curr: useDerivedValue(() => fonts.time.measureText(stringTimes.curr.value)),
+    date: useDerivedValue(() => fonts.date.measureText(stringTimes.date)),
   }
-
-  // ----- text width -----
-  const centerStringTimes = {
-    now: useDerivedValue(() => (innerDiameter - measureStringTimes.now.value.width)/2),
-    curr: useDerivedValue(() => (innerDiameter - measureStringTimes.curr.value.width)/2),
-    date:
-  }
-  // ----- text width -----
-
-  // ----- Date --------
-  let date = radialProgressState$.todayDate.get().toLocaleDateString()
-  observe(() => {
-    let date = radialProgressState$.todayDate.get().toLocaleDateString()
-  })
-  // ----- Date --------
 
 // ------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------
@@ -158,30 +128,39 @@ const CircularProgressBar = ({radius, strokeWidth, font}: CircularProgressProps)
   const outerDiameter = radius * 2
   const innerDiameter = radius * 2 - strokeWidth * 2
 
-  // ----- text width -----
-  const mainTextWidth = useDerivedValue(() => {
-    return (innerDiameter - measureStringTimes.now.value.width)/2
-  })
 
-  const taskTextWidth = useDerivedValue(() => {
-    return (innerDiameter - measureStringTimes.curr.value.width)/2
-  })
   // ----- text width -----
+  const centerStringTimes = {
+    now: useDerivedValue(() => (innerDiameter - measureStringTimes.now.value.width)/2),
+    curr: useDerivedValue(() => (innerDiameter - measureStringTimes.curr.value.width)/2),
+    date: useDerivedValue(() => (innerDiameter - measureStringTimes.date.value.width)/2),
+  }
+  // ----- text width -----
+
+  const textViews = {
+    now: {
+      view: {...styles.innerTimerTextCanvas, width: innerDiameter, top: innerDiameter / 2 - measureStringTimes.now.value.height/2},
+      canvas:[{height: measureStringTimes.now.value.height + 1, width: innerDiameter,} ],   // (+1 b/c text is getting cut off at the bottom)
+    },
+    curr: {
+      view: {...styles.innerTimerTextCanvas, width: innerDiameter, top: innerDiameter / 2 - measureStringTimes.curr.value.height/2},
+      canvas: [{ height: measureStringTimes.curr.value.height + 1, width: innerDiameter }],
+    },
+    date: {
+      view: {...styles.innerTimerTextCanvas, width: innerDiameter, top: innerDiameter / 2 - measureStringTimes.date.value.height - measureStringTimes.now.value.height/2 },
+      canvas: [{ height: measureStringTimes.date.value.height, width: innerDiameter }],
+    },
+    percent: {
+    // percentage: {...styles.innerTimerTextCanvas, width: innerDiameter, top: innerDiameter / 2 + fontMeasurePercentage.height},
+    // percentageCanvas: {width: fontMeasurePercentage.width, height: fontMeasurePercentage.height, },
+    }
+  }
 
   const additionalStyles = {
     scrollViewCrop: {...styles.innerTimerContainer, width: innerDiameter, height: innerDiameter, overflow: 'hidden', borderRadius: innerDiameter / 2},
     scrollViewContainer: {backgroundColor: 'rgba(0, 255, 0, 0.0)', width: innerDiameter + spacingBetween, height: innerDiameter},
     scrollViewWiderElement: {width: innerDiameter + spacingBetween, alignItems: 'center', },
     inViewComponent: {width: innerDiameter, alignItems: 'center',},
-
-    // percentage: {...styles.innerTimerTextCanvas, width: innerDiameter, top: innerDiameter / 2 + fontMeasurePercentage.height},
-
-    mainTimer: {...styles.innerTimerTextCanvas, width: innerDiameter, top: innerDiameter / 2 - measureStringTimes.now.value.height/2},
-    mainTimerCanvas: [{height: measureStringTimes.now.value.height, width: innerDiameter,} ],
-
-    taskTimer: {...styles. innerTimerTextCanvas, innerDiameter, top: innerDiameter / 2 - measureStringTimes.curr.value.height/2},
-    taskTimerCanvas: [{ height: measureStringTimes.curr.value.height, width: innerDiameter }],
-    // percentageCanvas: {width: fontMeasurePercentage.width, height: fontMeasurePercentage.height, },
   }
 // ------------------------------------------------------------------------------------------------
 
@@ -273,6 +252,18 @@ const CircularProgressBar = ({radius, strokeWidth, font}: CircularProgressProps)
           // Block it is also doing it
         }
         <View style={additionalStyles.scrollViewCrop}>
+        <View style={[textViews.date.view,]}>
+                  <Canvas style={[textViews.date.canvas]}>
+                    <Text
+                      x={centerStringTimes.date}
+                      y={measureStringTimes.date.value.height}
+                      text={useDerivedValue(() => stringTimes.date).value}
+                      // text={"black"}
+                      color={'black'}
+                      font={fonts.date}
+                    />
+                  </Canvas>
+                </View>
           {/*  TODO — The radialProgressState$ might need an observe... */}
           <ScrollView
             horizontal={true}
@@ -287,14 +278,14 @@ const CircularProgressBar = ({radius, strokeWidth, font}: CircularProgressProps)
           >
             { /*Current Time */ }
             <Animated.View style={[additionalStyles.scrollViewWiderElement]}>
-              <View style={additionalStyles.mainTimer}>
-                <Canvas style={additionalStyles.mainTimerCanvas}>
+              <View style={textViews.now.view}>
+                <Canvas style={textViews.now.canvas}>
                   <Text
-                    x={mainTextWidth}
+                    x={centerStringTimes.now}
                     y={measureStringTimes.now.value.height}
                     text={stringTimes.now}
                     color={"black"}
-                    font={font}
+                    font={fonts.time}
                   />
                 </Canvas>
               </View>
@@ -307,23 +298,15 @@ const CircularProgressBar = ({radius, strokeWidth, font}: CircularProgressProps)
               if={() => tasksState$.current.data.get().length > 0}
               else={() => null}
             >
-              <Animated.View style={additionalStyles.scrollViewWiderElement}>
-                <View style={additionalStyles.taskTimer}>
-                  <Canvas style={[additionalStyles.taskTimerCanvas]}>
+              <Animated.View style={[additionalStyles.scrollViewWiderElement, { backgroundColor: 'red '}]}>
+                <View style={textViews.curr.view}>
+                  <Canvas style={textViews.curr.canvas}>
                     <Text
-                      x={taskTextWidth}
+                      x={centerStringTimes.curr}
                       y={measureStringTimes.curr.value.height}
                       text={stringTimes.curr}
                       color={"black"}
-                      font={font}
-                    />
-                  </Canvas>
-                </View>
-
-                <View>
-                  <Canvas>
-                    <Text
-                      x={}
+                      font={fonts.time}
                     />
                   </Canvas>
                 </View>

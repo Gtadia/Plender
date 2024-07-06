@@ -53,7 +53,7 @@ export const radialProgressState$ = observable<radialProgressState>({
         // TODO — is observe necessary?
         observe(() => {
             // TODO — THIS OBSERVER RUNS EVERYTIME A TASK IS COUNTED DOWN...
-            // TODO — Use observe where its needed. (Subtract from current, etc. instead of adding everything up) 
+            // TODO — Use observe where its needed. (Subtract from current, etc. instead of adding everything up)
             batch(() => {
                 // if(radialProgressState$.current.get()) {
                 //     if(radialProgressState$.current.get()?.is_daily) {

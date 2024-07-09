@@ -48,33 +48,25 @@ export const radialProgressState$ = observable<radialProgressState>({
     radialDaily: () => radialProgressState$.now.get() + radialProgressState$.daily.get(),
     radialTodo: () => radialProgressState$.radialDaily.get() + radialProgressState$.todo.get(),
 
-    // TODO — try moving sumTasks to tasksState$
-    sumTasks: () => {
-        // TODO — is observe necessary?
-        observe(() => {
-            // TODO — THIS OBSERVER RUNS EVERYTIME A TASK IS COUNTED DOWN...
-            // TODO — Use observe where its needed. (Subtract from current, etc. instead of adding everything up)
-            batch(() => {
-                // if(radialProgressState$.current.get()) {
-                //     if(radialProgressState$.current.get()?.is_daily) {
-                //         radialProgressState$.daily.set((prev) => prev + radialProgressState$.current.get().time_remaining)
-                //     } else {
-                //         radialProgressState$.todo.set((prev) => prev + radialProgressState$.current.get().time_remaining)
-                //     }
-                // }
+    // TODO
+    /**
+     * Add to timer when
+     *      New tasks are added (to TODAY)
+     *      When tasks are moved to TODAY
+     *      When tasks (TODAY) are updated
+     *
+     * Remove from timer when
+     *      tasks are deleted (from TODAY)
+     *      tasks are moved away from TODAY
+     *      when (TODAY) tasks are being worked on (remove 1 second)
+     */
 
-                for(const task of tasksState$.today.data.get()) {
-                    // NOTE: THIS will load 2 times because tasksState$ was updated 2 times
-                    // console.log("Calculating: ", task);
-                    if(task.is_daily) {
-                        radialProgressState$.daily.set((prev) => prev + task.time_remaining)
-                    } else {
-                        radialProgressState$.todo.set((prev) => prev + task.time_remaining)
-                    }
-                }
-            })
-        })
+    updateTodo: ({sec}: {sec: number}) => {
+        // -sec ==> remove time
+        // sec ==> add time
+        radialProgressState$.todo.set((prev) => (prev + sec))
     }
+
 })
 
 

@@ -3,7 +3,7 @@ From this tutorial:
 https://www.youtube.com/watch?v=KvRqsRwpwhY&t=77s
 */
 import { StatusBar } from 'expo-status-bar';
-import { Dimensions, SafeAreaView, StyleSheet, View } from 'react-native'
+import { Dimensions, SafeAreaView, StyleSheet, TouchableOpacity, View } from 'react-native'
 import React, { useEffect, useCallback } from 'react'
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler'
 import Animated, { Extrapolation, interpolate, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
@@ -12,6 +12,8 @@ import CircularProgressBar from '../components/RadialProgressBar';
 import TaskList from '../components/TaskList';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { observe } from '@legendapp/state';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
+
 
 const RADIUS = 160
 const STROKEWIDTH = 25
@@ -110,7 +112,6 @@ export default function Home() {
       // TODO — origin point ==> SCREEN_HEIGHT - <Height of header> - <height of radial wheel> - <some padding>
       translateY.value = withSpring(MAX_TRANSLATE_Y/2, { damping: 50 })
       radialTranslate.value = withSpring(0, {damping: 50})
-      radialProgressState$.sumTasks.get()
     }, [])
 
   // ----------
@@ -163,9 +164,24 @@ export default function Home() {
         </GestureDetector>
 
         <TaskList />
+        <AddTaskBtn />
       </Animated.View>
       </SafeAreaView>
     </GestureHandlerRootView>
+  )
+}
+
+function AddTaskBtn() {
+  const submitTask = () => {
+    // TODO — Add Tasks
+  }
+
+  return (
+    <TouchableOpacity style={[styles.addBtnPosition, styles.addBtn]} onPress={submitTask}>
+      <View style={{position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, justifyContent: 'center', alignItems: 'center'}}>
+        <FontAwesome name="plus" size={24} color="white"/>
+      </View>
+    </TouchableOpacity>
   )
 }
 
@@ -173,11 +189,24 @@ const styles = StyleSheet.create({
     container: {
         height: SCREEN_HEIGHT,
         width: "100%",
-        backgroundColor: "white",
+        // backgroundColor: "white",
+        backgroundColor: 'purple',
         position: "absolute",
         // top: SCREEN_HEIGHT / 1,
         bottom: 0,
-        borderRadius: 25
+        borderRadius: 25,
+    },
+    addBtnPosition: {
+      position: 'absolute',
+      bottom: 30,
+      right: 30,
+
+    },
+    addBtn: {
+      backgroundColor: 'blue',
+      width: 50,
+      height: 50,
+      borderRadius: 25,
     },
     line: {
         width: 75,

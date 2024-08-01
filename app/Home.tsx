@@ -1,14 +1,17 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import DateTimePicker from 'react-native-ui-datepicker';
 import dayjs from 'dayjs';
 import { useState } from 'react';
 import DrawerSceneWrapper from '../components/DrawerSceneWrapper';
+import Header from '../components/Header';
 
-export default function Home() {
+
+export default function Home({navigation}) {
   const [date, setDate] = useState(dayjs());
 
   return (
     <DrawerSceneWrapper>
+      <Header name="Home" toggleNav={navigation.openDrawer}/>
       <View style={styles.container}>
         <DateTimePicker
           mode="single"
@@ -22,7 +25,12 @@ export default function Home() {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     backgroundColor: '#F5FCFF',
   },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+  }
 });

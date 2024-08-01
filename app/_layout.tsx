@@ -1,30 +1,10 @@
-// import { StatusBar } from 'expo-status-bar';
-// import { StyleSheet, Text, View } from 'react-native';
-
-// export default function App() {
-//   return (
-//     <View style={styles.container}>
-//       <Text>Open up App.tsx to start working on your app!</Text>
-//       <StatusBar style="auto" />
-//     </View>
-//   );
-// }
-
-// const styles = StyleSheet.create({
-//   container: {
-//     flex: 1,
-//     backgroundColor: '#fff',
-//     alignItems: 'center',
-//     justifyContent: 'center',
-//   },
-// });
-
-
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { StyleSheet, Text, View } from 'react-native';
-import { useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import Home from './Home';
+import Settings from './Settings';
+import React from 'react';
 
 
 const Drawer = createDrawerNavigator();
@@ -33,16 +13,26 @@ const Drawer = createDrawerNavigator();
 const colors = {
   bg: '#009955',
   transparent: 'transparent',
-  active: '990055',
-  inactive: '991111',
+  active: '#990055',
+  inactive: '#320122',
 }
 
 export default function RootLayout() {
+  const drawerIcon = ({focused, size}, name) => {
+    return (
+      <MaterialIcons
+        name={name}
+        size={size}
+        color={focused ? colors.active : colors.inactive}
+      />
+    )
+  }
+
   return (
     <>
       <StatusBar style="auto"/>
       <Drawer.Navigator initialRouteName="Home" screenOptions={{
-          // headerShown: false,
+          headerShown: false,
           drawerActiveBackgroundColor: colors.transparent,
           drawerInactiveBackgroundColor: colors.transparent,
           drawerActiveTintColor: colors.active,
@@ -52,25 +42,22 @@ export default function RootLayout() {
             backgroundColor: colors.bg
           }
         }}>
-        <Drawer.Screen name="Home" component={Home}/>
+        <Drawer.Screen
+          name="Home"
+          component={Home}
+          options={{
+            drawerIcon: options => drawerIcon(options, 'home')
+          }}
+        />
+        <Drawer.Screen
+          name="Settings"
+          component={Settings}
+          options={{
+            drawerIcon: options => drawerIcon(options, 'settings')
+          }}
+        />
       </Drawer.Navigator>
     </>
-
-    // <SafeAreaView>
-    //   <View>
-    //     {/* Header */}
-    //     <Text>Home</Text>
-
-    //   </View>
-
-    //   <View style={styles.container}>
-    //     <DateTimePicker
-    //       mode="single"
-    //       date={date}
-    //       onChange={(params) => setDate(params.date)}
-    //     />
-    //   </View>
-    // </SafeAreaView>
   );
 }
 

@@ -1,8 +1,15 @@
-import { StyleSheet, Text, View } from 'react-native'
+import { SafeAreaView, StyleSheet, View, Text } from 'react-native'
 import React from 'react'
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { TouchableOpacity } from 'react-native-gesture-handler';
+
 
 const DrawerSceneWrapper = ({children}) => {
-  return <View style={styles.container}>{children}</View>;
+  return (
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+      {children}
+    </SafeAreaView>
+  )
 }
 
 export default DrawerSceneWrapper
@@ -10,5 +17,6 @@ export default DrawerSceneWrapper
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
+    // backgroundColor:'blue'
+  }
 })

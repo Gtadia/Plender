@@ -1,241 +1,28 @@
-/*
-From this tutorial:
-https://www.youtube.com/watch?v=KvRqsRwpwhY&t=77s
-*/
-import { StatusBar } from 'expo-status-bar';
-import { Dimensions, SafeAreaView, StyleSheet, TouchableOpacity, View } from 'react-native'
-import React, { useEffect, useCallback } from 'react'
-import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler'
-import Animated, { Extrapolation, interpolate, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
-import { fontState$, radialProgressState$, tasksState$ } from '../db/LegendApp';
-import CircularProgressBar from '../components/RadialProgressBar';
-import TaskList from '../components/TaskList';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { observe } from '@legendapp/state';
-import FontAwesome from '@expo/vector-icons/FontAwesome';
-
-
-const RADIUS = 160
-const STROKEWIDTH = 25
-const {height: SCREEN_HEIGHT} = Dimensions.get('window')
-
-const scrollSensitivity = 100;
+import { StyleSheet, Text, View } from 'react-native';
+import DateTimePicker from 'react-native-ui-datepicker';
+import dayjs from 'dayjs';
+import { useState } from 'react';
+import DrawerSceneWrapper from '../components/DrawerSceneWrapper';
 
 export default function Home() {
-  const insets = useSafeAreaInsets();
-  const MAX_TRANSLATE_Y = SCREEN_HEIGHT - insets.top - 100
-
-  const translateY = useSharedValue(0)
-  const radialTranslate = useSharedValue(0)
-  const context = useSharedValue({ y: 0})     // to keep context of the previous scroll position
-
-  const scrollTo = useCallback((destination: number) => {
-      "worklet";
-      translateY.value = withSpring(destination, { damping: 50 })
-  }, [])
-
-  const radialScrollTo = useCallback((destination: number) => {
-    "worklet";
-    radialTranslate.value = withSpring(destination, { damping: 50 })
-  }, [])
-
-  const gesture = Gesture.Pan().onStart(() => {
-      context.value = {y:translateY.value}
-  })
-  .onUpdate((event) => {
-      translateY.value = -event.translationY + context.value.y   // adding previous scroll position
-      // translateY.value = Math.max(0, Math.min(translateY.value, MAX_TRANSLATE_Y))  // Clamps value between min and max
-  })
-  .onEnd(() => {
-      if (translateY.value > MAX_TRANSLATE_Y / 2) {
-          // TODO — maybe add a scroll sensitivity
-          if (context.value.y < translateY.value - scrollSensitivity) {
-              scrollTo(MAX_TRANSLATE_Y)
-              console.log("1")
-              console.log(insets.top)
-          } else if (context.value.y > translateY.value + scrollSensitivity) {
-              scrollTo(MAX_TRANSLATE_Y / 2)
-              console.log("2")
-          } else {
-              scrollTo(context.value.y)
-          }
-      } else if (translateY.value < MAX_TRANSLATE_Y / 2) {
-          if (context.value.y > translateY.value + scrollSensitivity) {
-              scrollTo(10)
-              radialScrollTo(MAX_TRANSLATE_Y / 2 - (RADIUS + STROKEWIDTH))  // TODO — Find how to find the height of the circle (including current task bar and how strokewidth affects the size)
-              console.log("3")
-          } else if (context.value.y < translateY.value - scrollSensitivity) {
-            // (This doesn't (correction: it SHOULDN'T) ever run)
-            scrollTo(MAX_TRANSLATE_Y / 2)
-          } else {
-              scrollTo(context.value.y)
-          }
-      } else {
-        scrollTo(context.value.y)
-      }
-  })
-
-  const swipeUpGesture = Gesture.Pan().onUpdate((event) => {
-      // TODO — We can even get the velocity of the event (.velocityX .velocityY)
-      translateY.value = -event.translationY
-    })
-    .onEnd(() => {
-      if (translateY.value > scrollSensitivity) {
-        scrollTo(MAX_TRANSLATE_Y / 2)
-        radialScrollTo(0)
-      } else {
-          scrollTo(10)
-      }
-  })
-
-  const rBottomSheetStyle = useAnimatedStyle(() => {
-    const borderRadius = interpolate(
-      translateY.value,                           // when translateY.value...
-      [MAX_TRANSLATE_Y + 50, MAX_TRANSLATE_Y],    // reaches value of MAX_TRANSLATE_Y+50, the border radius needs to be 5
-      [25, 5],                                    // otherwise, if it is less than or equal to MAX_TRANSLATE_Y, it will be 25
-      Extrapolation.CLAMP     // without CLAMP, if the value is less than MAX_TRANSLATE_Y, the borderRadius won't be clamped to 25, but greater
-    )
-    return {
-      // TODO — Instead of moving things down, resize the component
-      borderRadius,
-      height: translateY.value,
-    }
-  })
-
-  const radialStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{translateY: radialTranslate.value}]
-    }
-  })
-
-  useEffect(() => {
-      // TODO — origin point ==> SCREEN_HEIGHT - <Height of header> - <height of radial wheel> - <some padding>
-      translateY.value = withSpring(MAX_TRANSLATE_Y/2, { damping: 50 })
-      radialTranslate.value = withSpring(0, {damping: 50})
-    }, [])
-
-  // ----------
-  observe(() => {
-    // If I make this in tasksState$ itself, it will run 3 times (once for each update) (infiniti radialProgressState$)
-    console.log("observe ran on ", radialProgressState$.todayDate.get().toLocaleDateString())
-    console.log("batch ran")
-    // TODO — because today.data is being updated (counted down), this observer runs...
-    // TODO — I think we can solve this issue NOT .get() (trust that the code works and just .set())
-      // TODO — NOT POSSIBLE (you have to .get() the data so that you can .set() it)...
-      // TODO — I might have fixed it (just .peek())
-    for (const [index, task] of tasksState$.today.data.peek().entries()) {
-      console.log("today loop", task.label)
-        if(task.due.toLocaleDateString() !== radialProgressState$.todayDate.get().toLocaleDateString()) { // todo — change to dayjs
-            console.log(task, " is overdue")
-            tasksState$.overdue.data.push(task)
-            tasksState$.today.data[index].delete()
-        }
-    }
-
-    for (const [index, task] of tasksState$.upcoming.data.peek().entries()) {
-        console.log(task.label, ' is due today')
-        if (task.due.toLocaleDateString() === radialProgressState$.todayDate.get().toLocaleDateString()) {
-            console.log('The Dates Match')
-            tasksState$.today.data.push(task)
-            tasksState$.upcoming.data[index].delete()
-        }
-    }
-  })
+  const [date, setDate] = useState(dayjs());
 
   return (
-    <GestureHandlerRootView style={{flex: 1}}>
-      <SafeAreaView style={styles.container2}>
-        <StatusBar style="auto" />
-        <Animated.View style={[radialStyle]}>
-            <CircularProgressBar radius={RADIUS} strokeWidth={STROKEWIDTH} font={fontState$.font.get()}/>
-        </Animated.View>
-
-      <GestureDetector gesture={swipeUpGesture}>
-        <View style={styles.swipeUpFromZero}></View>
-      </GestureDetector>
-
-      <Animated.View style={[styles.container, rBottomSheetStyle]}>
-        <GestureDetector gesture={gesture}>
-            <View style={{width: "100%", height: 50,
-                // backgroundColor: 'green'
-              }}>
-                <View style={styles.line} />
-            </View>
-        </GestureDetector>
-
-        <TaskList />
-        <AddTaskBtn />
-      </Animated.View>
-      </SafeAreaView>
-    </GestureHandlerRootView>
-  )
-}
-
-function AddTaskBtn() {
-  const submitTask = () => {
-    // TODO — Add Tasks
-  }
-
-  return (
-    <TouchableOpacity style={[styles.addBtnPosition, styles.addBtn]} onPress={submitTask}>
-      <View style={{position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, justifyContent: 'center', alignItems: 'center'}}>
-        <FontAwesome name="plus" size={24} color="white"/>
+    <DrawerSceneWrapper>
+      <View style={styles.container}>
+        <DateTimePicker
+          mode="single"
+          date={date}
+          onChange={(params) => setDate(params.date)}
+        />
       </View>
-    </TouchableOpacity>
-  )
+    </DrawerSceneWrapper>
+  );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        height: SCREEN_HEIGHT,
-        width: "100%",
-        // backgroundColor: "white",
-        backgroundColor: 'purple',
-        position: "absolute",
-        // top: SCREEN_HEIGHT / 1,
-        bottom: 0,
-        borderRadius: 25,
-    },
-    addBtnPosition: {
-      position: 'absolute',
-      bottom: 30,
-      right: 30,
-
-    },
-    addBtn: {
-      backgroundColor: 'blue',
-      width: 50,
-      height: 50,
-      borderRadius: 25,
-    },
-    line: {
-        width: 75,
-        height: 4,
-        backgroundColor: 'gray',
-        alignSelf: 'center',
-        marginVertical: 15,
-        borderRadius: 2,
-    },
-    swipeUpFromZero: {
-        height: SCREEN_HEIGHT / 3,
-        width: '100%',
-        position: 'absolute',
-
-        bottom: 0,
-        // backgroundColor: 'blue'
-    },
-    container2: {
-      flex: 1,
-      // backgroundColor: '#111',
-      alignItems: 'center',
-      // justifyContent: 'center',
-      // paddingTop: Platform.select({ios: 170,  default: 0})
-    },
-    button: {
-      height: 50,
-      aspectRatio: 1,
-      borderRadius: 25,
-      backgroundColor: "white",
-      opacity: 0.6,
-    },
-})
+  container: {
+    flex: 1,
+    backgroundColor: '#F5FCFF',
+  },
+});

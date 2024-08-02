@@ -4,7 +4,11 @@ import dayjs from 'dayjs';
 import { useState } from 'react';
 import DrawerSceneWrapper from '../components/DrawerSceneWrapper';
 import Header from '../components/Header';
+import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
+import List from './tabs/List';
+import Progress from './tabs/Progress';
 
+const Tab = createMaterialTopTabNavigator();
 
 export default function Home({navigation}) {
   const [date, setDate] = useState(dayjs());
@@ -12,6 +16,11 @@ export default function Home({navigation}) {
   return (
     <DrawerSceneWrapper>
       <Header name="Home" toggleNav={navigation.openDrawer}/>
+      <Tab.Navigator>
+        <Tab.Screen name="List" component={List} />
+        <Tab.Screen name="Progress" component={Progress} />
+      </Tab.Navigator>
+
       <View style={styles.container}>
         <DateTimePicker
           mode="single"

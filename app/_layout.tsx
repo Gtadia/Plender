@@ -1,6 +1,5 @@
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { StyleSheet, Text, View } from 'react-native';
-import { StatusBar } from 'expo-status-bar';
+import { Platform, StatusBar, StyleSheet, Text, View } from 'react-native';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import Settings from './Settings';
 import Home from './Home';
@@ -30,7 +29,6 @@ export default function RootLayout() {
 
   return (
     <>
-      <StatusBar style="auto"/>
       <Drawer.Navigator initialRouteName="Home" screenOptions={{
           headerShown: false,
           drawerActiveBackgroundColor: colors.transparent,
@@ -65,5 +63,5 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F5FCFF',
-  },
+  }
 });

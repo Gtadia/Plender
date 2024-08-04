@@ -17,8 +17,8 @@ export default function Home({navigation}) {
     <DrawerSceneWrapper>
       <Header name="Home" toggleNav={navigation.openDrawer}/>
       <Tab.Navigator>
-        <Tab.Screen name="List" component={List} />
-        <Tab.Screen name="Progress" component={Progress} />
+        <Tab.Screen name="List " component={List} />
+        <Tab.Screen name="Progress " component={Progress} />
       </Tab.Navigator>
 
       <View style={styles.container}>

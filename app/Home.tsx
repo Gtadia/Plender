@@ -1,4 +1,4 @@
-import { SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import DateTimePicker from 'react-native-ui-datepicker';
 import dayjs from 'dayjs';
 import { useState } from 'react';
@@ -18,16 +18,8 @@ export default function Home({navigation}) {
       <Header name="Home" toggleNav={navigation.openDrawer}/>
       <Tab.Navigator>
         <Tab.Screen name="List " component={List} />
-        <Tab.Screen name="Progress " component={Progress} />
+        <Tab.Screen name="Calendar " component={Progress} />
       </Tab.Navigator>
-
-      <View style={styles.container}>
-        <DateTimePicker
-          mode="single"
-          date={date}
-          onChange={(params) => setDate(params.date)}
-        />
-      </View>
     </DrawerSceneWrapper>
   );
 }

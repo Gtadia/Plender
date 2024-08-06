@@ -1,4 +1,6 @@
 import { observable, Observable } from "@legendapp/state";
+import { syncObservable, configureObservableSync } from '@legendapp/state/sync'
+import { ObservablePersistMMKV } from '@legendapp/state/persist-plugins/mmkv'
 
 interface taskTags {
   title: string,
@@ -20,11 +22,31 @@ interface tasks {
 }
 
 // TODO - Just link the task from today/upcoming/overdue here
-export const currentTask = observable<tasks>()
+export const currentTask$ = observable<tasks>({
+  title: "Test",
+  tags: null,
+  category: null,
+  due: new Date(),
+  created: new Date(),
+  time_goal: 23,
+  time_spent: 1,
+  repeated: null
+})
+
 
 export const todayTasks$ = observable({
   title: 'Today',
   data: [
+    {
+      title: "Test",
+      tags: null,
+      category: null,
+      due: new Date(),
+      created: new Date(),
+      time_goal: 23,
+      time_spent: 1,
+      repeated: null
+    },
     {
       title: "Test",
       tags: null,
@@ -51,55 +73,21 @@ export const upcomingTasks$ = observable({
       time_spent: 1,
       repeated: null
     },
-    {
-      title: "Test",
-      tags: null,
-      category: null,
-      due: new Date(),
-      created: new Date(),
-      time_goal: 23,
-      time_spent: 1,
-      repeated: null
-    },
-    {
-      title: "Test",
-      tags: null,
-      category: null,
-      due: new Date(),
-      created: new Date(),
-      time_goal: 23,
-      time_spent: 1,
-      repeated: null
-    },     {
-      title: "Test",
-      tags: null,
-      category: null,
-      due: new Date(),
-      created: new Date(),
-      time_goal: 23,
-      time_spent: 1,
-      repeated: null
-    },     {
-      title: "Test",
-      tags: null,
-      category: null,
-      due: new Date(),
-      created: new Date(),
-      time_goal: 23,
-      time_spent: 1,
-      repeated: null
-    },     {
-      title: "Test",
-      tags: null,
-      category: null,
-      due: new Date(),
-      created: new Date(),
-      time_goal: 23,
-      time_spent: 1,
-      repeated: null
-    }
   ]
 })
+
+// configureObservableSync({
+//   persist: {
+//       plugin: ObservablePersistMMKV
+//   }
+// })
+
+// // Persist the observable to the named key of the global persist plugin
+// syncObservable(upcomingTasks$, {
+//   persist: {
+//       name: 'upcomingPersist',
+//   }
+// })
 
 export const completedTasks$ = observable()
 

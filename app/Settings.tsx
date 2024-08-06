@@ -1,16 +1,17 @@
 import { StyleSheet, Text, View } from 'react-native'
 import React from 'react'
-import DrawerSceneWrapper from '../components/DrawerSceneWrapper'
 import Header from '../components/Header'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import AndroidSafeArea from '../components/AndroidSafeArea'
 
-const Settings = ({navigation}) => {
+const Settings = ({ navigation }: any) => {
   return (
-    <DrawerSceneWrapper>
+    <SafeAreaView style={[AndroidSafeArea.AndroidSafeArea]} edges={['top', 'left', 'right']}>
       <Header name='Settings' toggleNav={navigation.openDrawer} />
       <View>
         <Text>Settings</Text>
       </View>
-    </DrawerSceneWrapper>
+    </SafeAreaView>
   )
 }
 

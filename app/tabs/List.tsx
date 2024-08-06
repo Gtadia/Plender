@@ -1,35 +1,19 @@
 import { FlatList, LayoutAnimation, Dimensions, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View, Pressable } from 'react-native'
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { observer } from '@legendapp/state/react'
-import { currentTask$, openAddMenu$, overdueTasks$, todayTasks$, upcomingTasks$ } from '../../db/LegendApp'
-
-import { Gesture, GestureDetector } from 'react-native-gesture-handler'
-import Animated, { Extrapolation, interpolate, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
+import { currentTask$, overdueTasks$, todayTasks$, upcomingTasks$ } from '../../db/LegendApp'
 
 import AntDesign from '@expo/vector-icons/AntDesign';
 import Card from '../../components/ui/Card'
-import { observable, observe } from '@legendapp/state'
+import BottomSheet from '../../components/BottomSheet'
 
 var {width, height} = Dimensions.get('window');
-const MAX_TRANSLATE_Y = -height + 50
 
 const List = observer(() => {
 
   return (
     <View style={styles.container}>
       <Text>[Today's Date]</Text>
-
-      {/* <SectionList
-        sections={[todayTasks$.get(), overdueTasks$.get(), upcomingTasks$.get()]}
-        keyExtractor={(item, index) => item + index}
-        renderItem={({item, index}) => <Card item={item} index={index}/>}
-        ListEmptyComponent={<Text>Empty List</Text>}
-        renderSectionHeader={({section}) => (
-          <Text>{section.title}</Text>
-        )}
-        stickySectionHeadersEnabled
-      /> */}
-
 
       <Item task={todayTasks$.get()} />
       <Item task={overdueTasks$.get()} />
@@ -47,8 +31,6 @@ const List = observer(() => {
           </Pressable>
         }
       </View>
-
-      <BottomSheet />
     </View>
   )
 })
@@ -74,62 +56,10 @@ function Item({task}: any) {
       <FlatList
         data={task.data}
         renderItem={({item}) => <ListItem item={item}/>}
-        keyExtractor={item => item.created}
+        keyExtractor={item => item.created + Math.random()} // TODO — get rid of Math.random()
       />
     </TouchableOpacity>
   );
-}
-
-function BottomSheet() {
-  const translateY = useSharedValue(0)
-
-    const scrollTo = useCallback((destination: number) => {
-        "worklet";
-        translateY.value = (withSpring(destination, { damping: 50 }))
-    }, [])
-
-    const context = useSharedValue({ y: 0})     // to keep context of the previous scroll position
-    const gesture = Gesture.Pan().onStart(() => {
-        context.value = {y:translateY.value}
-    })
-    .onUpdate((event) => {
-      translateY.value = (event.translationY + context.value.y)   // adding previous scroll position
-      translateY.value = (Math.max(translateY.value, MAX_TRANSLATE_Y))
-    })
-    .onEnd(() => {
-        if (translateY.value > -height / 3) {
-            scrollTo(10)
-        } else if (translateY.value < -height / 2) {
-            scrollTo(MAX_TRANSLATE_Y)
-        }
-    })
-
-    const rBottomSheetStyle = useAnimatedStyle(() => {
-        const borderRadius = interpolate(
-          translateY.value,                           // when translateY.value...
-            [MAX_TRANSLATE_Y + 50, MAX_TRANSLATE_Y],    // reaches value of MAX_TRANSLATE_Y+50, the border radius needs to be 5
-            [25, 5],                                    // otherwise, if it is less than or equal to MAX_TRANSLATE_Y, it will be 25
-            Extrapolation.CLAMP     // without CLAMP, if the value is less than MAX_TRANSLATE_Y, the borderRadius won't be clamped to 25, but greater
-        )
-        return {
-            borderRadius,
-            transform: [{translateY: translateY.value}]
-        }
-    })
-
-    observe(() => {
-      if (openAddMenu$.get()) {
-        scrollTo(-height * 5 / 8)
-      }
-    })
-
-    return (
-        <GestureDetector gesture={gesture}>
-            <Animated.View style={[bottomStyle.container, rBottomSheetStyle]}>
-                <View style={bottomStyle.line} />
-            </Animated.View>
-        </GestureDetector>
-    )
 }
 
 function ListItem({item}: any) {
@@ -182,24 +112,5 @@ const styles = StyleSheet.create({
     width: width,
     height: 120,
     backgroundColor: 'green',
-  }
-})
-
-const bottomStyle = StyleSheet.create({
-  container: {
-    height: height,
-    width: "100%",
-    backgroundColor: "white",
-    position: "absolute",
-    top: height / 1,
-    borderRadius: 25
-  },
-  line: {
-      width: 75,
-      height: 4,
-      backgroundColor: 'gray',
-      alignSelf: 'center',
-      marginVertical: 15,
-      borderRadius: 2,
   }
 })

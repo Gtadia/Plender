@@ -3,8 +3,9 @@ import React from 'react'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import AntDesign from '@expo/vector-icons/AntDesign';
+import {openAddMenu$} from '../db/LegendApp'
 
-const Header = ({name, toggleNav}) => {
+const Header = ({name, toggleNav}: any) => {
   return (
     <View style={styles.header}>
     <View style={styles.flexRow}>
@@ -15,7 +16,8 @@ const Header = ({name, toggleNav}) => {
     </View>
 
     <View style={styles.flexRow}>
-      <TouchableOpacity style={styles.addButton}>
+      {/* Just here to observe a change */}
+      <TouchableOpacity style={styles.addButton} onPress={() => {openAddMenu$.set((prev) => !prev)}}>
         <AntDesign name="plus" size={24} color="black" />
       </TouchableOpacity>
       <TouchableOpacity>

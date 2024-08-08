@@ -12,6 +12,13 @@ import AndroidSafeArea from '../components/AndroidSafeArea';
 import { For, Memo, Reactive, useObservable } from '@legendapp/state/react';
 import Modal from '../components/Modal';
 import Animated, { useAnimatedStyle } from 'react-native-reanimated';
+import { AutoSizeText, ResizeTextMode } from 'react-native-auto-size-text';
+
+import { observable } from '@legendapp/state';
+import { taskTags$ } from '../db/LegendApp';
+
+import AntDesign from '@expo/vector-icons/AntDesign';
+import AddTags from '../components/Screens/Modals/AddTags';
 
 const Tab = createMaterialTopTabNavigator();
 
@@ -47,7 +54,7 @@ export default function Home({ navigation }: any) {
         {/* TODO — Check if padding is okay */}
         {/* paddingBottom: insets.bottom + (20 + 80) */}
         <View style={{ flexGrow: 1, justifyContent: 'space-between' }}>
-          <ScrollView style={{borderWidth: 2}}>
+          <ScrollView style={{marginHorizontal: 20, borderWidth: 2}}>
             <Reactive.TextInput
               $value={title$}
               style={styles.taskInput}
@@ -60,6 +67,14 @@ export default function Home({ navigation }: any) {
                   >
                   <Text>+ Tags</Text>
                 </TouchableOpacity>
+                <For each={taskTags$.selected} optimized>
+                {item$ => (
+                    <Text>
+                        {taskTags$.list[item$.get() - 1].label.get()}
+                    </Text>
+                )}
+              </For>
+
 
             <Text>Category</Text>
             <TouchableOpacity>
@@ -94,8 +109,16 @@ export default function Home({ navigation }: any) {
 
             {/* TODO — Clamp the width to about 1000 px */}
             {/* TODO — Clear the form when pressed*/}
-            <TouchableOpacity style={{width: width - 40, height: 80, borderRadius: 15, backgroundColor: 'red', marginHorizontal: 20, marginTop: 20, marginBottom: insets.bottom}}>
-              <Text>Add Task</Text>
+            <TouchableOpacity
+              style={{width: width - 40, height: 80, borderRadius: 15, backgroundColor: 'red', marginHorizontal: 20, marginTop: 20, marginBottom: insets.bottom, justifyContent: 'center', alignItems: 'center'}}
+              >
+              <AutoSizeText
+                fontSize={32}
+                numberOfLines={1}
+                mode={ResizeTextMode.max_lines}
+                >
+                Add Task
+              </AutoSizeText>
             </TouchableOpacity>
         </View>
       </BottomSheet>
@@ -109,32 +132,10 @@ export default function Home({ navigation }: any) {
             //   isModalOpen$.set(false)
             // }}
             >
-            <View style={{width: width - (16 * 2), height: 'auto', padding: 16, borderRadius: 16, backgroundColor: 'white'}}>
-              <Text>Create Tag</Text>
-              <Text>#</Text>
-              <Reactive.TextInput
-                $value={createTagTitle$}
-                placeholder="Tag"
-                />
-
-              <TouchableOpacity
-                onPress={() => {
-                  isModalOpen$.set(false)
-                }}
-                >
-                <Text>Close</Text>
-              </TouchableOpacity>
-
-            </View>
+              <AddTags isModalOpen={isModalOpen$} />
           </Modal>
         )}
       </Memo>
-
-      {/* <Memo>
-        {() => (
-
-        )}
-      </Memo> */}
     </SafeAreaView>
   );
 }
@@ -150,6 +151,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   taskInput: {
-
-  }
+    fontSize: 24,
+    fontFamily: ''
+  },
 });

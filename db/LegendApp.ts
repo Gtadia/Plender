@@ -119,7 +119,29 @@ export const overdueTasks$ = observable({
   ]
 })
 
-export const taskTags$ = observable<taskTags>()
-
 // For the create page
 export const openAddMenu$ = observable(false)
+
+
+// Tags
+export const taskTags$ = observable({
+  list:[
+    { label: 'Item 1', value: 1, color: 'red' },
+    { label: 'Item 2', value: 2 },
+    { label: 'Item 3', value: 3 },
+    { label: 'Item 4', value: 4 },
+    { label: 'Item 5', value: 5 },
+    { label: 'Item 6', value: 6 },
+    { label: 'Item 7', value: 7 },
+    { label: 'Item 8', value: 8 },
+  ],
+  list_keyExtractor: (item: any) => item.idObject._id,
+  selected: [],
+
+  clear: () => {
+    taskTags$.selected.set([])
+  },
+  addToList: (tagItem: { label: string, value: number, color: string }) => {
+    taskTags$.list.push(tagItem)
+  }
+})

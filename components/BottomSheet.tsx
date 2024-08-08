@@ -16,6 +16,8 @@ const MAX_TRANSLATE_Y = -height;
 import AntDesign from '@expo/vector-icons/AntDesign';
 
 const gestureOffset = 10;
+const lineMargin = 15;
+const lineHeight = 4;
 
 const BottomSheet = ({ children }: any) => {
   const insets = useSafeAreaInsets();
@@ -63,7 +65,8 @@ const BottomSheet = ({ children }: any) => {
         )
         return {
             borderRadius,
-            transform: [{translateY: translateY.value}]
+            transform: [{translateY: translateY.value}],
+            height: -translateY.value
         }
     })
 
@@ -88,9 +91,10 @@ const BottomSheet = ({ children }: any) => {
               <View style={styles.line} />
             </View>
           </GestureDetector>
-          <View style={{paddingTop: insets.top, backgroundColor: 'pink'}}>
+          <View style={{backgroundColor: 'red'}}>
 
-            <Animated.View style={animatedStyles}>
+            <Animated.View style={[animatedStyles]}>
+              <View style={{paddingTop: (insets.top - 2 * lineMargin - lineHeight), backgroundColor: 'pink'}}></View>
               <TouchableOpacity onPress={() => scrollTo(0)}>
                 <AntDesign name="close" size={24} color="black" />
               </TouchableOpacity>
@@ -98,9 +102,9 @@ const BottomSheet = ({ children }: any) => {
 
 
 
-            { children }
 
           </View>
+            { children }
         </Animated.View>
       </>
     )
@@ -110,7 +114,7 @@ export default BottomSheet
 
 const styles = StyleSheet.create({
   container: {
-    height: height,
+    height: 0,
     width: "100%",
     backgroundColor: "white",
     position: "absolute",
@@ -119,11 +123,11 @@ const styles = StyleSheet.create({
   },
   line: {
       width: 75,
-      height: 4,
+      height: lineHeight,
       backgroundColor: 'gray',
       alignSelf: 'center',
-      marginVertical: 15,
-      borderRadius: 2,
+      marginVertical: lineMargin,
+      borderRadius: lineHeight/2,
   },
   gestureArea: {
     width: '100%',

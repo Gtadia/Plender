@@ -1,12 +1,17 @@
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { Platform, StatusBar, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import Settings from './Settings';
 import Home from './Home';
 import React from 'react';
 
 
+import { enableReactNativeComponents } from "@legendapp/state/config/enableReactNativeComponents";
+import { TouchableOpacity } from 'react-native-gesture-handler';
+enableReactNativeComponents();
+
 const Drawer = createDrawerNavigator();
+
 
 // TODO — Make this a legend database thing.
 const colors = {
@@ -17,7 +22,7 @@ const colors = {
 }
 
 export default function RootLayout() {
-  const drawerIcon = ({focused, size}, name) => {
+  const drawerIcon = ({focused, size}: any, name: any) => {
     return (
       <MaterialIcons
         name={name}

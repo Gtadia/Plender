@@ -145,3 +145,25 @@ export const taskTags$ = observable({
     taskTags$.list.push(tagItem)
   }
 })
+
+// Category
+export const taskCategory$ = observable({
+  list: [
+    { label: 'No Category', value: 1, color: 'gray' },
+    { label: 'Item 2', value: 2 },
+    { label: 'Item 3', value: 3 },
+    { label: 'Item 4', value: 4 },
+    { label: 'Item 5', value: 5 },
+    { label: 'Item 6', value: 6 },
+    { label: 'Item 7', value: 7 },
+    { label: 'Item 8', value: 8 },
+  ],
+  list_keyExtractor: (item: any) => item.idObject._id,
+  selected: () => taskCategory$.list[0].get(),
+  clear: () => {
+    taskCategory$.selected.set(taskCategory$.list[0].get())
+  },
+  addToList: (categoryItem: { label: string, value: number, color: string }) => {
+    taskCategory$.list.push(categoryItem)
+  }
+})

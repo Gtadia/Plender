@@ -99,6 +99,9 @@ const BottomSheet = ({ children }: any) => {
                 <AntDesign name="close" size={24} color="black" />
               </TouchableOpacity>
             </Animated.View>
+            {
+              // TODO — Use ...props to import clear functions to clear form when 'close' is pressed
+            }
 
 
 

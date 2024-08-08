@@ -1,9 +1,9 @@
 import { Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import React from 'react'
 import { AutoSizeText, ResizeTextMode } from 'react-native-auto-size-text';
-import { taskTags$ } from '../../../db/LegendApp';
+import { taskCategory$, taskTags$ } from '../../../db/LegendApp';
 
-import { MultiSelect } from 'react-native-element-dropdown';
+import { Dropdown } from 'react-native-element-dropdown';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import { observer, useObservable } from '@legendapp/state/react';
 import Modal from '../../Modal';
@@ -11,14 +11,21 @@ import CreateNewTag from './CreateNewTag';
 
 var { width } = Dimensions.get('window');
 
-const AddTags = observer(({modalToggle}: any) => {
+const AddCategory = observer(({ modalToggle }: any) => {
   const isCreateModalOpen$ = useObservable(false);
 
   const renderItem = (item: any) => {
     return (
-      <View style={dropdownStyles.item}>
-        <Text style={dropdownStyles.selectedTextStyle}>{item.label}</Text>
-        <AntDesign style={dropdownStyles.icon} color="black" name="Safety" size={20} />
+      <View style={styles.item}>
+        <Text style={styles.textItem}>{item.label}</Text>
+        {item.value === taskCategory$.selected.value.get() && (
+          <AntDesign
+            style={styles.icon}
+            color="black"
+            name="Safety"
+            size={20}
+          />
+        )}
       </View>
     );
   };
@@ -32,42 +39,30 @@ const AddTags = observer(({modalToggle}: any) => {
         Tags
       </AutoSizeText>
 
-      <View style={dropdownStyles.container}>
-        <MultiSelect
-          style={dropdownStyles.dropdown}
-          placeholderStyle={dropdownStyles.placeholderStyle}
-          selectedTextStyle={dropdownStyles.selectedTextStyle}
-          inputSearchStyle={dropdownStyles.inputSearchStyle}
-          iconStyle={dropdownStyles.iconStyle}
-          data={taskTags$.list.get()}
+      <View style={styles.container}>
+        <Dropdown
+          style={styles.dropdown}
+          placeholderStyle={styles.placeholderStyle}
+          selectedTextStyle={styles.selectedTextStyle}
+          inputSearchStyle={styles.inputSearchStyle}
+          iconStyle={styles.iconStyle}
+          data={taskCategory$.list.get()}
+          search
+          maxHeight={300}
           labelField="label"
           valueField="value"
           placeholder="Select item"
-          value={taskTags$.selected.get()}
-          search
           searchPlaceholder="Search..."
+          value={taskCategory$.selected.get()}
           onChange={item => {
             console.log(item)
-            taskTags$.selected.set(item);
+            taskCategory$.selected.set(item);
           }}
           renderLeftIcon={() => (
-            <AntDesign
-              style={dropdownStyles.icon}
-              color="black"
-              name="Safety"
-              size={20}
-            />
+            <AntDesign style={styles.icon} color="black" name="Safety" size={20} />
           )}
           renderItem={renderItem}
-          renderSelectedItem={(item, unSelect) => (
-            <TouchableOpacity onPress={() => unSelect && unSelect(item)}>
-              <View style={dropdownStyles.selectedStyle}>
-                <Text style={dropdownStyles.textSelectedStyle}>{item.label}</Text>
-                <AntDesign color="black" name="delete" size={17} />
-              </View>
-            </TouchableOpacity>
-          )}
-        />
+          />
         <TouchableOpacity
           style={{}}
           onPress={() => isCreateModalOpen$.set(true)}
@@ -89,7 +84,7 @@ const AddTags = observer(({modalToggle}: any) => {
           numberOfLines={1}
           mode={ResizeTextMode.max_lines}
           >
-            Add Tags
+            Add Category
         </AutoSizeText>
     </TouchableOpacity>
 
@@ -103,11 +98,12 @@ const AddTags = observer(({modalToggle}: any) => {
   )
 })
 
-export default AddTags
+export default AddCategory
 
-const dropdownStyles = StyleSheet.create({
+const styles = StyleSheet.create({
   container: { padding: 16 },
   dropdown: {
+    margin: 16,
     height: 50,
     backgroundColor: 'white',
     borderRadius: 12,
@@ -119,22 +115,8 @@ const dropdownStyles = StyleSheet.create({
     },
     shadowOpacity: 0.2,
     shadowRadius: 1.41,
-
+  
     elevation: 2,
-  },
-  placeholderStyle: {
-    fontSize: 16,
-  },
-  selectedTextStyle: {
-    fontSize: 14,
-  },
-  iconStyle: {
-    width: 20,
-    height: 20,
-  },
-  inputSearchStyle: {
-    height: 40,
-    fontSize: 16,
   },
   icon: {
     marginRight: 5,
@@ -145,28 +127,22 @@ const dropdownStyles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  selectedStyle: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 14,
-    backgroundColor: 'white',
-    shadowColor: '#000',
-    marginTop: 8,
-    marginRight: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.2,
-    shadowRadius: 1.41,
-
-    elevation: 2,
+  textItem: {
+    flex: 1,
+    fontSize: 16,
   },
-  textSelectedStyle: {
-    marginRight: 5,
+  placeholderStyle: {
+    fontSize: 16,
+  },
+  selectedTextStyle: {
+    fontSize: 16,
+  },
+  iconStyle: {
+    width: 20,
+    height: 20,
+  },
+  inputSearchStyle: {
+    height: 40,
     fontSize: 16,
   },
 

@@ -9,16 +9,18 @@ import Progress from './tabs/Progress';
 import BottomSheet from '../components/BottomSheet';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import AndroidSafeArea from '../components/AndroidSafeArea';
-import { For, Memo, Reactive, useObservable } from '@legendapp/state/react';
+import { For, Memo, observer, Reactive, useObservable } from '@legendapp/state/react';
 import Modal from '../components/Modal';
 import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 import { AutoSizeText, ResizeTextMode } from 'react-native-auto-size-text';
 
-import { observable } from '@legendapp/state';
-import { taskTags$ } from '../db/LegendApp';
+import { observable, observe } from '@legendapp/state';
+import { taskCategory$, taskTags$ } from '../db/LegendApp';
 
 import AntDesign from '@expo/vector-icons/AntDesign';
 import AddTags from '../components/Screens/Modals/AddTags';
+import AddCategory from '../components/Screens/Modals/AddCategory';
+import DatePicker from '../components/Screens/Modals/DatePicker';
 
 const Tab = createMaterialTopTabNavigator();
 
@@ -28,8 +30,16 @@ export default function Home({ navigation }: any) {
   const insets = useSafeAreaInsets();
 
 
-  const isModalOpen$ = useObservable(false);
-  const createTagTitle$ = useObservable('');
+  const tagModalToggle$ = useObservable(false);
+  const categoryModalToggle$ = useObservable(false);
+  const dateModalToggle$ = useObservable(false);
+
+  const dateDue$ = useObservable(dayjs());   // TODO — Allow user to choose how to format date
+
+  const clearForm = () => {
+    taskTags$.clear   // TODO — Does this function work (or should I just clear it here manually)
+    taskCategory$.clear
+  }
 
   const title$ = useObservable('hello');
   const repeated$ = useObservable([
@@ -41,6 +51,10 @@ export default function Home({ navigation }: any) {
     { day: 'Friday', abbrev: 'Fri.', initial: 'F', selected: false},
     { day: 'Saturday', abbrev: 'Sat.', initial: 'S', selected: false}
   ])
+
+  observe(() => {
+    console.log(dateDue$.get())
+  })
 
   return (
     <SafeAreaView style={[AndroidSafeArea.AndroidSafeArea]} edges={['top', 'left', 'right']}>
@@ -63,7 +77,7 @@ export default function Home({ navigation }: any) {
               {/* TODO — Needs to avoid keyboard (KeyboardAvoidingView) (JUST MOVE THIS TEXT-INPUT UP)*/}
 
                 <TouchableOpacity
-                  onPress={() => isModalOpen$.set(true)}
+                  onPress={() => tagModalToggle$.set(true)}
                   >
                   <Text>+ Tags</Text>
                 </TouchableOpacity>
@@ -77,13 +91,28 @@ export default function Home({ navigation }: any) {
 
 
             <Text>Category</Text>
-            <TouchableOpacity>
-                <Text>No Category</Text>
+            <TouchableOpacity
+              onPress={() => categoryModalToggle$.set(true)}
+              >
+                <AutoSizeText
+                  fontSize={18}
+                  numberOfLines={1}
+                  mode={ResizeTextMode.max_lines}
+                  >
+                    <Memo>{() => taskCategory$.selected.label.get()}</Memo>
+                  </AutoSizeText>
               </TouchableOpacity>
 
             <Text>Due</Text>
-            <TouchableOpacity>
-                <Text>Aug 7</Text>
+            <TouchableOpacity
+              onPress={() => dateModalToggle$.set(true)}
+              >
+                <AutoSizeText
+                  fontSize={18}
+                  numberOfLines={1}
+                  mode={ResizeTextMode.max_lines}>
+                    <Memo>{() => dateDue$.get().format('MMM DD, YYYY')}</Memo>
+                  </AutoSizeText>
               </TouchableOpacity>
 
             <Text>Time Goal</Text>
@@ -111,6 +140,10 @@ export default function Home({ navigation }: any) {
             {/* TODO — Clear the form when pressed*/}
             <TouchableOpacity
               style={{width: width - 40, height: 80, borderRadius: 15, backgroundColor: 'red', marginHorizontal: 20, marginTop: 20, marginBottom: insets.bottom, justifyContent: 'center', alignItems: 'center'}}
+              onPress={() => {
+                // TODO — Clear Selected Category,
+              }}
+
               >
               <AutoSizeText
                 fontSize={32}
@@ -126,14 +159,35 @@ export default function Home({ navigation }: any) {
       <Memo>
         {() => (
           <Modal
-            isOpen={isModalOpen$.get()}
+            isOpen={tagModalToggle$.get()}
             withInput
             // onRequestClose={() => {
-            //   isModalOpen$.set(false)
+            //   tagModalToggle$.set(false)
             // }}
             >
-              <AddTags isModalOpen={isModalOpen$} />
+              <AddTags modalToggle={tagModalToggle$} />
           </Modal>
+        )}
+      </Memo>
+
+      <Memo>
+        {() => (
+          <Modal
+            isOpen={categoryModalToggle$.get()}
+            withInput
+            >
+              <AddCategory modalToggle={categoryModalToggle$} />
+          </Modal>
+        )}
+      </Memo>
+
+      <Memo>
+        {() => (
+          <Modal
+            isOpen={dateModalToggle$.get()}
+            >
+              <DatePicker modalToggle={dateModalToggle$} date={dateDue$} />
+            </Modal>
         )}
       </Memo>
     </SafeAreaView>

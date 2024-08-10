@@ -1,4 +1,4 @@
-import { observable, Observable } from "@legendapp/state";
+import { observable, Observable, observe } from "@legendapp/state";
 import { syncObservable, configureObservableSync } from '@legendapp/state/sync'
 import { ObservablePersistMMKV } from '@legendapp/state/persist-plugins/mmkv'
 import { useSharedValue } from "react-native-reanimated";
@@ -34,17 +34,38 @@ export const subsections$ = observable({
 })
 
 // TODO - Just link the task from today/upcoming/overdue here
-export const currentTask$ = observable<tasks>({
+export const currentTask$ = observable({
   title: "Test",
   tags: null,
   category: subsections$.category[0],
   due: new Date(),
   created: new Date(),
-  time_goal: 23,
-  time_spent: 1,
-  repeated: null
-})
+  time_goal: {hour: 2, minute: 0, second: 0, total: 7200},
+  time_spent: {hour: 1, minute: 23, second: 45, total: 5025},
+  repeated: null,
 
+
+})
+// TODO — when editing a task, make sure that when the time changes, re-calculate the time object
+
+observe(() => {
+  if (currentTask$.time_spent.second.get() == 0) {
+    currentTask$.time_spent.minute.set((prev) => (prev - 1))
+  } else if (currentTask$.time_spent.second.get() < 0) {
+    currentTask$.time_spent.second.set(59)
+  }
+
+  if (currentTask$.time_spent.minute.get() == 0) {
+    currentTask$.time_spent.hour.set((prev) => (prev - 1))
+  } else if (currentTask$.time_spent.minute.get() < 0) {
+    currentTask$.time_spent.minute.set(59)
+  }
+
+  if (currentTask$.time_spent.hour.get() < 0) {
+    currentTask$.time_spent.hour.set(0)
+    // TODO — Either (1) stop timer here, or (2) stop timer with total seconds
+  }
+})
 
 export const todayTasks$ = observable({
   title: 'Today',
@@ -167,3 +188,4 @@ export const taskCategory$ = observable({
     taskCategory$.list.push(categoryItem)
   }
 })
+

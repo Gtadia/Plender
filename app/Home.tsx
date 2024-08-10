@@ -21,6 +21,7 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 import AddTags from '../components/Screens/Modals/AddTags';
 import AddCategory from '../components/Screens/Modals/AddCategory';
 import DatePicker from '../components/Screens/Modals/DatePicker';
+import TimePicker from '../components/Screens/Modals/TimePicker';
 
 const Tab = createMaterialTopTabNavigator();
 
@@ -33,8 +34,11 @@ export default function Home({ navigation }: any) {
   const tagModalToggle$ = useObservable(false);
   const categoryModalToggle$ = useObservable(false);
   const dateModalToggle$ = useObservable(false);
+  const timeModalToggle$ = useObservable(false);
 
   const dateDue$ = useObservable(dayjs());   // TODO — Allow user to choose how to format date
+  const timeGoal$ = useObservable(dayjs());
+  // TODO — Have both a dayjs object and a number of seconds for the time goal
 
   const clearForm = () => {
     taskTags$.clear   // TODO — Does this function work (or should I just clear it here manually)
@@ -116,8 +120,15 @@ export default function Home({ navigation }: any) {
               </TouchableOpacity>
 
             <Text>Time Goal</Text>
-            <TouchableOpacity>
-                <Text>4:30</Text>
+            <TouchableOpacity
+              onPress={() => timeModalToggle$.set(true)}
+              >
+                <AutoSizeText
+                  fontSize={18}
+                  numberOfLines={1}
+                  mode={ResizeTextMode.max_lines}>
+                    <Memo>{() => timeGoal$.get().format('HH:mm:ss')}</Memo>
+                  </AutoSizeText>
               </TouchableOpacity>
 
             <Text>Repeated</Text>
@@ -187,6 +198,16 @@ export default function Home({ navigation }: any) {
             isOpen={dateModalToggle$.get()}
             >
               <DatePicker modalToggle={dateModalToggle$} date={dateDue$} />
+            </Modal>
+        )}
+      </Memo>
+
+      <Memo>
+        {() => (
+          <Modal
+            isOpen={timeModalToggle$.get()}
+            >
+              <TimePicker modalToggle={timeModalToggle$} date={timeGoal$} />
             </Modal>
         )}
       </Memo>

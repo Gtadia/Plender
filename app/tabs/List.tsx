@@ -26,8 +26,8 @@ const List = observer(() => {
           <Pressable style={styles.taskBanner} onPress={() => console.log('hello')}>
               <Text>{currentTask$.title.get()}</Text>
               {/* <Text>{currentTask$.tags.get()}</Text> */}
-              <Text>{currentTask$.time_goal.get()}</Text>
-              <Text>{currentTask$.time_spent.get()}</Text>
+              <Text>{currentTask$.time_goal.total.get()}</Text>
+              <Text>{currentTask$.time_spent.total.get()}</Text>
           </Pressable>
         }
       </View>

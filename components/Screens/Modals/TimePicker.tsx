@@ -7,7 +7,7 @@ import { AutoSizeText, ResizeTextMode } from 'react-native-auto-size-text';
 
 const { width } = Dimensions.get('window');
 
-const DatePicker = observer(({modalToggle, date}: any) => {
+const TimePicker = observer(({modalToggle, date}: any) => {
 
   return (
     <View style={{width: width - (16 * 2), height: 'auto', padding: 16, borderRadius: 16, backgroundColor: 'white'}}>
@@ -15,7 +15,9 @@ const DatePicker = observer(({modalToggle, date}: any) => {
         mode="single"
         date={date.get()}
         onChange={(params) => date.set(params.date)}
-        headerTextContainerStyle={{backgroundColor: '#F0F2F7', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 5}}
+        headerContainerStyle={{height: 0}}
+        timePicker={true}
+        initialView={'time'}
         />
 
 
@@ -37,6 +39,6 @@ const DatePicker = observer(({modalToggle, date}: any) => {
   )
 })
 
-export default DatePicker
+export default TimePicker
 
 const styles = StyleSheet.create({})

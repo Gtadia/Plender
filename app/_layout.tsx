@@ -9,6 +9,7 @@ import React from 'react';
 import { enableReactNativeComponents } from "@legendapp/state/config/enableReactNativeComponents";
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import Picker from '../components/TimeCarousel/Picker';
+import App from '../components/TimeCarousel/App';
 enableReactNativeComponents();
 
 const Drawer = createDrawerNavigator();
@@ -36,6 +37,7 @@ export default function RootLayout() {
   return (
     <>
       <Picker />
+      {/* <App /> */}
       {/* <Drawer.Navigator initialRouteName="Home" screenOptions={{
           headerShown: false,
           drawerActiveBackgroundColor: colors.transparent,

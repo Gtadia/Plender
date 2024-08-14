@@ -38,6 +38,7 @@ export default function Home({ navigation }: any) {
 
   const dateDue$ = useObservable(dayjs());   // TODO — Allow user to choose how to format date
   const timeGoal$ = useObservable({hours: 0, minutes: 0, total: 0});
+  const timeGoalDefault$ = useObservable({hours: 0, minutes: 0});
 
   const clearForm = () => {
     taskTags$.clear   // TODO — Does this function work (or should I just clear it here manually)
@@ -120,7 +121,13 @@ export default function Home({ navigation }: any) {
 
             <Text>Time Goal</Text>
             <TouchableOpacity
-              onPress={() => timeModalToggle$.set(true)}
+              onPress={() => {
+                timeModalToggle$.set(true)
+                timeGoalDefault$.assign({
+                  hours: timeGoal$.hours.get(),
+                  minutes: timeGoal$.minutes.get()
+                })
+              }}
               >
                 <AutoSizeText
                   fontSize={18}
@@ -206,7 +213,7 @@ export default function Home({ navigation }: any) {
           <Modal
             isOpen={timeModalToggle$.get()}
             >
-              <TimePicker modalToggle={timeModalToggle$} time={timeGoal$} />
+              <TimePicker modalToggle={timeModalToggle$} time={timeGoal$} timeDefault={timeGoalDefault$} />
             </Modal>
         )}
       </Memo>

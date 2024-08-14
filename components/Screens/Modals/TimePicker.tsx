@@ -10,9 +10,7 @@ const { width } = Dimensions.get('window');
 const minutes = new Array(60).fill({value: 0, label: 0}).map((_, index) => ({value: index, label: index < 10 ? `0${index}` : `${index}`}))
 const hours = new Array(24).fill({value: 0, label: 0}).map((_, index) => ({value: index, label: index}))
 
-const TimePicker = observer(({modalToggle, time}: any) => {
-
-  // TODO — In Home.js, set defaultValue to current value when button is pressed. Then defaultValue (observable) will be picked up by `Picker.js` and scrollTo the defaultValue
+const TimePicker = observer(({modalToggle, time, timeDefault}: any) => {
   return (
     <View style={{width: width - (16 * 2), height: 'auto', padding: 16, borderRadius: 16, backgroundColor: 'white'}}>
       <AutoSizeText
@@ -27,7 +25,7 @@ const TimePicker = observer(({modalToggle, time}: any) => {
               moreTextStyles={{ FontWeight: 'bold', }}
               textStyle={{fontSize: 64}}
               ITEM_HEIGHT={72}
-              defaultValue={time.hours.get()}
+              defaultValue={timeDefault.hours}
               legendState={time.hours}
               width={125}
             />
@@ -36,7 +34,7 @@ const TimePicker = observer(({modalToggle, time}: any) => {
             moreTextStyles={{ FontWeight: 'bold', }}
             textStyle={{fontSize: 64}}
             ITEM_HEIGHT={72}
-            defaultValue={time.minutes.get()}
+            defaultValue={timeDefault.minutes}
             legendState={time.minutes}
             width={125}
           />

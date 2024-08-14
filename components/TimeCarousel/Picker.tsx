@@ -7,7 +7,7 @@ import { Observable, observe } from "@legendapp/state";
 interface PickerProps {
   values: { value: number; label: string | number }[];
   legendState: Observable;
-  defaultValue: number;
+  defaultValue: Observable;
   VISIBLE_ITEMS?: number;
   ITEM_HEIGHT?: number;
   width?: number;
@@ -20,7 +20,7 @@ interface PickerProps {
 
 // const hours = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
-const Picker = ({ values, legendState, moreTextStyles, defaultValue = 0, VISIBLE_ITEMS = 5, ITEM_HEIGHT = 32, width = 100, textStyle = { fontFamily: "SFProText-Semibold", fontSize: 24, primaryColor: 'black', secondaryColor: 'gray' }, viewStyle = { perspective: 600, RADIUS_REL_Factor: 0.5}, enableSelectBox = true }: PickerProps) => {
+const Picker = ({ values, legendState, moreTextStyles, defaultValue, VISIBLE_ITEMS = 5, ITEM_HEIGHT = 32, width = 100, textStyle = { fontFamily: "SFProText-Semibold", fontSize: 24, primaryColor: 'black', secondaryColor: 'gray' }, viewStyle = { perspective: 600, RADIUS_REL_Factor: 0.5}, enableSelectBox = true }: PickerProps) => {
   const perspective = viewStyle.perspective
   const RADIUS_REL = VISIBLE_ITEMS * viewStyle.RADIUS_REL_Factor;
   const RADIUS = RADIUS_REL * ITEM_HEIGHT;
@@ -33,6 +33,10 @@ const Picker = ({ values, legendState, moreTextStyles, defaultValue = 0, VISIBLE
     "worklet";
     translateY.value = withSpring(destination, { damping: 50 })
   }, []);
+
+  observe(() => {
+    scrollTo((defaultValue.get() - 2) * -ITEM_HEIGHT)
+  })
 
   const update = (num: number) => {
     legendState.set(num)

@@ -37,7 +37,7 @@ export const subsections$ = observable({
 export const currentTask$ = observable({
   title: "Test",
   tags: null,
-  category: subsections$.category[0],
+  category: null,
   due: new Date(),
   created: new Date(),
   time_goal: {hour: 2, minute: 0, second: 0, total: 7200},
@@ -73,7 +73,7 @@ export const todayTasks$ = observable({
     {
       title: "Test",
       tags: null,
-      category: subsections$.category[0],
+      category: null,
       due: new Date(),
       created: new Date(),
       time_goal: 23,
@@ -130,7 +130,7 @@ export const overdueTasks$ = observable({
     {
       title: "Test",
       tags: null,
-      category: subsections$.category[0],
+      category: null,
       due: new Date(),
       created: new Date(),
       time_goal: 23,
@@ -157,11 +157,7 @@ export const taskTags$ = observable({
     { label: 'Item 8', value: 8 },
   ],
   list_keyExtractor: (item: any) => item.idObject._id,
-  selected: [],
 
-  clear: () => {
-    taskTags$.selected.set([])
-  },
   addToList: (tagItem: { label: string, value: number, color: string }) => {
     taskTags$.list.push(tagItem)
   }
@@ -180,10 +176,6 @@ export const taskCategory$ = observable({
     { label: 'Item 8', value: 8 },
   ],
   list_keyExtractor: (item: any) => item.idObject._id,
-  selected: () => taskCategory$.list[0].get(),
-  clear: () => {
-    taskCategory$.selected.set(taskCategory$.list[0].get())
-  },
   addToList: (categoryItem: { label: string, value: number, color: string }) => {
     taskCategory$.list.push(categoryItem)
   }

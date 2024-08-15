@@ -1,24 +1,30 @@
-import { Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import React from 'react'
-import { AutoSizeText, ResizeTextMode } from 'react-native-auto-size-text';
-import { taskCategory$, taskTags$ } from '../../../db/LegendApp';
+import {
+  Dimensions,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import React from "react";
+import { AutoSizeText, ResizeTextMode } from "react-native-auto-size-text";
+import { taskCategory$, taskTags$ } from "../../../db/LegendApp";
 
-import { Dropdown } from 'react-native-element-dropdown';
-import AntDesign from '@expo/vector-icons/AntDesign';
-import { observer, useObservable } from '@legendapp/state/react';
-import Modal from '../../Modal';
-import CreateNewTag from './CreateNewTag';
+import { Dropdown } from "react-native-element-dropdown";
+import AntDesign from "@expo/vector-icons/AntDesign";
+import { observer, useObservable } from "@legendapp/state/react";
+import Modal from "../../Modal";
+import CreateNewTag from "./CreateNewTag";
 
-var { width } = Dimensions.get('window');
+var { width } = Dimensions.get("window");
 
-const AddCategory = observer(({ modalToggle }: any) => {
+const AddCategory = observer(({ modalToggle, category }: any) => {
   const isCreateModalOpen$ = useObservable(false);
 
   const renderItem = (item: any) => {
     return (
       <View style={styles.item}>
         <Text style={styles.textItem}>{item.label}</Text>
-        {item.value === taskCategory$.selected.value.get() && (
+        {item.value === category.get() && (
           <AntDesign
             style={styles.icon}
             color="black"
@@ -31,11 +37,20 @@ const AddCategory = observer(({ modalToggle }: any) => {
   };
 
   return (
-    <View style={{width: width - (16 * 2), height: 'auto', padding: 16, borderRadius: 16, backgroundColor: 'white'}}>
+    <View
+      style={{
+        width: width - 16 * 2,
+        height: "auto",
+        padding: 16,
+        borderRadius: 16,
+        backgroundColor: "white",
+      }}
+    >
       <AutoSizeText
         fontSize={32}
         numberOfLines={1}
-        mode={ResizeTextMode.max_lines}>
+        mode={ResizeTextMode.max_lines}
+      >
         Tags
       </AutoSizeText>
 
@@ -53,69 +68,77 @@ const AddCategory = observer(({ modalToggle }: any) => {
           valueField="value"
           placeholder="Select item"
           searchPlaceholder="Search..."
-          value={taskCategory$.selected.get()}
-          onChange={item => {
-            console.log(item)
-            taskCategory$.selected.set(item);
+          value={category.get()}
+          onChange={(item) => {
+            console.log(item);
+            category.set(item);
           }}
           renderLeftIcon={() => (
-            <AntDesign style={styles.icon} color="black" name="Safety" size={20} />
+            <AntDesign
+              style={styles.icon}
+              color="black"
+              name="Safety"
+              size={20}
+            />
           )}
           renderItem={renderItem}
-          />
+        />
         <TouchableOpacity
           style={{}}
           onPress={() => isCreateModalOpen$.set(true)}
-          >
-          <Text>
-            Create New Tag
-          </Text>
+        >
+          <Text>Create New Tag</Text>
         </TouchableOpacity>
       </View>
 
       {/* TODO — Add selected tags to tagsSelected */}
       {/* TODO — Submit button clears tagsSelected array */}
       <TouchableOpacity
-        style={{width: '100%', height: 'auto', borderRadius: 15, backgroundColor: 'red', padding: 16, justifyContent: 'center', alignItems: 'center'}}
+        style={{
+          width: "100%",
+          height: "auto",
+          borderRadius: 15,
+          backgroundColor: "red",
+          padding: 16,
+          justifyContent: "center",
+          alignItems: "center",
+        }}
         onPress={() => modalToggle.set(false)}
-        >
+      >
         <AutoSizeText
           fontSize={24}
           numberOfLines={1}
           mode={ResizeTextMode.max_lines}
-          >
-            Add Category
+        >
+          Add Category
         </AutoSizeText>
-    </TouchableOpacity>
+      </TouchableOpacity>
 
-    <Modal
-      isOpen={isCreateModalOpen$.get()}
-      withInput
-      >
-        <CreateNewTag modalToggle={isCreateModalOpen$}/>
-    </Modal>
-  </View>
-  )
-})
+      <Modal isOpen={isCreateModalOpen$.get()} withInput>
+        <CreateNewTag modalToggle={isCreateModalOpen$} />
+      </Modal>
+    </View>
+  );
+});
 
-export default AddCategory
+export default AddCategory;
 
 const styles = StyleSheet.create({
   container: { padding: 16 },
   dropdown: {
     margin: 16,
     height: 50,
-    backgroundColor: 'white',
+    backgroundColor: "white",
     borderRadius: 12,
     padding: 12,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: {
       width: 0,
       height: 1,
     },
     shadowOpacity: 0.2,
     shadowRadius: 1.41,
-  
+
     elevation: 2,
   },
   icon: {
@@ -123,9 +146,9 @@ const styles = StyleSheet.create({
   },
   item: {
     padding: 17,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   textItem: {
     flex: 1,
@@ -145,5 +168,4 @@ const styles = StyleSheet.create({
     height: 40,
     fontSize: 16,
   },
-
-})
+});

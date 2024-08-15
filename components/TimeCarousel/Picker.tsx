@@ -20,7 +20,7 @@ interface PickerProps {
 
 // const hours = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
-const Picker = ({ values, legendState, moreTextStyles, defaultValue, VISIBLE_ITEMS = 5, ITEM_HEIGHT = 32, width = 100, textStyle = { fontFamily: "SFProText-Semibold", fontSize: 24, primaryColor: 'black', secondaryColor: 'gray' }, viewStyle = { perspective: 600, RADIUS_REL_Factor: 0.5}, enableSelectBox = true }: PickerProps) => {
+const Picker = ({ values, legendState, moreTextStyles, defaultValue, VISIBLE_ITEMS = 5, ITEM_HEIGHT = 32, width = 100, textStyle = { fontFamily: "Roboto", fontSize: 24, primaryColor: 'black', secondaryColor: 'gray' }, viewStyle = { perspective: 600, RADIUS_REL_Factor: 0.5}, enableSelectBox = true }: PickerProps) => {
   const perspective = viewStyle.perspective
   const RADIUS_REL = VISIBLE_ITEMS * viewStyle.RADIUS_REL_Factor;
   const RADIUS = RADIUS_REL * ITEM_HEIGHT;

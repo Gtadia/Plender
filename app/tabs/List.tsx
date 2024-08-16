@@ -10,9 +10,17 @@ import {
   Pressable,
 } from "react-native";
 import React, { useState } from "react";
-import { observer } from "@legendapp/state/react";
+import {
+  For,
+  Memo,
+  observer,
+  Reactive,
+  Show,
+  useObservable,
+} from "@legendapp/state/react";
 import {
   currentTask$,
+  dateToday$,
   overdueTasks$,
   todayTasks$,
   upcomingTasks$,
@@ -21,23 +29,39 @@ import {
 import AntDesign from "@expo/vector-icons/AntDesign";
 import Card from "../../components/ui/Card";
 import BottomSheet from "../../components/BottomSheet";
+import { constants } from "../../constants/style";
+import { AutoSizeText, ResizeTextMode } from "react-native-auto-size-text";
+import { ScrollView } from "react-native-gesture-handler";
 
 var { width, height } = Dimensions.get("window");
 
+const RADIUS = 30;
+const DIAMETER = 2 * RADIUS;
+
 const List = observer(() => {
   return (
-    <View style={styles.container}>
-      <Text>[Today's Date]</Text>
+    <>
+      <ScrollView style={styles.container}>
+        <View
+          style={{ alignItems: "center", padding: constants.regularPadding }}
+        >
+          <Memo>
+            {() => <Text>{dateToday$.get().format("ddd, MMM DD")}</Text>}
+          </Memo>
+        </View>
 
-      <Item task={todayTasks$.get()} />
-      <Item task={overdueTasks$.get()} />
-      <Item task={upcomingTasks$.get()} />
+        <ItemList task={todayTasks$} />
+        <ItemList task={overdueTasks$} />
+        <ItemList task={upcomingTasks$} />
 
+        {/* TODO — Come up with a better solution later... */}
+        <View style={styles.taskBannerDimension} />
+      </ScrollView>
       <View style={[styles.absBottom]}>
         {currentTask$.get() && (
           // true &&
           <Pressable
-            style={styles.taskBanner}
+            style={[styles.taskBannerDimension, styles.taskBannerStyle]}
             onPress={() => console.log("hello")}
           >
             <Text>{currentTask$.title.get()}</Text>
@@ -47,51 +71,68 @@ const List = observer(() => {
           </Pressable>
         )}
       </View>
-    </View>
+    </>
   );
 });
 
-function Item({ task }: any) {
-  const [open, setopen] = useState(true);
+function ItemList({ task }: any) {
+  const show$ = useObservable(true);
   const onPress = () => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    setopen(!open);
+    show$.set((prev) => !prev);
   };
 
-  if (task.data.length == 0) {
+  if (task.data.get().length == 0) {
     return;
   }
-  // !open && { height: 40} ==> turn `40` into the height of the text
-  return (
-    <TouchableOpacity
-      style={[styles.item, !open && { height: 40 }]}
-      onPress={onPress}
-      activeOpacity={1}
-    >
-      <View style={[styles.flexRow, { paddingLeft: 15 }]}>
-        <Text>{task.title}</Text>
-        {!open ? (
-          <AntDesign name="caretup" size={24} color="black" />
-        ) : (
-          <AntDesign name="caretdown" size={24} color="black" />
-        )}
-      </View>
 
-      <FlatList
-        data={task.data}
-        renderItem={({ item }) => <ListItem item={item} />}
-        keyExtractor={(item) => item.created + Math.random()} // TODO — get rid of Math.random()
-      />
-    </TouchableOpacity>
+  return (
+    <>
+      <TouchableOpacity
+        style={[styles.flexRow, { paddingLeft: 15 }]}
+        onPress={onPress}
+      >
+        <Text>
+          <Memo>{() => task.title.get()}</Memo>
+        </Text>
+        <Memo>
+          {() =>
+            show$.get() ? (
+              <AntDesign name="caretdown" size={24} color="black" />
+            ) : (
+              <AntDesign name="caretup" size={24} color="black" />
+            )
+          }
+        </Memo>
+      </TouchableOpacity>
+
+      <Show if={show$} else={<></>}>
+        {() => (
+          <View
+            style={[styles.item, !show$.get() && { height: 40 }]}
+            // activeOpacity={1}
+          >
+            <Memo>
+              {() => (
+                <For each={task.data}>
+                  {(item$) => <Item item={item$.get()} />}
+                </For>
+              )}
+            </Memo>
+          </View>
+        )}
+      </Show>
+    </>
   );
 }
 
-function ListItem({ item }: any) {
+function Item({ item }: any) {
+  // TODO — MAKE SURE ITEM UPDATES WHEN VALUES ARE UPDATED
   return (
     <View
       style={{
-        height: 85,
-        backgroundColor: "red",
+        height: 80,
+        backgroundColor: "gray",
         borderRadius: 15,
         flexDirection: "row",
         alignItems: "center",
@@ -100,23 +141,78 @@ function ListItem({ item }: any) {
         margin: 7,
       }}
     >
-      <View style={{ flexDirection: "row" }}>
-        <View style={{ width: 55, height: 55, backgroundColor: "pink" }}>
-          <Text>Progress</Text>
+      <View style={{ flexDirection: "row", alignItems: "center" }}>
+        <View
+          style={{
+            width: DIAMETER,
+            height: DIAMETER,
+            backgroundColor: "pink",
+            borderRadius: RADIUS,
+          }}
+        >
+          {/* Play Button Icon */}
         </View>
 
-        <View>
-          <Text>{item.title}</Text>
-          {item.category ? (
-            <Text>{item.category.label}</Text>
-          ) : (
-            <Text>Nope</Text>
-          )}
+        <View style={[itemStyles.middleSection]}>
+          <AutoSizeText
+            fontSize={constants.secondaryPlusFontSize}
+            numberOfLines={1}
+            mode={ResizeTextMode.max_lines}
+            style={[itemStyles.title]}
+          >
+            {item.title}
+          </AutoSizeText>
+
+          <View
+            style={[
+              itemStyles.categoryPill,
+              {
+                backgroundColor: "purple",
+              },
+            ]}
+          >
+            {/* TODO — Get the background color of each category */}
+            <AutoSizeText
+              fontSize={constants.secondaryFontSize}
+              numberOfLines={1}
+              mode={ResizeTextMode.max_lines}
+              style={[itemStyles.categoryText]}
+            >
+              {item.category.label}
+            </AutoSizeText>
+          </View>
         </View>
       </View>
 
-      <View>
-        <Text>Hi</Text>
+      <View style={[itemStyles.rightSection]}>
+        <View>
+          <Reactive.Text style={[itemStyles.time_spent]}>
+            {item.time_spent.hours > 9
+              ? item.time_spent.hours
+              : `0${item.time_spent.hours}`}
+            :
+            {item.time_spent.minutes > 9
+              ? item.time_spent.minutes
+              : `0${item.time_spent.minutes}`}
+            :
+            {item.time_spent.seconds > 9
+              ? item.time_spent.seconds
+              : `0${item.time_spent.seconds}`}
+          </Reactive.Text>
+        </View>
+
+        <View>
+          <Reactive.Text style={[itemStyles.time_goal]}>
+            {item.time_goal.hours > 9
+              ? item.time_goal.hours
+              : `0${item.time_goal.hours}`}
+            :
+            {item.time_goal.minutes > 9
+              ? item.time_goal.minutes
+              : `0${item.time_goal.minutes}`}
+            :00
+          </Reactive.Text>
+        </View>
       </View>
     </View>
   );
@@ -128,7 +224,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     // alignItems: 'center',
-    backgroundColor: "blue",
+    // backgroundColor: "blue",
   },
   flexRow: {
     flexDirection: "row",
@@ -145,9 +241,48 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: 0,
   },
-  taskBanner: {
+  taskBannerDimension: {
     width: width,
     height: 120,
+  },
+  taskBannerStyle: {
     backgroundColor: "green",
+  },
+});
+
+const itemStyles = StyleSheet.create({
+  middleSection: {
+    paddingHorizontal: constants.smallPadding,
+    // justifyContent: "center",
+    justifyContent: "space-between",
+    height: DIAMETER - 5,
+  },
+  title: {
+    fontWeight: "700",
+  },
+  categoryPill: {
+    borderRadius: 13,
+    minWidth: 50,
+    maxWidth: 100,
+    justifyContent: "center",
+    alignItems: "center",
+    height: 25,
+  },
+  categoryText: {
+    paddingHorizontal: 8,
+    fontWeight: "600",
+  },
+
+  rightSection: {
+    alignItems: "flex-end",
+  },
+  time_spent: {
+    fontWeight: "800",
+    fontSize: 18,
+  },
+  time_goal: {
+    fontWeight: "700",
+    fontSize: 15,
+    color: "rgba(0, 0, 0, 0.8)",
   },
 });

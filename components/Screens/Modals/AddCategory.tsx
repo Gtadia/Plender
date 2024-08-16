@@ -70,8 +70,8 @@ const AddCategory = observer(({ modalToggle, category }: any) => {
           searchPlaceholder="Search..."
           value={category.get()}
           onChange={(item) => {
-            console.log(item);
-            category.set(item);
+            console.log(taskCategory$.list.get().indexOf(item));
+            category.set(taskCategory$.list.get().indexOf(item));
           }}
           renderLeftIcon={() => (
             <AntDesign

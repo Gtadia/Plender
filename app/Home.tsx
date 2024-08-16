@@ -40,25 +40,12 @@ import AddTags from "../components/Screens/Modals/AddTags";
 import AddCategory from "../components/Screens/Modals/AddCategory";
 import DatePicker from "../components/Screens/Modals/DatePicker";
 import TimePicker from "../components/Screens/Modals/TimePicker";
+import { constants } from "../constants/style";
 
 var isToday = require("dayjs/plugin/isToday");
 // import isToday from 'dayjs/plugin/isToday' // ES 2015
 
 const Tab = createMaterialTopTabNavigator();
-const constants = {
-  primaryFontSize: 24,
-  secondaryFontSize: 16,
-
-  smallPadding: 8,
-  regularPadding: 16,
-  errorPadding: 20,
-
-  pillPaddingVertical: 8,
-  pillPaddingHorizontal: 12,
-
-  smallRadius: 8,
-  regularRadius: 16,
-};
 
 var { width } = Dimensions.get("window");
 
@@ -74,7 +61,7 @@ export default function Home({ navigation }: any) {
 
   const title$ = useObservable("");
   const tags$ = useObservable([]);
-  const category$ = useObservable(taskCategory$.list[0].get());
+  const category$ = useObservable(0);
   const dateDue$ = useObservable(dayjs()); // TODO — Allow user to choose how to format date
   const dateCreated$ = useObservable(dayjs());
   const timeGoal$ = useObservable({ hours: 0, minutes: 0, total: 0 });
@@ -92,7 +79,7 @@ export default function Home({ navigation }: any) {
   const clearForm = () => {
     title$.set("");
     tags$.set([]); // TODO — Does this function work (or should I just clear it here manually)
-    category$.set(taskCategory$.list[0].get());
+    category$.set(0);
     timeGoal$.set({ hours: 0, minutes: 0, total: 0 });
     timeGoalDefault$.set({ hours: 0, minutes: 0 });
     dateDue$.set(dayjs()); // TODO — Actually set dateDue() everytime + is pressed
@@ -113,7 +100,7 @@ export default function Home({ navigation }: any) {
       todayTasks$.data.push({
         title: title$.get(),
         tags: tags$.get(),
-        category: category$.get(), // TODO — Does clearing get rid of category -> Yes it does
+        category: taskCategory$.list[category$.get()], // TODO — Does clearing get rid of category -> Yes it does
         due: dateDue$.get(), // TODO — This is a DAYJS() object!!!
         created: dateCreated$.get(),
         time_goal: timeGoal$.get(),
@@ -188,7 +175,7 @@ export default function Home({ navigation }: any) {
             style={styles.pillPadding}
           >
             {/* TODO — Character Limit */}
-            <Memo>{() => category$.label.get()}</Memo>
+            <Memo>{() => taskCategory$.list[category$.get()].label.get()}</Memo>
           </AutoSizeText>
         </TouchableOpacity>
       </View>

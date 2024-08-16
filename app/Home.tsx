@@ -29,9 +29,11 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { observable, observe } from "@legendapp/state";
 import {
   openAddMenu$,
+  overdueTasks$,
   taskCategory$,
   taskTags$,
   todayTasks$,
+  upcomingTasks$,
 } from "../db/LegendApp";
 
 import AntDesign from "@expo/vector-icons/AntDesign";
@@ -96,8 +98,39 @@ export default function Home({ navigation }: any) {
 
   const createTask = () => {
     // There is no error for .isToday()
+    console.log(
+      "This is it ",
+      dateDue$.get().format("YY, MM, DD") > dayjs().format("YY, MM, DD")
+    );
+    // console.log("This is it ", dateDue$.get().diff(dayjs(), "day"));
     if (dateDue$.get().isToday()) {
       todayTasks$.data.push({
+        title: title$.get(),
+        tags: tags$.get(),
+        category: taskCategory$.list[category$.get()], // TODO — Does clearing get rid of category -> Yes it does
+        due: dateDue$.get(), // TODO — This is a DAYJS() object!!!
+        created: dateCreated$.get(),
+        time_goal: timeGoal$.get(),
+        time_spent: { hours: 0, minutes: 0, seconds: 0, total: 0 },
+        repeated: repeated$.get(),
+      });
+    } else if (
+      dateDue$.get().format("YY, MM, DD") > dayjs().format("YY, MM, DD")
+    ) {
+      upcomingTasks$.data.push({
+        title: title$.get(),
+        tags: tags$.get(),
+        category: taskCategory$.list[category$.get()], // TODO — Does clearing get rid of category -> Yes it does
+        due: dateDue$.get(), // TODO — This is a DAYJS() object!!!
+        created: dateCreated$.get(),
+        time_goal: timeGoal$.get(),
+        time_spent: { hours: 0, minutes: 0, seconds: 0, total: 0 },
+        repeated: repeated$.get(),
+      });
+    } else if (
+      dateDue$.get().format("YY, MM, DD") < dayjs().format("YY, MM, DD")
+    ) {
+      overdueTasks$.data.push({
         title: title$.get(),
         tags: tags$.get(),
         category: taskCategory$.list[category$.get()], // TODO — Does clearing get rid of category -> Yes it does

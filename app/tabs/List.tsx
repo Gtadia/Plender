@@ -27,11 +27,14 @@ import {
 } from "../../db/LegendApp";
 
 import AntDesign from "@expo/vector-icons/AntDesign";
+import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
+
 import Card from "../../components/ui/Card";
 import BottomSheet from "../../components/BottomSheet";
 import { constants } from "../../constants/style";
 import { AutoSizeText, ResizeTextMode } from "react-native-auto-size-text";
 import { ScrollView } from "react-native-gesture-handler";
+import { Canvas, Path, Skia } from "@shopify/react-native-skia";
 
 var { width, height } = Dimensions.get("window");
 
@@ -114,9 +117,7 @@ function ItemList({ task }: any) {
           >
             <Memo>
               {() => (
-                <For each={task.data}>
-                  {(item$) => <Item item={item$.get()} />}
-                </For>
+                <For each={task.data}>{(item$) => <Item item={item$} />}</For>
               )}
             </Memo>
           </View>
@@ -127,6 +128,15 @@ function ItemList({ task }: any) {
 }
 
 function Item({ item }: any) {
+  const startToggle$ = useObservable(false);
+
+  const startCurrentTask = () => {
+    startToggle$.set((prev) => !prev);
+    // TODO — Move Task to current task
+    // TODO — Move old current task back to today/upcoming/overdue/completed
+    // TODO — Before replacing the old current task, have a warning page to verify.
+  };
+
   // TODO — MAKE SURE ITEM UPDATES WHEN VALUES ARE UPDATED
   return (
     <View
@@ -146,11 +156,41 @@ function Item({ item }: any) {
           style={{
             width: DIAMETER,
             height: DIAMETER,
-            backgroundColor: "pink",
-            borderRadius: RADIUS,
+            justifyContent: "center",
+            alignItems: "center",
           }}
         >
-          {/* Play Button Icon */}
+          <RadialProgressBar
+            item={item}
+            time_goal={item.time_goal}
+            time_spent={item.time_spent}
+          />
+          <Pressable
+            onPress={startCurrentTask}
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <Memo>
+              {() =>
+                startToggle$.get() ? (
+                  <View style={{ marginLeft: 2 }}>
+                    <FontAwesome5 name="pause" size={24} color="black" />
+                  </View>
+                ) : (
+                  <View style={{ paddingLeft: 5 }}>
+                    <FontAwesome5 name="play" size={24} color="black" />
+                  </View>
+                )
+              }
+            </Memo>
+          </Pressable>
         </View>
 
         <View style={[itemStyles.middleSection]}>
@@ -160,7 +200,7 @@ function Item({ item }: any) {
             mode={ResizeTextMode.max_lines}
             style={[itemStyles.title]}
           >
-            {item.title}
+            {item.title.get()}
           </AutoSizeText>
 
           <View
@@ -178,7 +218,7 @@ function Item({ item }: any) {
               mode={ResizeTextMode.max_lines}
               style={[itemStyles.categoryText]}
             >
-              {item.category.label}
+              {item.category.label.get()}
             </AutoSizeText>
           </View>
         </View>
@@ -187,29 +227,29 @@ function Item({ item }: any) {
       <View style={[itemStyles.rightSection]}>
         <View>
           <Reactive.Text style={[itemStyles.time_spent]}>
-            {item.time_spent.hours > 9
-              ? item.time_spent.hours
-              : `0${item.time_spent.hours}`}
+            {item.time_spent.hours.get() > 9
+              ? item.time_spent.hours.get()
+              : `0${item.time_spent.hours.get()}`}
             :
-            {item.time_spent.minutes > 9
-              ? item.time_spent.minutes
-              : `0${item.time_spent.minutes}`}
+            {item.time_spent.minutes.get() > 9
+              ? item.time_spent.minutes.get()
+              : `0${item.time_spent.minutes.get()}`}
             :
-            {item.time_spent.seconds > 9
-              ? item.time_spent.seconds
-              : `0${item.time_spent.seconds}`}
+            {item.time_spent.seconds.get() > 9
+              ? item.time_spent.seconds.get()
+              : `0${item.time_spent.seconds.get()}`}
           </Reactive.Text>
         </View>
 
         <View>
           <Reactive.Text style={[itemStyles.time_goal]}>
-            {item.time_goal.hours > 9
-              ? item.time_goal.hours
-              : `0${item.time_goal.hours}`}
+            {item.time_goal.hours.get() > 9
+              ? item.time_goal.hours.get()
+              : `0${item.time_goal.hours.get()}`}
             :
-            {item.time_goal.minutes > 9
-              ? item.time_goal.minutes
-              : `0${item.time_goal.minutes}`}
+            {item.time_goal.minutes.get() > 9
+              ? item.time_goal.minutes.get()
+              : `0${item.time_goal.minutes.get()}`}
             :00
           </Reactive.Text>
         </View>
@@ -217,6 +257,69 @@ function Item({ item }: any) {
     </View>
   );
 }
+
+const RadialProgressBar = observer(
+  ({ time_goal, time_spent, currentHandler, item }: any) => {
+    console.log("This is an item, ", item);
+    const color = "#e68f40"; // TODO — gradient change based on percentage completed (color-interpolate --> reanimated)
+    const radius = RADIUS;
+    const strokeWidth = 8;
+
+    const innerRadius = radius - strokeWidth / 2;
+    const outerDiameter = radius * 2;
+    const outerBuffer = strokeWidth / 2;
+
+    const path = Skia.Path.Make();
+    path.addCircle(radius + outerBuffer, radius + outerBuffer, innerRadius);
+
+    return (
+      <View>
+        <View>
+          <View
+            style={{
+              width: outerDiameter + strokeWidth,
+              height: outerDiameter + strokeWidth,
+              transform: [{ rotate: "-90deg" }],
+            }}
+          >
+            <Canvas style={{ flex: 1 }}>
+              <Path
+                path={path}
+                strokeWidth={strokeWidth}
+                style={"stroke"}
+                color={"#333438"}
+                strokeJoin={"round"}
+                strokeCap={"round"}
+                start={0}
+                end={1}
+              />
+              <Path
+                path={path}
+                strokeWidth={strokeWidth}
+                style={"stroke"}
+                color={color}
+                strokeJoin={"round"}
+                strokeCap={"round"}
+                start={0}
+                end={item.time_spent.get() / item.time_goal.get()}
+              />
+            </Canvas>
+          </View>
+
+          {/* <View style={{
+          position: 'absolute',
+top: 0, left: 0, right: 0, bottom: 0, justifyContent: 'center', alignItems: 'center'
+
+        }}>
+          <TouchableOpacity onPress={currentHandler}>
+            <FontAwesome5 name="play" size={24} color="black" />
+          </TouchableOpacity>
+        </View> */}
+        </View>
+      </View>
+    );
+  }
+);
 
 export default List;
 

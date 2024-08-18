@@ -171,6 +171,16 @@ export const overdueTasks$ = observable({
       time_goal: 23,
       time_spent: 1,
       repeated: null
+    },
+    {
+      title: "Winner",
+      tags: null,
+      category: taskCategory$.list[0].get(),
+      due: dayjs().subtract(5, 'day'),
+      created: dayjs(),
+      time_goal: 23,
+      time_spent: 1,
+      repeated: null
     }
   ]
 })

@@ -44,23 +44,26 @@ const DIAMETER = 2 * RADIUS;
 const List = observer(() => {
   return (
     <>
-      <ScrollView style={styles.container}>
-        <View
-          style={{ alignItems: "center", padding: constants.regularPadding }}
-        >
-          <Memo>
-            {() => <Text>{dateToday$.get().format("ddd, MMM DD")}</Text>}
-          </Memo>
-        </View>
+      <View style={{ flex: 1 }}>
+        <ScrollView style={[styles.container]}>
+          <View
+            style={{ alignItems: "center", padding: constants.regularPadding }}
+          >
+            <Memo>
+              {() => <Text>{dateToday$.get().format("ddd, MMM DD")}</Text>}
+            </Memo>
+          </View>
 
-        <ItemList task={todayTasks$} />
-        <ItemList task={overdueTasks$} />
-        <ItemList task={upcomingTasks$} />
+          <ItemList task={todayTasks$} />
+          <ItemList task={overdueTasks$} />
+          <ItemList task={upcomingTasks$} />
 
-        {/* TODO — Come up with a better solution later... */}
-        <View style={styles.taskBannerDimension} />
-      </ScrollView>
-      <View style={[styles.absBottom]}>
+          {/* TODO — Come up with a better solution later... */}
+          {/* <View style={styles.taskBannerDimension} /> */}
+        </ScrollView>
+      </View>
+
+      <View style={[]}>
         {currentTask$.get() && (
           // true &&
           <Pressable
@@ -260,7 +263,6 @@ function Item({ item }: any) {
 
 const RadialProgressBar = observer(
   ({ time_goal, time_spent, currentHandler, item }: any) => {
-    console.log("This is an item, ", item);
     const color = "#e68f40"; // TODO — gradient change based on percentage completed (color-interpolate --> reanimated)
     const radius = RADIUS;
     const strokeWidth = 8;
@@ -340,10 +342,6 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
 
-  absBottom: {
-    position: "absolute",
-    bottom: 0,
-  },
   taskBannerDimension: {
     width: width,
     height: 120,

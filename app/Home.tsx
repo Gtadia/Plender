@@ -13,7 +13,7 @@ import { useEffect, useState } from "react";
 import Header from "../components/Header";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 import List from "./tabs/List";
-import Progress from "./tabs/Progress";
+import Calendar from "./tabs/Calendar";
 import BottomSheet from "../components/BottomSheet";
 import {
   SafeAreaView,
@@ -386,7 +386,7 @@ export default function Home({ navigation }: any) {
       />
       <Tab.Navigator>
         <Tab.Screen name="List " component={List} />
-        <Tab.Screen name="Calendar " component={Progress} />
+        <Tab.Screen name="Calendar " component={Calendar} />
       </Tab.Navigator>
 
       <BottomSheet close={closeSheet$}>{CreateTaskPage}</BottomSheet>

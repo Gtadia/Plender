@@ -1,3 +1,6 @@
+// Code from https://withfra.me/components/pickers/simple-calendar-date-picker?utm_source=youtube&utm_medium=video&utm_campaign=react-native-5--34&ref=youtube
+// https://www.youtube.com/watch?v=zkNADBWGtBQ
+
 import React, { useState, useRef } from "react";
 import {
   StyleSheet,
@@ -10,28 +13,35 @@ import {
 } from "react-native";
 import moment from "moment";
 import Swiper from "react-native-swiper";
-import { observer, useObservable } from "@legendapp/state/react";
+import { For, Memo, observer, useObservable } from "@legendapp/state/react";
+import dayjs, { Dayjs } from "dayjs";
+import { overdueTasks$, todayTasks$, upcomingTasks$ } from "../../db/LegendApp";
+
+var isToday = require("dayjs/plugin/isToday");
 
 const { width } = Dimensions.get("window");
 
 const Example = observer(() => {
+  dayjs.extend(isToday);
   const swiper = useRef();
-  const value$ = useObservable(new Date());
+  // const value$ = useObservable(new Date());
+  const value$ = useObservable(dayjs());
   const week$ = useObservable(0);
   const [week, setWeek] = useState(0);
 
   const weeks =
     // React.useMemo(() => {
     useObservable(() => {
-      const start = moment().add(week$.get(), "weeks").startOf("week");
+      // const start = moment().add(week$.get(), "weeks").startOf("week");
+      const start = dayjs().add(week$.get(), "week").startOf("week");
 
       return [-1, 0, 1].map((adj) => {
         return Array.from({ length: 7 }).map((_, index) => {
-          const date = moment(start).add(adj, "week").add(index, "day");
+          const date = start.add(adj, "week").add(index, "day");
 
           return {
             weekday: date.format("ddd"),
-            date: date.toDate(),
+            date: date,
           };
         });
       });
@@ -62,9 +72,7 @@ const Example = observer(() => {
                 // setValue(moment(value).add(newIndex, "week").toDate());
                 const newWeek = week$.get() + newIndex;
                 week$.set(newWeek);
-                value$.set((prev) =>
-                  moment(prev).add(newIndex, "week").toDate()
-                );
+                value$.set((prev: Dayjs) => prev.add(newIndex, "week"));
                 swiper.current.scrollTo(1, false);
               }, 100);
             }}
@@ -73,7 +81,8 @@ const Example = observer(() => {
               <View style={styles.itemRow} key={index}>
                 {dates.map((item, dateIndex) => {
                   const isActive =
-                    value$.get().toDateString() === item.date.toDateString();
+                    value$.get().format("ddd MMM DD YYYY") ===
+                    item.date.format("ddd MMM DD YYYY");
                   return (
                     <TouchableWithoutFeedback
                       key={dateIndex}
@@ -103,7 +112,7 @@ const Example = observer(() => {
                             isActive && { color: "#fff" },
                           ]}
                         >
-                          {item.date.getDate()}
+                          {item.date.format("DD")}
                         </Text>
                       </View>
                     </TouchableWithoutFeedback>
@@ -115,10 +124,57 @@ const Example = observer(() => {
         </View>
 
         <View style={{ flex: 1, paddingHorizontal: 16, paddingVertical: 24 }}>
-          <Text style={styles.subtitle}>{value$.get().toDateString()}</Text>
+          <Text style={styles.subtitle}>
+            {value$.get().format("ddd MMM DD YYYY")}
+          </Text>
           <View style={styles.placeholder}>
             <View style={styles.placeholderInset}>
               {/* Replace with your content */}
+
+              <Memo>
+                {() => {
+                  if (value$.get().isToday()) {
+                    return (
+                      <For each={todayTasks$.data}>
+                        {(item$) => <Item item={item$} />}
+                      </For>
+                    );
+                  } else if (
+                    value$.get().format("YY, MM, DD") <
+                    dayjs().format("YY, MM, DD")
+                  ) {
+                    return (
+                      <For each={overdueTasks$.data}>
+                        {(item$) =>
+                          item$.due.get().format("YY, MM, DD") ===
+                          value$.get().format("YY, MM, DD") ? (
+                            <Item item={item$} />
+                          ) : (
+                            <></>
+                          )
+                        }
+                      </For>
+                    );
+                  } else if (
+                    value$.get().format("YY, MM, DD") >
+                    dayjs().format("YY, MM, DD")
+                  ) {
+                    return (
+                      <For each={upcomingTasks$.data}>
+                        {(item$) =>
+                          item$.due.get().format("YY, MM, DD") ===
+                          value$.get().format("YY, MM, DD") ? (
+                            <Item item={item$} />
+                          ) : (
+                            <></>
+                          )
+                        }
+                      </For>
+                    );
+                  }
+                  // return <Text>Delete This Later</Text>;
+                }}
+              </Memo>
             </View>
           </View>
         </View>
@@ -138,6 +194,10 @@ const Example = observer(() => {
     </SafeAreaView>
   );
 });
+
+const Item = ({ item }: any) => {
+  return <Text>{item.title.get()}</Text>;
+};
 
 export default Example;
 

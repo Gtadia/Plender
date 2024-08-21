@@ -58,8 +58,8 @@ export default function Home({ navigation }: any) {
   const closeSheet$ = useObservable(false);
   const tagModalToggle$ = useObservable(false);
   const categoryModalToggle$ = useObservable(false);
-  const dateModalToggle$ = useObservable(true);
-  const timeModalToggle$ = useObservable(false);
+  const dateModalToggle$ = useObservable(false);
+  const timeModalToggle$ = useObservable(true);
 
   const title$ = useObservable("");
   const tags$ = useObservable([]);

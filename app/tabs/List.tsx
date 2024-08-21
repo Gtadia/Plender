@@ -216,7 +216,7 @@ function Item({ item }: any) {
           >
             {/* TODO — Get the background color of each category */}
             <AutoSizeText
-              fontSize={constants.secondaryFontSize}
+              fontSize={itemStyles.categoryFontSize.fontSize}
               numberOfLines={1}
               mode={ResizeTextMode.max_lines}
               style={[itemStyles.categoryText]}
@@ -307,16 +307,6 @@ const RadialProgressBar = observer(
               />
             </Canvas>
           </View>
-
-          {/* <View style={{
-          position: 'absolute',
-top: 0, left: 0, right: 0, bottom: 0, justifyContent: 'center', alignItems: 'center'
-
-        }}>
-          <TouchableOpacity onPress={currentHandler}>
-            <FontAwesome5 name="play" size={24} color="black" />
-          </TouchableOpacity>
-        </View> */}
         </View>
       </View>
     );
@@ -368,6 +358,9 @@ const itemStyles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     height: 25,
+  },
+  categoryFontSize: {
+    fontSize: 14,
   },
   categoryText: {
     paddingHorizontal: 8,

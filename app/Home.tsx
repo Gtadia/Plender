@@ -13,7 +13,6 @@ import { useEffect, useState } from "react";
 import Header from "../components/Header";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 import List from "./tabs/List";
-import Calendar from "./tabs/Calendar";
 import BottomSheet from "../components/BottomSheet";
 import {
   SafeAreaView,
@@ -43,6 +42,7 @@ import AddCategory from "../components/Screens/Modals/AddCategory";
 import DatePicker from "../components/Screens/Modals/DatePicker";
 import TimePicker from "../components/Screens/Modals/TimePicker";
 import { constants } from "../constants/style";
+import Calendar from "./tabs/Calendar";
 
 var isToday = require("dayjs/plugin/isToday");
 // import isToday from 'dayjs/plugin/isToday' // ES 2015
@@ -58,7 +58,7 @@ export default function Home({ navigation }: any) {
   const closeSheet$ = useObservable(false);
   const tagModalToggle$ = useObservable(false);
   const categoryModalToggle$ = useObservable(false);
-  const dateModalToggle$ = useObservable(false);
+  const dateModalToggle$ = useObservable(true);
   const timeModalToggle$ = useObservable(false);
 
   const title$ = useObservable("");

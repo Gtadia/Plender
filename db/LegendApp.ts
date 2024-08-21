@@ -33,13 +33,13 @@ export const openAddMenu$ = observable(false)
 export const taskTags$ = observable({
   list:[
     { label: 'Item 1', value: 1, color: 'red' },
-    { label: 'Item 2', value: 2 },
-    { label: 'Item 3', value: 3 },
-    { label: 'Item 4', value: 4 },
-    { label: 'Item 5', value: 5 },
-    { label: 'Item 6', value: 6 },
-    { label: 'Item 7', value: 7 },
-    { label: 'Item 8', value: 8 },
+    { label: 'Item 2', value: 2, color: 'orange' },
+    { label: 'Item 3', value: 3, color: 'yellow'  },
+    { label: 'Item 4', value: 4, color: 'green'  },
+    { label: 'Item 5', value: 5, color: 'blue'  },
+    { label: 'Item 6', value: 6, color: 'purple'  },
+    { label: 'Item 7', value: 7, color: 'pink'  },
+    { label: 'Item 8', value: 8, color: 'violet'  },
   ],
   list_keyExtractor: (item: any) => item.idObject._id,
 
@@ -52,13 +52,13 @@ export const taskTags$ = observable({
 export const taskCategory$ = observable({
   list: [
     { label: 'No Category', value: 1, color: 'gray' },
-    { label: 'Item 2', value: 2 },
-    { label: 'Item 3', value: 3 },
-    { label: 'Item 4', value: 4 },
-    { label: 'Item 5', value: 5 },
-    { label: 'Item 6', value: 6 },
-    { label: 'Item 7', value: 7 },
-    { label: 'Item 8', value: 8 },
+    { label: 'Item 2', value: 2, color: 'red' },
+    { label: 'Item 3', value: 3, color: 'orange' },
+    { label: 'Item 4', value: 4, color: 'yellow' },
+    { label: 'Item 5', value: 5, color: 'green' },
+    { label: 'Item 6', value: 6, color: 'blue' },
+    { label: 'Item 7', value: 7, color: 'pink' },
+    { label: 'Item 8', value: 8, color: 'purple' },
   ],
   list_keyExtractor: (item: any) => item.idObject._id,
   addToList: (categoryItem: { label: string, value: number, color: string }) => {

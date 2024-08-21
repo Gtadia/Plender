@@ -13,7 +13,9 @@ import { Dropdown } from "react-native-element-dropdown";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import { observer, useObservable } from "@legendapp/state/react";
 import Modal from "../../Modal";
-import CreateNewTag from "./CreateNewTag";
+import { appearance$ } from "../../../db/Settings";
+import { constants, fontSizes, modalConst } from "../../../constants/style";
+import CreateNewCategory from "./CreateNewCategory";
 
 var { width } = Dimensions.get("window");
 
@@ -23,14 +25,33 @@ const AddCategory = observer(({ modalToggle, category }: any) => {
   const renderItem = (item: any) => {
     return (
       <View style={styles.item}>
-        <Text style={styles.textItem}>{item.label}</Text>
-        {item.value === category.get() && (
-          <AntDesign
-            style={styles.icon}
-            color="black"
-            name="Safety"
-            size={20}
-          />
+        <Text style={[styles.selectedTextStyle, { color: item.color }]}>
+          {item.label}
+        </Text>
+        {category.get() === item.value ? (
+          <View
+            style={{
+              justifyContent: "center",
+              alignItems: "center",
+              borderWidth: 2,
+              borderRadius: 4,
+              width: 20,
+              height: 20,
+            }}
+          >
+            <AntDesign name="check" size={20} color="green" />
+          </View>
+        ) : (
+          <View
+            style={{
+              justifyContent: "center",
+              alignItems: "center",
+              borderWidth: 2,
+              borderRadius: 4,
+              width: 20,
+              height: 20,
+            }}
+          ></View>
         )}
       </View>
     );
@@ -39,19 +60,21 @@ const AddCategory = observer(({ modalToggle, category }: any) => {
   return (
     <View
       style={{
-        width: width - 16 * 2,
+        width: width - modalConst.paddingScreen,
         height: "auto",
-        padding: 16,
-        borderRadius: 16,
-        backgroundColor: "white",
+        paddingHorizontal: modalConst.largePadding,
+        paddingVertical: modalConst.largerPadding,
+        borderRadius: constants.regularRadius,
+        backgroundColor: appearance$.primaryDark.get(),
       }}
     >
       <AutoSizeText
-        fontSize={32}
+        fontSize={fontSizes.title}
         numberOfLines={1}
         mode={ResizeTextMode.max_lines}
+        style={{ color: appearance$.primaryWhite.get(), fontWeight: "bold" }}
       >
-        Tags
+        Category
       </AutoSizeText>
 
       <View style={styles.container}>
@@ -66,28 +89,36 @@ const AddCategory = observer(({ modalToggle, category }: any) => {
           maxHeight={300}
           labelField="label"
           valueField="value"
-          placeholder="Select item"
+          placeholder="Select Category"
           searchPlaceholder="Search..."
           value={category.get()}
           onChange={(item) => {
-            console.log(taskCategory$.list.get().indexOf(item));
             category.set(taskCategory$.list.get().indexOf(item));
           }}
-          renderLeftIcon={() => (
-            <AntDesign
-              style={styles.icon}
-              color="black"
-              name="Safety"
-              size={20}
-            />
-          )}
           renderItem={renderItem}
         />
         <TouchableOpacity
-          style={{}}
+          style={{
+            justifyContent: "center",
+            alignItems: "center",
+            borderRadius: 14,
+            paddingHorizontal: 12,
+            paddingVertical: 8,
+            backgroundColor: appearance$.accentColor.get(),
+            alignSelf: "flex-start",
+            marginTop: 20,
+          }}
           onPress={() => isCreateModalOpen$.set(true)}
         >
-          <Text>Create New Tag</Text>
+          <Text
+            style={{
+              color: "white",
+              fontWeight: "bold",
+              fontSize: fontSizes.small,
+            }}
+          >
+            Create Category
+          </Text>
         </TouchableOpacity>
       </View>
 
@@ -115,7 +146,7 @@ const AddCategory = observer(({ modalToggle, category }: any) => {
       </TouchableOpacity>
 
       <Modal isOpen={isCreateModalOpen$.get()} withInput>
-        <CreateNewTag modalToggle={isCreateModalOpen$} />
+        <CreateNewCategory modalToggle={isCreateModalOpen$} />
       </Modal>
     </View>
   );
@@ -124,25 +155,14 @@ const AddCategory = observer(({ modalToggle, category }: any) => {
 export default AddCategory;
 
 const styles = StyleSheet.create({
-  container: { padding: 16 },
+  container: { paddingVertical: modalConst.paddingBetween1 },
   dropdown: {
-    margin: 16,
     height: 50,
-    backgroundColor: "white",
-    borderRadius: 12,
-    padding: 12,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.2,
-    shadowRadius: 1.41,
-
+    backgroundColor: appearance$.primaryWhite.get(),
+    borderRadius: constants.smallPlusRadius,
+    paddingHorizontal: constants.smallPlusPadding,
+    width: "100%",
     elevation: 2,
-  },
-  icon: {
-    marginRight: 5,
   },
   item: {
     padding: 17,
@@ -155,10 +175,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   placeholderStyle: {
-    fontSize: 16,
+    fontSize: fontSizes.big,
+    fontWeight: "bold",
   },
   selectedTextStyle: {
-    fontSize: 16,
+    fontSize: fontSizes.small,
+    fontWeight: "bold",
   },
   iconStyle: {
     width: 20,
@@ -167,5 +189,8 @@ const styles = StyleSheet.create({
   inputSearchStyle: {
     height: 40,
     fontSize: 16,
+  },
+  icon: {
+    marginRight: 5,
   },
 });

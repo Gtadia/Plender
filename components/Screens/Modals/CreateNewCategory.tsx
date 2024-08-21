@@ -27,7 +27,7 @@ import { fontSizes } from "../../../constants/style";
 
 var { width } = Dimensions.get("window");
 
-const CreateNewTag = ({ modalToggle, tags }: any) => {
+const CreateNewCategory = ({ modalToggle, tags }: any) => {
   const title$ = useObservable("");
   const tagColor$ = useObservable("red");
 
@@ -68,7 +68,7 @@ const CreateNewTag = ({ modalToggle, tags }: any) => {
         mode={ResizeTextMode.max_lines}
         style={{ color: appearance$.primaryWhite.get(), fontWeight: "bold" }}
       >
-        Create Tag
+        Create Category
       </AutoSizeText>
 
       <View
@@ -77,15 +77,6 @@ const CreateNewTag = ({ modalToggle, tags }: any) => {
         <Memo>
           {() => (
             <>
-              <Text
-                style={{
-                  color: tagColor$.get(),
-                  fontSize: fontSizes.big,
-                  fontWeight: "bold",
-                }}
-              >
-                #{" "}
-              </Text>
               <Reactive.TextInput
                 $value={title$}
                 style={[
@@ -152,7 +143,7 @@ const CreateNewTag = ({ modalToggle, tags }: any) => {
 
 // TODO — Warning if (1. Same Tag Name) or (2. No Tag Name)
 
-export default CreateNewTag;
+export default CreateNewCategory;
 
 const styles = StyleSheet.create({
   colorWheel: {

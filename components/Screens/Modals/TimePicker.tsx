@@ -47,9 +47,9 @@ const TimePicker = observer(({ modalToggle, time, timeDefault }: any) => {
       >
         <Picker
           values={hours}
-          moreTextStyles={{
-            FontWeight: "900",
-          }}
+          // moreTextStyles={{
+          //   FontWeight: "900",
+          // }}
           textStyle={{
             fontFamily: "Roboto",
             fontSize: 64,
@@ -73,9 +73,9 @@ const TimePicker = observer(({ modalToggle, time, timeDefault }: any) => {
         </Text>
         <Picker
           values={minutes}
-          moreTextStyles={{
-            FontWeight: "900",
-          }}
+          // moreTextStyles={{
+          //   FontWeight: "900",
+          // }}
           textStyle={{
             fontFamily: "Roboto",
             fontSize: 64,

@@ -53,7 +53,7 @@ const Picker = ({
   moreTextStyles,
   defaultValue,
   VISIBLE_ITEMS = 5,
-  ITEM_HEIGHT = 32,
+  ITEM_HEIGHT = 64,
   width = 100,
   textStyle = {
     fontFamily: "Roboto",
@@ -65,6 +65,7 @@ const Picker = ({
   enableSelectBox = true,
 }: PickerProps) => {
   const perspective = viewStyle.perspective;
+  // const RADIUS_REL = VISIBLE_ITEMS * viewStyle.RADIUS_REL_Factor;
   const RADIUS_REL = VISIBLE_ITEMS * viewStyle.RADIUS_REL_Factor;
   const RADIUS = RADIUS_REL * ITEM_HEIGHT;
 
@@ -113,6 +114,11 @@ const Picker = ({
           } else {
             scrollTo(Math.round(translateY.value / ITEM_HEIGHT) * ITEM_HEIGHT);
           }
+          console.log(
+            translateY.value,
+            Math.abs(Math.round(translateY.value / ITEM_HEIGHT) - 2),
+            ITEM_HEIGHT
+          );
 
           runOnJS(update)(
             Math.round(Math.abs(translateY.value / ITEM_HEIGHT - 2))
@@ -214,7 +220,17 @@ const Picker = ({
           });
 
           return (
-            <Animated.View key={i} style={[animate]}>
+            <Animated.View
+              key={i}
+              style={[
+                animate,
+                {
+                  height: ITEM_HEIGHT,
+                  justifyContent: "center",
+                  alignItems: "center",
+                },
+              ]}
+            >
               <Animated.Text
                 style={[styles.label, colorAnimate, { ...moreTextStyles }]}
               >

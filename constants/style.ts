@@ -22,6 +22,7 @@ export const modalConst = {
   largerPadding: 30,
   largePadding: 25,
   paddingBetween1: 20,
+  smallPadding: 10,
 
   paddingScreen: 16 * 2,
 

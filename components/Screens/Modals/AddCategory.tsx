@@ -140,8 +140,9 @@ const AddCategory = observer(({ modalToggle, category }: any) => {
           fontSize={24}
           numberOfLines={1}
           mode={ResizeTextMode.max_lines}
+          style={{ color: "white", fontWeight: "bold" }}
         >
-          Add Category
+          Add
         </AutoSizeText>
       </TouchableOpacity>
 

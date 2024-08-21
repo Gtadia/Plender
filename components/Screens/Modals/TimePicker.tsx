@@ -47,9 +47,9 @@ const TimePicker = observer(({ modalToggle, time, timeDefault }: any) => {
       >
         <Picker
           values={hours}
-          // moreTextStyles={{
-          //   FontWeight: "900",
-          // }}
+          moreTextStyles={{
+            FontWeight: "900",
+          }}
           textStyle={{
             fontFamily: "Roboto",
             fontSize: 64,
@@ -67,15 +67,16 @@ const TimePicker = observer(({ modalToggle, time, timeDefault }: any) => {
             fontSize: 64,
             fontWeight: "bold",
             padding: 16,
+            color: appearance$.primaryWhite.get(),
           }}
         >
           :
         </Text>
         <Picker
           values={minutes}
-          // moreTextStyles={{
-          //   FontWeight: "900",
-          // }}
+          moreTextStyles={{
+            FontWeight: "900",
+          }}
           textStyle={{
             fontFamily: "Roboto",
             fontSize: 64,
@@ -111,6 +112,7 @@ const TimePicker = observer(({ modalToggle, time, timeDefault }: any) => {
           fontSize={24}
           numberOfLines={1}
           mode={ResizeTextMode.max_lines}
+          style={{ color: "white", fontWeight: "bold" }}
         >
           Select
         </AutoSizeText>

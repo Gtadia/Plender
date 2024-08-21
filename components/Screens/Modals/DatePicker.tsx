@@ -61,7 +61,7 @@ const CreateNewCategory = ({ modalToggle, date }: any) => {
           {
             borderRadius: constants.smallRadius,
             flexDirection: "row",
-            justifyContent: "space-around",
+            justifyContent: "space-between",
           },
           styles.pillOutline,
           styles.pillPadding,
@@ -69,9 +69,32 @@ const CreateNewCategory = ({ modalToggle, date }: any) => {
       >
         <For each={repeated$} optimized>
           {(item$) => (
-            <TouchableOpacity>
-              <Text style={{ color: "white" }}>{item$.initial.get()}</Text>
-            </TouchableOpacity>
+            <Pressable
+              onPress={() => {
+                item$.selected.set((prev: boolean) => !prev);
+              }}
+            >
+              <Memo>
+                {() => (
+                  <View
+                    style={{
+                      width: 30,
+                      aspectRatio: 1,
+                      justifyContent: "center",
+                      alignItems: "center",
+                      borderRadius: 20,
+                      backgroundColor: item$.selected.get()
+                        ? "red"
+                        : "rgba(0, 0, 0, 0)",
+                    }}
+                  >
+                    <Text style={{ color: "white" }}>
+                      {item$.initial.get()}
+                    </Text>
+                  </View>
+                )}
+              </Memo>
+            </Pressable>
           )}
         </For>
       </View>
@@ -200,7 +223,8 @@ const CreateNewCategory = ({ modalToggle, date }: any) => {
                 style={{
                   color: appearance$.primaryWhite.get(),
                   fontWeight: "bold",
-                  marginBottom: modalConst.paddingBetween1,
+                  marginTop: modalConst.paddingBetween1,
+                  marginBottom: modalConst.smallPadding,
                 }}
               >
                 Repeat On

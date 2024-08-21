@@ -133,7 +133,7 @@ const CreateNewTag = ({ modalToggle, tags }: any) => {
           alignItems: "center",
           marginTop: 15,
         }}
-        onPress={() => modalToggle.set(false)}
+        onPress={createHandler}
       >
         <AutoSizeText
           fontSize={24}

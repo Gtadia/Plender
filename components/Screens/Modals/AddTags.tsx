@@ -79,7 +79,7 @@ const AddTags = observer(({ modalToggle, tags }: any) => {
         height: "auto",
         paddingHorizontal: modalConst.largePadding,
         paddingVertical: modalConst.largerPadding,
-        borderRadius: constants.regularRadius,
+        borderRadius: constants.regular,
         backgroundColor: appearance$.primaryDark.get(),
       }}
     >
@@ -177,8 +177,8 @@ const dropdownStyles = StyleSheet.create({
   dropdown: {
     height: 50,
     backgroundColor: appearance$.primaryWhite.get(),
-    borderRadius: constants.smallPlusRadius,
-    paddingHorizontal: constants.smallPlusPadding,
+    borderRadius: constants.smallPlus,
+    paddingHorizontal: constants.smallPlus,
     width: "100%",
     elevation: 2,
   },

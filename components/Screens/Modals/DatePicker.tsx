@@ -78,7 +78,7 @@ const CreateNewCategory = ({ modalToggle, date }: any) => {
                 {() => (
                   <View
                     style={{
-                      width: 30,
+                      width: 40,
                       aspectRatio: 1,
                       justifyContent: "center",
                       alignItems: "center",
@@ -88,9 +88,14 @@ const CreateNewCategory = ({ modalToggle, date }: any) => {
                         : "rgba(0, 0, 0, 0)",
                     }}
                   >
-                    <Text style={{ color: "white" }}>
+                    <AutoSizeText
+                      fontSize={fontSizes.big}
+                      numberOfLines={1}
+                      mode={ResizeTextMode.max_lines}
+                      style={{ color: "white", fontWeight: "600" }}
+                    >
                       {item$.initial.get()}
-                    </Text>
+                    </AutoSizeText>
                   </View>
                 )}
               </Memo>

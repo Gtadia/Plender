@@ -1,39 +1,52 @@
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import React from "react";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
-import AntDesign from "@expo/vector-icons/AntDesign";
+import Entypo from "@expo/vector-icons/Entypo";
+import FontAwesome from "@expo/vector-icons/FontAwesome";
+import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import { openAddMenu$ } from "../db/LegendApp";
 import dayjs from "dayjs";
+import { constants, fontSizes } from "../constants/style";
+import { AutoSizeText, ResizeTextMode } from "react-native-auto-size-text";
+
+const buttonSize = 30;
 
 const Header = ({ name, toggleNav, enableRightBtn, setNewDueDate }: any) => {
   return (
     <View style={styles.header}>
       <View style={styles.flexRow}>
-        <TouchableOpacity onPress={toggleNav}>
-          <MaterialIcons name="menu" size={24} color="black" />
+        <TouchableOpacity
+          onPress={toggleNav}
+          style={{ paddingRight: constants.regular }}
+        >
+          <Entypo name="menu" size={fontSizes.titlePlus} color="black" />
         </TouchableOpacity>
-        <Text>{name}</Text>
+        <AutoSizeText
+          fontSize={fontSizes.titlePlus}
+          numberOfLines={1}
+          mode={ResizeTextMode.max_lines}
+          style={{ fontWeight: "900" }}
+        >
+          {name}
+        </AutoSizeText>
       </View>
 
       {enableRightBtn && (
         <View style={styles.flexRow}>
-          {/* Just here to observe a change */}
           <TouchableOpacity
-            style={styles.addButton}
             onPress={() => {
               openAddMenu$.set((prev) => !prev);
               setNewDueDate.set(dayjs());
             }}
           >
-            <AntDesign name="plus" size={24} color="black" />
-          </TouchableOpacity>
-          <TouchableOpacity>
-            <MaterialCommunityIcons
-              name="clock-outline"
-              size={24}
+            <FontAwesome
+              name="plus-circle"
+              size={buttonSize + 2}
               color="black"
             />
+          </TouchableOpacity>
+
+          <TouchableOpacity style={{ paddingLeft: constants.regular15 }}>
+            <FontAwesome6 name="clock" size={buttonSize} color="black" />
           </TouchableOpacity>
         </View>
       )}
@@ -49,14 +62,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     width: "100%",
-  },
-  addButton: {
-    height: 40,
-    width: 40,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "green",
-    borderRadius: 1000,
+    paddingHorizontal: constants.regularPlus,
   },
   flexRow: {
     flexDirection: "row",

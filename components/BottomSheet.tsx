@@ -108,9 +108,15 @@ const BottomSheet = ({ close, children }: any) => {
   // });
 
   return (
-    <Animated.View style={[styles.container, rBottomSheetStyle]}>
+    <Animated.View
+      style={[
+        styles.container,
+        rBottomSheetStyle,
+        { borderWidth: 2, overflow: "hidden" },
+      ]}
+    >
       <GestureDetector gesture={gesture}>
-        <View style={styles.gestureArea}>
+        <View style={[styles.gestureArea]}>
           <View style={styles.line} />
         </View>
       </GestureDetector>
@@ -119,7 +125,10 @@ const BottomSheet = ({ close, children }: any) => {
           <View
             style={{ paddingTop: insets.top - 2 * lineMargin - lineHeight }}
           ></View>
-          <TouchableOpacity onPress={() => scrollTo(0)}>
+          <TouchableOpacity
+            onPress={() => scrollTo(0)}
+            style={{ alignSelf: "flex-start" }}
+          >
             <AntDesign name="close" size={24} color="black" />
           </TouchableOpacity>
         </Animated.View>
@@ -127,7 +136,7 @@ const BottomSheet = ({ close, children }: any) => {
           // TODO — Use ...props to import clear functions to clear form when 'close' is pressed
         }
       </View>
-      {children}
+      <View style={{ flex: 1 }}>{children}</View>
     </Animated.View>
   );
 };

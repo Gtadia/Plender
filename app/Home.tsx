@@ -41,7 +41,7 @@ import AddTags from "../components/Screens/Modals/AddTags";
 import AddCategory from "../components/Screens/Modals/AddCategory";
 import DatePicker from "../components/Screens/Modals/DatePicker";
 import TimePicker from "../components/Screens/Modals/TimePicker";
-import { constants } from "../constants/style";
+import { constants, fontSizes } from "../constants/style";
 import Calendar from "./tabs/Calendar";
 
 var isToday = require("dayjs/plugin/isToday");
@@ -58,7 +58,7 @@ export default function Home({ navigation }: any) {
   const closeSheet$ = useObservable(false);
   const tagModalToggle$ = useObservable(false);
   const categoryModalToggle$ = useObservable(false);
-  const dateModalToggle$ = useObservable(true);
+  const dateModalToggle$ = useObservable(false);
   const timeModalToggle$ = useObservable(false);
 
   const title$ = useObservable("");
@@ -163,16 +163,27 @@ export default function Home({ navigation }: any) {
 
   const TagsView = (
     <>
-      <For each={tags$} optimized>
-        {(item$) => (
-          <Text>{taskTags$.list[item$.get() - 1].label.get()}</Text>
-          // TODO — Touchable Opacity to pop-up delete panel
-        )}
-      </For>
-      <View style={{ alignSelf: "flex-start" }}>
+      <View style={{ flexDirection: "row", width: "100%", flexWrap: "wrap" }}>
+        <For each={tags$} optimized>
+          {(item$) => (
+            <View style={{ marginRight: 15 }}>
+              <Text
+                style={[
+                  { color: taskTags$.list[item$.get() - 1].color.get() },
+                  { fontSize: fontSizes.regular, fontWeight: "600" },
+                ]}
+              >
+                # {taskTags$.list[item$.get() - 1].label.get()}
+              </Text>
+            </View>
+            // TODO — Touchable Opacity to pop-up delete panel
+          )}
+        </For>
+      </View>
+      <View style={{ alignSelf: "flex-start", marginTop: 5 }}>
         <TouchableOpacity onPress={() => tagModalToggle$.set(true)}>
           <AutoSizeText
-            fontSize={constants.secondaryFontSize}
+            fontSize={fontSizes.regular}
             numberOfLines={1}
             mode={ResizeTextMode.max_lines}
             style={[styles.grayedText]}
@@ -187,30 +198,43 @@ export default function Home({ navigation }: any) {
   const CategoryView = (
     <>
       <AutoSizeText
-        fontSize={constants.primaryFontSize}
+        fontSize={fontSizes.big}
         numberOfLines={1}
         mode={ResizeTextMode.max_lines}
-        style={{ paddingTop: constants.regularPadding }}
+        style={{ paddingTop: constants.regular, fontWeight: "bold" }}
       >
         Category
       </AutoSizeText>
       <View style={styles.alignSelf}>
-        <TouchableOpacity
-          onPress={() => categoryModalToggle$.set(true)}
-          style={[styles.pillTouchable, { backgroundColor: "purple" }]}
-          // TODO — Change the background color ('wrap all of TouchableOpacity in Memo')
-          // TODO — Fixed width (ADD CHARACTER LIMIT)
-        >
-          <AutoSizeText
-            fontSize={constants.secondaryFontSize}
-            numberOfLines={1}
-            mode={ResizeTextMode.max_lines}
-            style={styles.pillPadding}
-          >
-            {/* TODO — Character Limit */}
-            <Memo>{() => taskCategory$.list[category$.get()].label.get()}</Memo>
-          </AutoSizeText>
-        </TouchableOpacity>
+        <Memo>
+          {() => (
+            <TouchableOpacity
+              onPress={() => categoryModalToggle$.set(true)}
+              style={[
+                styles.pillTouchable,
+                {
+                  backgroundColor:
+                    taskCategory$.list[category$.get()].color.get(),
+                },
+              ]}
+              // TODO — Change the background color ('wrap all of TouchableOpacity in Memo')
+              // TODO — Fixed width (ADD CHARACTER LIMIT)
+            >
+              <AutoSizeText
+                fontSize={fontSizes.regular}
+                numberOfLines={1}
+                mode={ResizeTextMode.max_lines}
+                style={[
+                  styles.pillPadding,
+                  { color: "white", fontSize: 18, fontWeight: "bold" },
+                ]}
+              >
+                {/* TODO — Character Limit */}
+                {taskCategory$.list[category$.get()].label.get()}
+              </AutoSizeText>
+            </TouchableOpacity>
+          )}
+        </Memo>
       </View>
     </>
   );
@@ -218,10 +242,10 @@ export default function Home({ navigation }: any) {
   const DueView = (
     <>
       <AutoSizeText
-        fontSize={constants.primaryFontSize}
+        fontSize={fontSizes.big}
         numberOfLines={1}
         mode={ResizeTextMode.max_lines}
-        style={{ paddingTop: constants.regularPadding }}
+        style={{ paddingTop: constants.regular, fontWeight: "bold" }}
       >
         Due
       </AutoSizeText>
@@ -231,10 +255,10 @@ export default function Home({ navigation }: any) {
           style={[styles.pillTouchable, styles.pillOutline]}
         >
           <AutoSizeText
-            fontSize={constants.secondaryFontSize}
+            fontSize={fontSizes.regular}
             numberOfLines={1}
             mode={ResizeTextMode.max_lines}
-            style={styles.pillPadding}
+            style={[styles.pillPadding, { fontWeight: "bold" }]}
           >
             <Memo>{() => dateDue$.get().format("MMM DD, YYYY")}</Memo>
           </AutoSizeText>
@@ -246,10 +270,10 @@ export default function Home({ navigation }: any) {
   const TimeGoalView = (
     <>
       <AutoSizeText
-        fontSize={constants.primaryFontSize}
+        fontSize={fontSizes.big}
         numberOfLines={1}
         mode={ResizeTextMode.max_lines}
-        style={{ paddingTop: constants.regularPadding }}
+        style={{ paddingTop: constants.regular, fontWeight: "bold" }}
       >
         Time Goal
       </AutoSizeText>
@@ -266,13 +290,17 @@ export default function Home({ navigation }: any) {
             style={[styles.pillTouchable, styles.pillOutline]}
           >
             <AutoSizeText
-              fontSize={18}
+              fontSize={fontSizes.regular}
               numberOfLines={1}
               mode={ResizeTextMode.max_lines}
-              style={styles.pillPadding}
+              style={[styles.pillPadding, { fontWeight: "bold" }]}
             >
               <Memo>
-                {() => `${timeGoal$.hours.get()} : ${timeGoal$.minutes.get()}`}
+                {() =>
+                  `${timeGoal$.hours.get()} : ${
+                    timeGoal$.minutes.get() < 10 ? "0" : ""
+                  }${timeGoal$.minutes.get()}`
+                }
               </Memo>
             </AutoSizeText>
           </TouchableOpacity>
@@ -282,41 +310,8 @@ export default function Home({ navigation }: any) {
           name="error"
           size={24}
           color="red"
-          style={{ padding: constants.errorPadding }}
+          style={{ padding: constants.error }}
         />
-      </View>
-    </>
-  );
-
-  const RepeatView = (
-    <>
-      <AutoSizeText
-        fontSize={constants.primaryFontSize}
-        numberOfLines={1}
-        mode={ResizeTextMode.max_lines}
-        style={{ paddingTop: constants.regularPadding }}
-      >
-        Repeat
-      </AutoSizeText>
-
-      <View
-        style={[
-          {
-            borderRadius: constants.smallRadius,
-            flexDirection: "row",
-            justifyContent: "space-around",
-          },
-          styles.pillOutline,
-          styles.pillPadding,
-        ]}
-      >
-        <For each={repeated$} optimized>
-          {(item$) => (
-            <TouchableOpacity>
-              <Text>{item$.initial.get()}</Text>
-            </TouchableOpacity>
-          )}
-        </For>
       </View>
     </>
   );
@@ -329,10 +324,9 @@ export default function Home({ navigation }: any) {
       <TouchableOpacity
         style={{
           width: "100%",
-          height: 80,
+          paddingVertical: constants.regular,
           borderRadius: 15,
           backgroundColor: "red",
-          marginTop: 20,
           marginBottom: insets.bottom,
           justifyContent: "center",
           alignItems: "center",
@@ -346,9 +340,10 @@ export default function Home({ navigation }: any) {
         }}
       >
         <AutoSizeText
-          fontSize={32}
+          fontSize={fontSizes.title}
           numberOfLines={1}
           mode={ResizeTextMode.max_lines}
+          style={{ color: "white", fontWeight: "bold" }}
         >
           Add Task
         </AutoSizeText>
@@ -359,18 +354,19 @@ export default function Home({ navigation }: any) {
   const CreateTaskPage = (
     // TODO — Check if padding is okay
     // paddingBottom: insets.bottom + (20 + 80)
-    <ScrollView>
-      <View style={{ marginHorizontal: 20, borderWidth: 2 }}>
-        {TitleView}
-        {TagsView}
-        {CategoryView}
-        {DueView}
-        {TimeGoalView}
-        {RepeatView}
+    <View style={{ flex: 1 }}>
+      <ScrollView style={[{ overflow: "visible" }]}>
+        <View style={{ marginHorizontal: 20 }}>
+          {TitleView}
+          {TagsView}
+          {CategoryView}
+          {DueView}
+          {TimeGoalView}
+        </View>
+      </ScrollView>
 
-        {AddTaskButton}
-      </View>
-    </ScrollView>
+      <View style={{ marginHorizontal: 20 }}>{AddTaskButton}</View>
+    </View>
   );
 
   return (
@@ -450,8 +446,9 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   taskInput: {
-    fontSize: 24,
+    fontSize: fontSizes.title,
     fontFamily: "",
+    fontWeight: "bold",
   },
   grayedText: {
     color: "#B5B5B5",
@@ -461,14 +458,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: constants.pillPaddingHorizontal,
   },
   pillTouchable: {
-    borderRadius: constants.smallRadius,
+    borderRadius: constants.smallPlus,
     minWidth: 85,
     justifyContent: "center",
     alignItems: "center",
   },
   alignSelf: {
     alignSelf: "flex-start",
-    paddingTop: constants.smallPadding,
+    paddingTop: constants.small,
   },
   pillOutline: {
     borderWidth: 2,

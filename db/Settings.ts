@@ -1,7 +1,7 @@
 import { useObservable } from "@legendapp/state/react";
 
 export const appearance$ = useObservable({
-  darkMode: true,
+  darkMode: false,
   primaryDark: () => (appearance$.darkMode ? 'black' : 'white'),
   primaryWhite: () => (appearance$.darkMode? 'white': 'black'),
   accentColor: 'red',

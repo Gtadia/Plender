@@ -4,19 +4,35 @@ export const constants = {
 
   secondaryPlusFontSize: 20,
 
-  smallPadding: 8,
-  smallPlusPadding: 12,
-  regularPadding: 16,
-  errorPadding: 20,
-
   pillPaddingVertical: 8,
   pillPaddingHorizontal: 12,
 
-  smallRadius: 8,
-  smallPlusRadius: 12,
-  regularMinusRadius: 14,
-  regularRadius: 16,
+  small: 8,
+  smallPlus: 12,
+  regularMinus: 14,
+  regular15: 15,
+  regular: 16,
+  regularPlus: 20,
+  error: 20,
 };
+
+export const padding = {
+  small: 8,
+  smallPlus: 12,
+  regularMinus: 14,
+  regular15: 15,
+  regular: 16,
+  regularPlus: 20,
+}
+
+export const radius = {
+  small: 8,
+  smallPlus: 12,
+  regularMinus: 14,
+  regular15: 15,
+  regular: 16,
+  regularPlus: 20,
+}
 
 export const modalConst = {
   largerPadding: 30,
@@ -31,6 +47,7 @@ export const modalConst = {
 
 export const fontSizes = {
   jumbo: 64,  // Check if time picker uses 64 font
+  titlePlus: 34,
   title: 32,
 
   big: 24,

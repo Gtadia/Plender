@@ -26,31 +26,41 @@ import {
   upcomingTasks$,
 } from "../../db/LegendApp";
 
-import AntDesign from "@expo/vector-icons/AntDesign";
+import Entypo from "@expo/vector-icons/Entypo";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 
-import Card from "../../components/ui/Card";
-import BottomSheet from "../../components/BottomSheet";
-import { constants } from "../../constants/style";
+import { constants, fontSizes, padding } from "../../constants/style";
 import { AutoSizeText, ResizeTextMode } from "react-native-auto-size-text";
 import { ScrollView } from "react-native-gesture-handler";
 import { Canvas, Path, Skia } from "@shopify/react-native-skia";
+import { appearance$ } from "../../db/Settings";
+import { observe } from "@legendapp/state";
 
 var { width, height } = Dimensions.get("window");
 
 const RADIUS = 30;
 const DIAMETER = 2 * RADIUS;
 
+const itemHeight = 80;
+const playButtonSize = 24;
+
 const List = observer(() => {
   return (
     <>
       <View style={{ flex: 1 }}>
         <ScrollView style={[styles.container]}>
-          <View
-            style={{ alignItems: "center", padding: constants.regularPadding }}
-          >
+          <View style={{ alignItems: "center", padding: constants.regular }}>
             <Memo>
-              {() => <Text>{dateToday$.get().format("ddd, MMM DD")}</Text>}
+              {() => (
+                <AutoSizeText
+                  fontSize={fontSizes.big}
+                  numberOfLines={1}
+                  mode={ResizeTextMode.max_lines}
+                  style={{ fontWeight: "bold" }}
+                >
+                  {dateToday$.get().format("ddd, MMM DD")}
+                </AutoSizeText>
+              )}
             </Memo>
           </View>
 
@@ -64,16 +74,16 @@ const List = observer(() => {
       </View>
 
       <View style={[]}>
-        {currentTask$.get() && (
+        {currentTask$.task.get() && (
           // true &&
           <Pressable
             style={[styles.taskBannerDimension, styles.taskBannerStyle]}
             onPress={() => console.log("hello")}
           >
-            <Text>{currentTask$.title.get()}</Text>
+            <Text>{currentTask$.task.title.get()}</Text>
             {/* <Text>{currentTask$.tags.get()}</Text> */}
-            <Text>{currentTask$.time_goal.total.get()}</Text>
-            <Text>{currentTask$.time_spent.total.get()}</Text>
+            <Text>{currentTask$.task.time_goal.total.get()}</Text>
+            <Text>{currentTask$.task.time_spent.total.get()}</Text>
           </Pressable>
         )}
       </View>
@@ -95,18 +105,28 @@ function ItemList({ task }: any) {
   return (
     <>
       <TouchableOpacity
-        style={[styles.flexRow, { paddingLeft: 15 }]}
+        style={[
+          styles.flexRow,
+          { paddingLeft: 15, alignSelf: "flex-start", alignItems: "center" },
+        ]}
         onPress={onPress}
       >
-        <Text>
+        <Text
+          style={{
+            fontSize: fontSizes.big,
+            fontWeight: "bold",
+            paddingRight: constants.small,
+          }}
+        >
           <Memo>{() => task.title.get()}</Memo>
         </Text>
+
         <Memo>
           {() =>
             show$.get() ? (
-              <AntDesign name="caretdown" size={24} color="black" />
+              <Entypo name="chevron-down" size={fontSizes.big} color="black" />
             ) : (
-              <AntDesign name="caretup" size={24} color="black" />
+              <Entypo name="chevron-up" size={fontSizes.big} color="black" />
             )
           }
         </Memo>
@@ -140,18 +160,40 @@ function Item({ item }: any) {
     // TODO — Before replacing the old current task, have a warning page to verify.
   };
 
+  const bColor = {
+    primary:
+      currentTask$.task.get() == item.get()
+        ? appearance$.primaryDark.get()
+        : appearance$.primaryWhite.get(),
+    secondary:
+      currentTask$.task.get() !== item.get()
+        ? appearance$.primaryDark.get()
+        : appearance$.primaryWhite.get(),
+  };
+  observe(() => {
+    bColor.primary =
+      currentTask$.task.get() == item.get()
+        ? appearance$.primaryDark.get()
+        : appearance$.primaryWhite.get();
+
+    bColor.secondary =
+      currentTask$.task.get() !== item.get()
+        ? appearance$.primaryDark.get()
+        : appearance$.primaryWhite.get();
+  });
+
   // TODO — MAKE SURE ITEM UPDATES WHEN VALUES ARE UPDATED
   return (
     <View
       style={{
-        height: 80,
-        backgroundColor: "gray",
-        borderRadius: 15,
+        height: itemHeight,
+        backgroundColor: bColor.primary,
+        borderRadius: constants.regular15,
         flexDirection: "row",
         alignItems: "center",
-        padding: 20,
+        padding: constants.regularPlus,
         justifyContent: "space-between",
-        margin: 7,
+        margin: constants.small,
       }}
     >
       <View style={{ flexDirection: "row", alignItems: "center" }}>
@@ -178,17 +220,26 @@ function Item({ item }: any) {
               bottom: 0,
               justifyContent: "center",
               alignItems: "center",
+              opacity: 0.5,
             }}
           >
             <Memo>
               {() =>
                 startToggle$.get() ? (
                   <View style={{ marginLeft: 2 }}>
-                    <FontAwesome5 name="pause" size={24} color="black" />
+                    <FontAwesome5
+                      name="pause"
+                      size={playButtonSize}
+                      color={bColor.secondary}
+                    />
                   </View>
                 ) : (
                   <View style={{ paddingLeft: 5 }}>
-                    <FontAwesome5 name="play" size={24} color="black" />
+                    <FontAwesome5
+                      name="play"
+                      size={playButtonSize}
+                      color={bColor.secondary}
+                    />
                   </View>
                 )
               }
@@ -201,62 +252,82 @@ function Item({ item }: any) {
             fontSize={constants.secondaryPlusFontSize}
             numberOfLines={1}
             mode={ResizeTextMode.max_lines}
-            style={[itemStyles.title]}
+            style={[itemStyles.title, { color: bColor.secondary }]}
           >
-            {item.title.get()}
+            <Memo>{() => item.title.get()}</Memo>
           </AutoSizeText>
 
+          <Memo>
+            {() => (
+              <View
+                style={[
+                  itemStyles.categoryPill,
+                  {
+                    backgroundColor: item.category.color.get(),
+                  },
+                ]}
+              >
+                {/* TODO — Get the background color of each category */}
+                <AutoSizeText
+                  fontSize={itemStyles.categoryFontSize.fontSize}
+                  numberOfLines={1}
+                  mode={ResizeTextMode.max_lines}
+                  style={[itemStyles.categoryText, { color: "white" }]}
+                >
+                  <Memo>{() => item.category.label.get()}</Memo>
+                </AutoSizeText>
+              </View>
+            )}
+          </Memo>
+        </View>
+      </View>
+
+      <Memo>
+        {() => (
           <View
             style={[
-              itemStyles.categoryPill,
-              {
-                backgroundColor: "purple",
-              },
+              itemStyles.rightSection,
+              { backgroundColor: "blue", alignSelf: "flex-end", width: 65 },
             ]}
           >
-            {/* TODO — Get the background color of each category */}
-            <AutoSizeText
-              fontSize={itemStyles.categoryFontSize.fontSize}
-              numberOfLines={1}
-              mode={ResizeTextMode.max_lines}
-              style={[itemStyles.categoryText]}
-            >
-              {item.category.label.get()}
-            </AutoSizeText>
+            <View>
+              <AutoSizeText
+                fontSize={fontSizes.regular}
+                numberOfLines={1}
+                mode={ResizeTextMode.max_lines}
+                style={[{ color: bColor.secondary, fontWeight: "800" }]}
+              >
+                {item.time_spent.hours.get() > 9
+                  ? item.time_spent.hours.get()
+                  : `0${item.time_spent.hours.get()}`}
+                :
+                {item.time_spent.minutes.get() > 9
+                  ? item.time_spent.minutes.get()
+                  : `0${item.time_spent.minutes.get()}`}
+                :
+                {item.time_spent.seconds.get() > 9
+                  ? item.time_spent.seconds.get()
+                  : `0${item.time_spent.seconds.get()}`}
+              </AutoSizeText>
+            </View>
+
+            <View>
+              <Reactive.Text
+                style={[itemStyles.time_goal, { color: bColor.secondary }]}
+              >
+                {item.time_goal.hours.get() > 9
+                  ? item.time_goal.hours.get()
+                  : `0${item.time_goal.hours.get()}`}
+                :
+                {item.time_goal.minutes.get() > 9
+                  ? item.time_goal.minutes.get()
+                  : `0${item.time_goal.minutes.get()}`}
+                :00
+              </Reactive.Text>
+            </View>
           </View>
-        </View>
-      </View>
-
-      <View style={[itemStyles.rightSection]}>
-        <View>
-          <Reactive.Text style={[itemStyles.time_spent]}>
-            {item.time_spent.hours.get() > 9
-              ? item.time_spent.hours.get()
-              : `0${item.time_spent.hours.get()}`}
-            :
-            {item.time_spent.minutes.get() > 9
-              ? item.time_spent.minutes.get()
-              : `0${item.time_spent.minutes.get()}`}
-            :
-            {item.time_spent.seconds.get() > 9
-              ? item.time_spent.seconds.get()
-              : `0${item.time_spent.seconds.get()}`}
-          </Reactive.Text>
-        </View>
-
-        <View>
-          <Reactive.Text style={[itemStyles.time_goal]}>
-            {item.time_goal.hours.get() > 9
-              ? item.time_goal.hours.get()
-              : `0${item.time_goal.hours.get()}`}
-            :
-            {item.time_goal.minutes.get() > 9
-              ? item.time_goal.minutes.get()
-              : `0${item.time_goal.minutes.get()}`}
-            :00
-          </Reactive.Text>
-        </View>
-      </View>
+        )}
+      </Memo>
     </View>
   );
 }
@@ -343,10 +414,11 @@ const styles = StyleSheet.create({
 
 const itemStyles = StyleSheet.create({
   middleSection: {
-    paddingHorizontal: constants.smallPadding,
+    paddingHorizontal: padding.small,
     // justifyContent: "center",
     justifyContent: "space-between",
     height: DIAMETER - 5,
+    backgroundColor: "red",
   },
   title: {
     fontWeight: "700",
@@ -369,10 +441,7 @@ const itemStyles = StyleSheet.create({
 
   rightSection: {
     alignItems: "flex-end",
-  },
-  time_spent: {
-    fontWeight: "800",
-    fontSize: 18,
+    backgroundColor: "blue ",
   },
   time_goal: {
     fontWeight: "700",

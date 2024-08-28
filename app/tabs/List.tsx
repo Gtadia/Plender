@@ -41,7 +41,7 @@ var { width, height } = Dimensions.get("window");
 const RADIUS = 30;
 const DIAMETER = 2 * RADIUS;
 
-const itemHeight = 80;
+const itemHeight = 75;
 const playButtonSize = 24;
 
 const List = observer(() => {
@@ -191,12 +191,21 @@ function Item({ item }: any) {
         borderRadius: constants.regular15,
         flexDirection: "row",
         alignItems: "center",
-        padding: constants.regularPlus,
+        paddingLeft: constants.small,
         justifyContent: "space-between",
         margin: constants.small,
+        flex: 1,
+        width: "100%",
       }}
     >
-      <View style={{ flexDirection: "row", alignItems: "center" }}>
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "center",
+          flex: 1,
+        }}
+      >
         <View
           style={{
             width: DIAMETER,
@@ -248,86 +257,131 @@ function Item({ item }: any) {
         </View>
 
         <View style={[itemStyles.middleSection]}>
-          <AutoSizeText
-            fontSize={constants.secondaryPlusFontSize}
-            numberOfLines={1}
-            mode={ResizeTextMode.max_lines}
-            style={[itemStyles.title, { color: bColor.secondary }]}
-          >
-            <Memo>{() => item.title.get()}</Memo>
-          </AutoSizeText>
-
-          <Memo>
-            {() => (
-              <View
-                style={[
-                  itemStyles.categoryPill,
-                  {
-                    backgroundColor: item.category.color.get(),
-                  },
-                ]}
-              >
-                {/* TODO — Get the background color of each category */}
-                <AutoSizeText
-                  fontSize={itemStyles.categoryFontSize.fontSize}
-                  numberOfLines={1}
-                  mode={ResizeTextMode.max_lines}
-                  style={[itemStyles.categoryText, { color: "white" }]}
-                >
-                  <Memo>{() => item.category.label.get()}</Memo>
-                </AutoSizeText>
-              </View>
-            )}
-          </Memo>
-        </View>
-      </View>
-
-      <Memo>
-        {() => (
           <View
-            style={[
-              itemStyles.rightSection,
-              { backgroundColor: "blue", alignSelf: "flex-end", width: 65 },
-            ]}
+            style={{
+              justifyContent: "space-between",
+              flexDirection: "row",
+              alignItems: "center",
+              // height: 30,
+            }}
           >
-            <View>
+            <View
+              style={{
+                flexDirection: "column",
+                flex: 1,
+              }}
+            >
               <AutoSizeText
-                fontSize={fontSizes.regular}
+                fontSize={constants.secondaryPlusFontSize}
                 numberOfLines={1}
                 mode={ResizeTextMode.max_lines}
-                style={[{ color: bColor.secondary, fontWeight: "800" }]}
+                minimumFontScale={0.6}
+                style={[itemStyles.title, { color: bColor.secondary }]}
               >
-                {item.time_spent.hours.get() > 9
-                  ? item.time_spent.hours.get()
-                  : `0${item.time_spent.hours.get()}`}
-                :
-                {item.time_spent.minutes.get() > 9
-                  ? item.time_spent.minutes.get()
-                  : `0${item.time_spent.minutes.get()}`}
-                :
-                {item.time_spent.seconds.get() > 9
-                  ? item.time_spent.seconds.get()
-                  : `0${item.time_spent.seconds.get()}`}
+                <Memo>{() => item.title.get()}</Memo>
               </AutoSizeText>
+
+              <View style={{ height: 10 }} />
+              <Memo>
+                {() => (
+                  <View
+                    style={[
+                      itemStyles.categoryPill,
+                      {
+                        backgroundColor: item.category.color.get(),
+                      },
+                    ]}
+                  >
+                    {/* TODO — Get the background color of each category */}
+                    <AutoSizeText
+                      fontSize={itemStyles.categoryFontSize.fontSize}
+                      numberOfLines={1}
+                      minimumFontScale={0.9}
+                      mode={ResizeTextMode.max_lines}
+                      style={[itemStyles.categoryText, { color: "white" }]}
+                    >
+                      <Memo>{() => item.category.label.get()}</Memo>
+                    </AutoSizeText>
+                  </View>
+                )}
+              </Memo>
             </View>
 
-            <View>
-              <Reactive.Text
-                style={[itemStyles.time_goal, { color: bColor.secondary }]}
-              >
-                {item.time_goal.hours.get() > 9
-                  ? item.time_goal.hours.get()
-                  : `0${item.time_goal.hours.get()}`}
-                :
-                {item.time_goal.minutes.get() > 9
-                  ? item.time_goal.minutes.get()
-                  : `0${item.time_goal.minutes.get()}`}
-                :00
-              </Reactive.Text>
+            <View
+              style={{
+                flexDirection: "column",
+              }}
+            >
+              <Memo>
+                {() => (
+                  <View
+                    style={[
+                      itemStyles.rightSection,
+                      {
+                        alignSelf: "center",
+                        width: 80,
+                        paddingLeft: 10,
+                      },
+                    ]}
+                  >
+                    <View style={{ alignSelf: "flex-end" }}>
+                      <AutoSizeText
+                        fontSize={fontSizes.regular}
+                        numberOfLines={1}
+                        mode={ResizeTextMode.max_lines}
+                        style={[{ color: bColor.secondary, fontWeight: "800" }]}
+                      >
+                        {item.time_spent.hours.get()}:
+                        {item.time_spent.minutes.get() > 9
+                          ? item.time_spent.minutes.get()
+                          : `0${item.time_spent.minutes.get()}`}
+                        :
+                        {item.time_spent.seconds.get() > 9
+                          ? item.time_spent.seconds.get()
+                          : `0${item.time_spent.seconds.get()}`}
+                      </AutoSizeText>
+                    </View>
+                  </View>
+                )}
+              </Memo>
+              <View style={{ height: 5 }} />
+              <Memo>
+                {() => (
+                  <View
+                    style={[
+                      {
+                        alignSelf: "center",
+                        width: 80,
+                        paddingLeft: 10,
+                        justifyContent: "center",
+                        opacity: 0.5,
+                      },
+                    ]}
+                  >
+                    <View style={{ alignSelf: "flex-end" }}>
+                      <AutoSizeText
+                        fontSize={fontSizes.smallMinus}
+                        numberOfLines={1}
+                        mode={ResizeTextMode.max_lines}
+                        style={[{ color: bColor.secondary, fontWeight: "800" }]}
+                      >
+                        {item.time_goal.hours.get()}:
+                        {item.time_goal.minutes.get() > 9
+                          ? item.time_goal.minutes.get()
+                          : `0${item.time_goal.minutes.get()}`}
+                        :
+                        {item.time_goal.seconds.get() > 9
+                          ? item.time_goal.seconds.get()
+                          : `0${item.time_goal.seconds.get()}`}
+                      </AutoSizeText>
+                    </View>
+                  </View>
+                )}
+              </Memo>
             </View>
           </View>
-        )}
-      </Memo>
+        </View>
+      </View>
     </View>
   );
 }
@@ -390,7 +444,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     // alignItems: 'center',
-    // backgroundColor: "blue",
   },
   flexRow: {
     flexDirection: "row",
@@ -416,9 +469,9 @@ const itemStyles = StyleSheet.create({
   middleSection: {
     paddingHorizontal: padding.small,
     // justifyContent: "center",
-    justifyContent: "space-between",
-    height: DIAMETER - 5,
-    backgroundColor: "red",
+    // justifyContent: "space-between",
+    // height: DIAMETER - 5,
+    flex: 1,
   },
   title: {
     fontWeight: "700",
@@ -429,7 +482,7 @@ const itemStyles = StyleSheet.create({
     maxWidth: 100,
     justifyContent: "center",
     alignItems: "center",
-    height: 25,
+    height: 20,
   },
   categoryFontSize: {
     fontSize: 14,
@@ -441,7 +494,6 @@ const itemStyles = StyleSheet.create({
 
   rightSection: {
     alignItems: "flex-end",
-    backgroundColor: "blue ",
   },
   time_goal: {
     fontWeight: "700",

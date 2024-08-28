@@ -41,8 +41,9 @@ import AddTags from "../components/Screens/Modals/AddTags";
 import AddCategory from "../components/Screens/Modals/AddCategory";
 import DatePicker from "../components/Screens/Modals/DatePicker";
 import TimePicker from "../components/Screens/Modals/TimePicker";
-import { constants, fontSizes } from "../constants/style";
+import { constants, fontSizes, padding } from "../constants/style";
 import Calendar from "./tabs/Calendar";
+import TopTab from "../components/TopTab";
 
 var isToday = require("dayjs/plugin/isToday");
 // import isToday from 'dayjs/plugin/isToday' // ES 2015
@@ -380,10 +381,8 @@ export default function Home({ navigation }: any) {
         enableRightBtn={true}
         setNewDueDate={dateDue$}
       />
-      <Tab.Navigator>
-        <Tab.Screen name="List " component={List} />
-        <Tab.Screen name="Calendar " component={Calendar} />
-      </Tab.Navigator>
+      <View style={{ height: padding.regularPlus }} />
+      <TopTab />
 
       <BottomSheet close={closeSheet$}>{CreateTaskPage}</BottomSheet>
 

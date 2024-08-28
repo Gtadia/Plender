@@ -137,7 +137,7 @@ export const overdueTasks$ = observable({
       repeated: null
     },
     {
-      title: "Winner",
+      title: "Winner Winner Chicken Dinner Bois",
       tags: null,
       category: taskCategory$.list[0].get(),
       due: dayjs().subtract(5, 'day'),

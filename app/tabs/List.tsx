@@ -80,7 +80,7 @@ const List = observer(() => {
           <ItemList task={upcomingTasks$} />
 
           {/* TODO — Come up with a better solution later... */}
-          {/* <View style={styles.taskBannerDimension} /> */}
+          {/* <View style={styles.taskFooterDimension} /> */}
         </ScrollView>
       </View>
 
@@ -94,8 +94,8 @@ TASK BANNER!!!!!!!!!!!
           // true &&
           <Pressable
             style={[
-              styles.taskBannerDimension,
-              styles.taskBannerStyle,
+              styles.taskFooterDimension,
+              styles.taskFooterStyle,
               {
                 borderTopLeftRadius: radius.regular,
                 borderTopRightRadius: radius.regular,
@@ -634,11 +634,11 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
 
-  taskBannerDimension: {
+  taskFooterDimension: {
     width: width,
     height: 120,
   },
-  taskBannerStyle: {
+  taskFooterStyle: {
     // backgroundColor: "green",
     justifyContent: "center",
     alignItems: "center",

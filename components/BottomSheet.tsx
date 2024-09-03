@@ -1,6 +1,7 @@
 import {
   Button,
   Dimensions,
+  Platform,
   StyleSheet,
   TouchableOpacity,
   View,
@@ -26,6 +27,7 @@ var { height } = Dimensions.get("window");
 const MAX_TRANSLATE_Y = -height;
 
 import AntDesign from "@expo/vector-icons/AntDesign";
+import { borderWidth, radius } from "../constants/style";
 
 const gestureOffset = 10;
 const lineMargin = 15;
@@ -76,9 +78,16 @@ const BottomSheet = ({ close, children }: any) => {
       [25, 5], // otherwise, if it is less than or equal to MAX_TRANSLATE_Y, it will be 25
       Extrapolation.CLAMP // without CLAMP, if the value is less than MAX_TRANSLATE_Y, the borderRadius won't be clamped to 25, but greater
     );
+    const borderWidth = interpolate(
+      translateY.value,
+      [-50, 0],
+      [3, 0],
+      Extrapolation.CLAMP
+    );
     return {
-      borderRadius,
-      transform: [{ translateY: translateY.value }],
+      borderTopLeftRadius: borderRadius,
+      borderTopRightRadius: borderRadius,
+      borderWidth,
       height: -translateY.value,
     };
   });
@@ -109,18 +118,14 @@ const BottomSheet = ({ close, children }: any) => {
 
   return (
     <Animated.View
-      style={[
-        styles.container,
-        rBottomSheetStyle,
-        { borderWidth: 2, overflow: "hidden" },
-      ]}
+      style={[styles.container, rBottomSheetStyle, { overflow: "hidden" }]}
     >
       <GestureDetector gesture={gesture}>
         <View style={[styles.gestureArea]}>
           <View style={styles.line} />
         </View>
       </GestureDetector>
-      <View>
+      <View style={{ overflow: "hidden" }}>
         <Animated.View style={[animatedStyles]}>
           <View
             style={{ paddingTop: insets.top - 2 * lineMargin - lineHeight }}
@@ -149,8 +154,7 @@ const styles = StyleSheet.create({
     width: "100%",
     backgroundColor: "white",
     position: "absolute",
-    top: height / 1,
-    borderRadius: 25,
+    bottom: 0,
   },
   line: {
     width: 75,

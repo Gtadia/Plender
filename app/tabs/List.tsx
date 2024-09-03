@@ -29,12 +29,21 @@ import {
 import Entypo from "@expo/vector-icons/Entypo";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 
-import { constants, fontSizes, padding } from "../../constants/style";
+import DropShadow from "react-native-drop-shadow";
+
+import {
+  borderWidth,
+  constants,
+  fontSizes,
+  padding,
+  radius,
+} from "../../constants/style";
 import { AutoSizeText, ResizeTextMode } from "react-native-auto-size-text";
 import { ScrollView } from "react-native-gesture-handler";
 import { Canvas, Path, Skia } from "@shopify/react-native-skia";
 import { appearance$ } from "../../db/Settings";
 import { observe } from "@legendapp/state";
+import { JumpingTransition } from "react-native-reanimated";
 
 var { width, height } = Dimensions.get("window");
 
@@ -43,6 +52,8 @@ const DIAMETER = 2 * RADIUS;
 
 const itemHeight = 75;
 const playButtonSize = 24;
+
+const bannerMarginBottom = 25;
 
 const List = observer(() => {
   return (
@@ -73,20 +84,176 @@ const List = observer(() => {
         </ScrollView>
       </View>
 
-      <View style={[]}>
+      {/*
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+TASK BANNER!!!!!!!!!!!
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+*/}
+      <View>
         {currentTask$.task.get() && (
           // true &&
           <Pressable
-            style={[styles.taskBannerDimension, styles.taskBannerStyle]}
+            style={[
+              styles.taskBannerDimension,
+              styles.taskBannerStyle,
+              {
+                borderTopLeftRadius: radius.regular,
+                borderTopRightRadius: radius.regular,
+                backgroundColor: appearance$.primaryDark.get(),
+              },
+            ]}
             onPress={() => console.log("hello")}
           >
-            <Text>{currentTask$.task.title.get()}</Text>
-            {/* <Text>{currentTask$.tags.get()}</Text> */}
-            <Text>{currentTask$.task.time_goal.total.get()}</Text>
-            <Text>{currentTask$.task.time_spent.total.get()}</Text>
+            <View
+              style={{
+                flexDirection: "row",
+                width: "90%",
+                height: "90%",
+                alignItems: "center",
+              }}
+            >
+              <View
+                style={{
+                  flexDirection: "column",
+                  flex: 1,
+                  justifyContent: "center",
+                  marginBottom: bannerMarginBottom,
+                }}
+              >
+                <AutoSizeText
+                  fontSize={constants.secondaryPlusFontSize}
+                  numberOfLines={1}
+                  mode={ResizeTextMode.max_lines}
+                  minimumFontScale={0.6}
+                  style={[
+                    itemStyles.title,
+                    {
+                      color: appearance$.primaryWhite.get(),
+                    },
+                  ]}
+                >
+                  <Memo>{() => currentTask$.task.title.get()}</Memo>
+                </AutoSizeText>
+
+                <View style={{ height: 10 }} />
+                <Memo>
+                  {() => (
+                    <View
+                      style={[
+                        itemStyles.categoryPill,
+                        {
+                          backgroundColor:
+                            currentTask$.task.category.color.get(),
+                        },
+                      ]}
+                    >
+                      {/* TODO — Get the background color of each category */}
+                      <AutoSizeText
+                        fontSize={itemStyles.categoryFontSize.fontSize}
+                        numberOfLines={1}
+                        minimumFontScale={0.9}
+                        mode={ResizeTextMode.max_lines}
+                        style={[itemStyles.categoryText, { color: "white" }]}
+                      >
+                        <Memo>
+                          {() => currentTask$.task.category.label.get()}
+                        </Memo>
+                      </AutoSizeText>
+                    </View>
+                  )}
+                </Memo>
+              </View>
+
+              <View
+                style={{
+                  flexDirection: "column",
+                  marginBottom: bannerMarginBottom,
+                }}
+              >
+                <Memo>
+                  {() => (
+                    <View
+                      style={[
+                        itemStyles.rightSection,
+                        {
+                          alignSelf: "center",
+                          width: 80,
+                          paddingLeft: 10,
+                        },
+                      ]}
+                    >
+                      <View style={{ alignSelf: "flex-end" }}>
+                        <AutoSizeText
+                          fontSize={fontSizes.regular}
+                          numberOfLines={1}
+                          mode={ResizeTextMode.max_lines}
+                          style={[
+                            {
+                              color: appearance$.primaryWhite.get(),
+                              fontWeight: "800",
+                            },
+                          ]}
+                        >
+                          {currentTask$.task.time_spent.hours.get()}:
+                          {currentTask$.task.time_spent.minutes.get() > 9
+                            ? currentTask$.task.time_spent.minutes.get()
+                            : `0${currentTask$.task.time_spent.minutes.get()}`}
+                          :
+                          {currentTask$.task.time_spent.seconds.get() > 9
+                            ? currentTask$.task.time_spent.seconds.get()
+                            : `0${currentTask$.task.time_spent.seconds.get()}`}
+                        </AutoSizeText>
+                      </View>
+                    </View>
+                  )}
+                </Memo>
+                <View style={{ height: 5 }} />
+                <Memo>
+                  {() => (
+                    <View
+                      style={[
+                        {
+                          alignSelf: "center",
+                          width: 80,
+                          paddingLeft: 10,
+                          justifyContent: "center",
+                          opacity: 0.5,
+                        },
+                      ]}
+                    >
+                      <View style={{ alignSelf: "flex-end" }}>
+                        <AutoSizeText
+                          fontSize={fontSizes.smallMinus}
+                          numberOfLines={1}
+                          mode={ResizeTextMode.max_lines}
+                          style={[
+                            {
+                              color: appearance$.primaryWhite.get(),
+                              fontWeight: "800",
+                            },
+                          ]}
+                        >
+                          {currentTask$.task.time_goal.hours.get()}:
+                          {currentTask$.task.time_goal.minutes.get() > 9
+                            ? currentTask$.task.time_goal.minutes.get()
+                            : `0${currentTask$.task.time_goal.minutes.get()}`}
+                          :00
+                        </AutoSizeText>
+                      </View>
+                    </View>
+                  )}
+                </Memo>
+              </View>
+            </View>
           </Pressable>
         )}
       </View>
+
+      {/*
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+TASK BANNER!!!!!!!!!!!
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+*/}
     </>
   );
 });
@@ -135,7 +302,11 @@ function ItemList({ task }: any) {
       <Show if={show$} else={<></>}>
         {() => (
           <View
-            style={[styles.item, !show$.get() && { height: 40 }]}
+            style={[
+              styles.item,
+              !show$.get() && { height: "auto" },
+              { alignItems: "center" },
+            ]}
             // activeOpacity={1}
           >
             <Memo>
@@ -196,6 +367,16 @@ function Item({ item }: any) {
         margin: constants.small,
         flex: 1,
         width: "100%",
+        // borderWidth: borderWidth.smallPlus,
+
+        shadowColor: appearance$.primaryDark.get(),
+        shadowOffset: {
+          width: 0,
+          height: 6,
+        },
+        shadowOpacity: 0.2,
+        shadowRadius: 5.62,
+        elevation: 8,
       }}
     >
       <View
@@ -369,10 +550,7 @@ function Item({ item }: any) {
                         {item.time_goal.minutes.get() > 9
                           ? item.time_goal.minutes.get()
                           : `0${item.time_goal.minutes.get()}`}
-                        :
-                        {item.time_goal.seconds.get() > 9
-                          ? item.time_goal.seconds.get()
-                          : `0${item.time_goal.seconds.get()}`}
+                        :00
                       </AutoSizeText>
                     </View>
                   </View>
@@ -461,7 +639,9 @@ const styles = StyleSheet.create({
     height: 120,
   },
   taskBannerStyle: {
-    backgroundColor: "green",
+    // backgroundColor: "green",
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
 

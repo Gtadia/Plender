@@ -325,6 +325,7 @@ export default function Home({ navigation }: any) {
       <TouchableOpacity
         style={{
           width: "100%",
+          height: 70,
           paddingVertical: constants.regular,
           borderRadius: 15,
           backgroundColor: "red",

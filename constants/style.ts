@@ -32,6 +32,7 @@ export const radius = {
   regular15: 15,
   regular: 16,
   regularPlus: 20,
+  large: 25,
 }
 
 export const modalConst = {
@@ -56,4 +57,10 @@ export const fontSizes = {
   regular: 18,
   small: 16,
   smallMinus: 14,
+}
+
+export const borderWidth = {
+  small: 2,
+  smallPlus: 3,
+  regular: 4,
 }

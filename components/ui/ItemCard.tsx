@@ -65,6 +65,7 @@ const ItemCard = ({ item }: any) => {
         width: "100%",
         // borderWidth: borderWidth.smallPlus,
 
+        // iOS
         shadowColor: appearance$.primaryDark.get(),
         shadowOffset: {
           width: 0,
@@ -72,6 +73,7 @@ const ItemCard = ({ item }: any) => {
         },
         shadowOpacity: 0.5,
         shadowRadius: 5.62,
+        // Android
         elevation: 8,
       }}
     >

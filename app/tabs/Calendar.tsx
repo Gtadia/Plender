@@ -29,6 +29,7 @@ import AntDesign from "@expo/vector-icons/AntDesign";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import { AutoSizeText, ResizeTextMode } from "react-native-auto-size-text";
 import { constants } from "../../constants/style";
+import ItemCard from "../../components/ui/ItemCard";
 
 var isToday = require("dayjs/plugin/isToday");
 
@@ -37,7 +38,10 @@ const { width } = Dimensions.get("window");
 const RADIUS = 30;
 const DIAMETER = 2 * RADIUS;
 
-const Example = observer(() => {
+// TODO — USE THIS CALENDAR LIBRARY FOR THE CALENDAR DATE PICKER
+// import { Calendar } from "react-native-calendars";
+
+const Calendar = observer(() => {
   dayjs.extend(isToday);
   const swiper = useRef();
   const value$ = useObservable(dayjs());
@@ -137,49 +141,59 @@ const Example = observer(() => {
             <View style={styles.placeholderInset}>
               {/* Replace with your content */}
 
-              <Memo>
-                {() => {
-                  if (value$.get().isToday()) {
-                    return (
-                      <For each={todayTasks$.data}>
-                        {(item$) => <Item item={item$} />}
-                      </For>
-                    );
-                  } else if (
-                    value$.get().format("YY, MM, DD") <
-                    dayjs().format("YY, MM, DD")
-                  ) {
-                    return (
-                      <For each={overdueTasks$.data}>
-                        {(item$) =>
-                          item$.due.get().format("YY, MM, DD") ===
-                          value$.get().format("YY, MM, DD") ? (
-                            <Item item={item$} />
-                          ) : (
-                            <></>
-                          )
-                        }
-                      </For>
-                    );
-                  } else if (
-                    value$.get().format("YY, MM, DD") >
-                    dayjs().format("YY, MM, DD")
-                  ) {
-                    return (
-                      <For each={upcomingTasks$.data}>
-                        {(item$) =>
-                          item$.due.get().format("YY, MM, DD") ===
-                          value$.get().format("YY, MM, DD") ? (
-                            <Item item={item$} />
-                          ) : (
-                            <></>
-                          )
-                        }
-                      </For>
-                    );
-                  }
-                }}
-              </Memo>
+              <View style={[styles.itemCard, { alignItems: "center" }]}>
+                <Memo>
+                  {() => {
+                    if (value$.get().isToday()) {
+                      return (
+                        <For each={todayTasks$.data}>
+                          {(item$) => (
+                            <View style={{ height: 90 }}>
+                              <ItemCard item={item$} />
+                            </View>
+                          )}
+                        </For>
+                      );
+                    } else if (
+                      value$.get().format("YY, MM, DD") <
+                      dayjs().format("YY, MM, DD")
+                    ) {
+                      return (
+                        <For each={overdueTasks$.data}>
+                          {(item$) =>
+                            item$.due.get().format("YY, MM, DD") ===
+                            value$.get().format("YY, MM, DD") ? (
+                              <View style={{ height: 90 }}>
+                                <ItemCard item={item$} />
+                              </View>
+                            ) : (
+                              <></>
+                            )
+                          }
+                        </For>
+                      );
+                    } else if (
+                      value$.get().format("YY, MM, DD") >
+                      dayjs().format("YY, MM, DD")
+                    ) {
+                      return (
+                        <For each={upcomingTasks$.data}>
+                          {(item$) =>
+                            item$.due.get().format("YY, MM, DD") ===
+                            value$.get().format("YY, MM, DD") ? (
+                              <View style={{ height: 90 }}>
+                                <ItemCard item={item$} />
+                              </View>
+                            ) : (
+                              <></>
+                            )
+                          }
+                        </For>
+                      );
+                    }
+                  }}
+                </Memo>
+              </View>
             </View>
           </View>
         </View>
@@ -200,138 +214,7 @@ const Example = observer(() => {
   );
 });
 
-function Item({ item }: any) {
-  const startToggle$ = useObservable(false);
-
-  const startCurrentTask = () => {
-    startToggle$.set((prev) => !prev);
-    // TODO — Move Task to current task
-    // TODO — Move old current task back to today/upcoming/overdue/completed
-    // TODO — Before replacing the old current task, have a warning page to verify.
-  };
-
-  // TODO — MAKE SURE ITEM UPDATES WHEN VALUES ARE UPDATED
-  return (
-    <View
-      style={{
-        height: 80,
-        backgroundColor: "gray",
-        borderRadius: 15,
-        flexDirection: "row",
-        alignItems: "center",
-        padding: 20,
-        justifyContent: "space-between",
-        margin: 7,
-      }}
-    >
-      <View style={{ flexDirection: "row", alignItems: "center" }}>
-        <View
-          style={{
-            width: DIAMETER,
-            height: DIAMETER,
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
-          <RadialProgressBar
-            item={item}
-            time_goal={item.time_goal}
-            time_spent={item.time_spent}
-          />
-          <Pressable
-            onPress={startCurrentTask}
-            style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
-            <Memo>
-              {() =>
-                startToggle$.get() ? (
-                  <View style={{ marginLeft: 2 }}>
-                    <FontAwesome5 name="pause" size={24} color="black" />
-                  </View>
-                ) : (
-                  <View style={{ paddingLeft: 5 }}>
-                    <FontAwesome5 name="play" size={24} color="black" />
-                  </View>
-                )
-              }
-            </Memo>
-          </Pressable>
-        </View>
-
-        <View style={[itemStyles.middleSection]}>
-          <AutoSizeText
-            fontSize={constants.secondaryPlusFontSize}
-            numberOfLines={1}
-            mode={ResizeTextMode.max_lines}
-            style={[itemStyles.title]}
-          >
-            {item.title.get()}
-          </AutoSizeText>
-
-          <View
-            style={[
-              itemStyles.categoryPill,
-              {
-                backgroundColor: "purple",
-              },
-            ]}
-          >
-            {/* TODO — Get the background color of each category */}
-            <AutoSizeText
-              fontSize={constants.secondaryFontSize}
-              numberOfLines={1}
-              mode={ResizeTextMode.max_lines}
-              style={[itemStyles.categoryText]}
-            >
-              {item.category.label.get()}
-            </AutoSizeText>
-          </View>
-        </View>
-      </View>
-
-      <View style={[itemStyles.rightSection]}>
-        <View>
-          <Reactive.Text style={[itemStyles.time_spent]}>
-            {item.time_spent.hours.get() > 9
-              ? item.time_spent.hours.get()
-              : `0${item.time_spent.hours.get()}`}
-            :
-            {item.time_spent.minutes.get() > 9
-              ? item.time_spent.minutes.get()
-              : `0${item.time_spent.minutes.get()}`}
-            :
-            {item.time_spent.seconds.get() > 9
-              ? item.time_spent.seconds.get()
-              : `0${item.time_spent.seconds.get()}`}
-          </Reactive.Text>
-        </View>
-
-        <View>
-          <Reactive.Text style={[itemStyles.time_goal]}>
-            {item.time_goal.hours.get() > 9
-              ? item.time_goal.hours.get()
-              : `0${item.time_goal.hours.get()}`}
-            :
-            {item.time_goal.minutes.get() > 9
-              ? item.time_goal.minutes.get()
-              : `0${item.time_goal.minutes.get()}`}
-            :00
-          </Reactive.Text>
-        </View>
-      </View>
-    </View>
-  );
-}
-
-export default Example;
+export default Calendar;
 
 const styles = StyleSheet.create({
   container: {
@@ -397,8 +280,9 @@ const styles = StyleSheet.create({
   },
   /** Placeholder */
   placeholder: {
-    flexGrow: 1,
-    flexShrink: 1,
+    // flexGrow: 1,
+    flex: 1,
+    // flexShrink: 1,
     flexBasis: 0,
     height: 400,
     marginTop: 0,
@@ -432,41 +316,13 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#fff",
   },
-});
 
-const itemStyles = StyleSheet.create({
-  middleSection: {
-    paddingHorizontal: constants.smallPadding,
-    // justifyContent: "center",
-    justifyContent: "space-between",
-    height: DIAMETER - 5,
-  },
-  title: {
-    fontWeight: "700",
-  },
-  categoryPill: {
-    borderRadius: 13,
-    minWidth: 50,
-    maxWidth: 100,
-    justifyContent: "center",
-    alignItems: "center",
-    height: 25,
-  },
-  categoryText: {
-    paddingHorizontal: 8,
-    fontWeight: "600",
-  },
-
-  rightSection: {
-    alignItems: "flex-end",
-  },
-  time_spent: {
-    fontWeight: "800",
-    fontSize: 18,
-  },
-  time_goal: {
-    fontWeight: "700",
-    fontSize: 15,
-    color: "rgba(0, 0, 0, 0.8)",
+  itemCard: {
+    width: "100%",
+    paddingHorizontal: 20,
+    overflow: "hidden",
+    paddingVertical: 10,
+    marginBottom: 5,
+    // height: "20%",
   },
 });

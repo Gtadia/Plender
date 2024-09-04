@@ -3,7 +3,7 @@ import React from "react";
 
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 import List from "../app/tabs/List";
-import { Calendar } from "react-native-calendars";
+import Calendar from "../app/tabs/Calendar";
 
 const TopTab = () => {
   const Tab = createMaterialTopTabNavigator();

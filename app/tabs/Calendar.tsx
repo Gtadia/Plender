@@ -30,6 +30,9 @@ import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import { AutoSizeText, ResizeTextMode } from "react-native-auto-size-text";
 import { constants } from "../../constants/style";
 import ItemCard from "../../components/ui/ItemCard";
+import { observable } from "@legendapp/state";
+
+import CalendarStrip from "react-native-calendar-strip";
 
 var isToday = require("dayjs/plugin/isToday");
 
@@ -40,98 +43,25 @@ const DIAMETER = 2 * RADIUS;
 
 // TODO — USE THIS CALENDAR LIBRARY FOR THE CALENDAR DATE PICKER
 // import { Calendar } from "react-native-calendars";
+const value$ = observable(dayjs());
+const week$ = observable(0);
 
 const Calendar = observer(() => {
   dayjs.extend(isToday);
-  const swiper = useRef();
-  const value$ = useObservable(dayjs());
-  const week$ = useObservable(0);
-
-  const weeks = useObservable(() => {
-    const start = dayjs().add(week$.get(), "week").startOf("week");
-
-    return [-1, 0, 1].map((adj) => {
-      return Array.from({ length: 7 }).map((_, index) => {
-        const date = start.add(adj, "week").add(index, "day");
-
-        return {
-          weekday: date.format("ddd"),
-          date: date,
-        };
-      });
-    });
-  });
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <View style={styles.container}>
-        <View style={styles.header}>
-          <Text style={styles.title}>Your Schedule</Text>
-        </View>
-
-        <View style={styles.picker}>
-          <Swiper
-            index={1}
-            ref={swiper}
-            loop={false}
-            showsPagination={false}
-            onIndexChanged={(ind) => {
-              if (ind === 1) {
-                return;
-              }
-              setTimeout(() => {
-                const newIndex = ind - 1;
-                const newWeek = week$.get() + newIndex;
-                week$.set(newWeek);
-                value$.set((prev: Dayjs) => prev.add(newIndex, "week"));
-                swiper.current.scrollTo(1, false);
-              }, 100);
-            }}
-          >
-            {weeks.get().map((dates, index) => (
-              <View style={styles.itemRow} key={index}>
-                {dates.map((item, dateIndex) => {
-                  const isActive =
-                    value$.get().format("ddd MMM DD YYYY") ===
-                    item.date.format("ddd MMM DD YYYY");
-                  return (
-                    <TouchableWithoutFeedback
-                      key={dateIndex}
-                      onPress={() => value$.set(item.date)}
-                    >
-                      <View
-                        style={[
-                          styles.item,
-                          isActive && {
-                            backgroundColor: "#111",
-                            borderColor: "#111",
-                          },
-                        ]}
-                      >
-                        <Text
-                          style={[
-                            styles.itemWeekday,
-                            isActive && { color: "#fff" },
-                          ]}
-                        >
-                          {item.weekday}
-                        </Text>
-                        <Text
-                          style={[
-                            styles.itemDate,
-                            isActive && { color: "#fff" },
-                          ]}
-                        >
-                          {item.date.format("DD")}
-                        </Text>
-                      </View>
-                    </TouchableWithoutFeedback>
-                  );
-                })}
-              </View>
-            ))}
-          </Swiper>
-        </View>
+        {/* <CalendarSwiper /> */}
+        <CalendarStrip
+          scrollable
+          style={{ height: 200, paddingTop: 20, paddingBottom: 10 }}
+          calendarColor={"#3343CE"}
+          calendarHeaderStyle={{ color: "white" }}
+          dateNumberStyle={{ color: "white" }}
+          dateNameStyle={{ color: "white" }}
+          iconContainer={{ flex: 0.1 }}
+        />
 
         <View style={{ flex: 1, paddingHorizontal: 16, paddingVertical: 24 }}>
           <Text style={styles.subtitle}>
@@ -139,8 +69,6 @@ const Calendar = observer(() => {
           </Text>
           <View style={styles.placeholder}>
             <View style={styles.placeholderInset}>
-              {/* Replace with your content */}
-
               <View style={[styles.itemCard, { alignItems: "center" }]}>
                 <Memo>
                   {() => {
@@ -216,6 +144,88 @@ const Calendar = observer(() => {
 
 export default Calendar;
 
+function CalendarSwiper() {
+  const swiper = useRef();
+
+  const weeks = useObservable(() => {
+    const start = dayjs().add(week$.get(), "week").startOf("week");
+
+    return [-1, 0, 1].map((adj) => {
+      return Array.from({ length: 7 }).map((_, index) => {
+        const date = start.add(adj, "week").add(index, "day");
+
+        return {
+          weekday: date.format("ddd"),
+          date: date,
+        };
+      });
+    });
+  });
+
+  return (
+    <View style={styles.picker}>
+      <Swiper
+        index={1}
+        ref={swiper}
+        loop={false}
+        showsPagination={false}
+        onIndexChanged={(ind) => {
+          if (ind === 1) {
+            return;
+          }
+          setTimeout(() => {
+            const newIndex = ind - 1;
+            const newWeek = week$.get() + newIndex;
+            week$.set(newWeek);
+            value$.set((prev: any) => prev.add(newIndex, "week"));
+            swiper.current.scrollTo(1, false);
+          }, 100);
+        }}
+      >
+        {weeks.get().map((dates, index) => (
+          <View style={styles.itemRow} key={index}>
+            {dates.map((item, dateIndex) => {
+              const isActive =
+                value$.get().format("ddd MMM DD YYYY") ===
+                item.date.format("ddd MMM DD YYYY");
+              return (
+                <TouchableWithoutFeedback
+                  key={dateIndex}
+                  onPress={() => value$.set(item.date)}
+                >
+                  <View
+                    style={[
+                      styles.item,
+                      isActive && {
+                        backgroundColor: "#111",
+                        borderColor: "#111",
+                      },
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.itemWeekday,
+                        isActive && { color: "#fff" },
+                      ]}
+                    >
+                      {item.weekday}
+                    </Text>
+                    <Text
+                      style={[styles.itemDate, isActive && { color: "#fff" }]}
+                    >
+                      {item.date.format("DD")}
+                    </Text>
+                  </View>
+                </TouchableWithoutFeedback>
+              );
+            })}
+          </View>
+        ))}
+      </Swiper>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -231,8 +241,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   picker: {
-    flex: 1,
-    maxHeight: 74,
+    height: 100,
     paddingVertical: 12,
     flexDirection: "row",
     alignItems: "center",
@@ -250,7 +259,7 @@ const styles = StyleSheet.create({
   /** Item */
   item: {
     flex: 1,
-    height: 50,
+    height: 70,
     marginHorizontal: 4,
     paddingVertical: 6,
     paddingHorizontal: 4,
@@ -280,9 +289,8 @@ const styles = StyleSheet.create({
   },
   /** Placeholder */
   placeholder: {
-    // flexGrow: 1,
-    flex: 1,
-    // flexShrink: 1,
+    flexGrow: 1,
+    flexShrink: 1,
     flexBasis: 0,
     height: 400,
     marginTop: 0,

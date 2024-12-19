@@ -12,6 +12,7 @@ dayjs.extend(isoWeek);
 windowWidth = Dimensions.get('window').width;
 windowHeight = Dimensions.get('window').height;
 
+// todo — option to change between monday as the first day (start: dayjs(date).startOf('isoWeek').clone().subtract(1, "day"))
 const getWeek = (date) => {
 	const data = {
 		start: dayjs(date).startOf('isoWeek'),
@@ -63,7 +64,7 @@ class Calendar extends Component {
 			this.props.onMount();
 		}
 		const weeks = this.getWeeks(this.props.startingDate);
-		
+
 		this.setState({
 			weeks: weeks,
 			activeDay: dayjs(),

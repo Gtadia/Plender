@@ -173,3 +173,13 @@ observe(() => {
   //   // TODO — Either (1) stop timer here, or (2) stop timer with total seconds
   // }
 })
+
+export const swipeableCalendar$ = observable({
+  // todo — does everything in here update when one of them changes?
+  weeks: null,
+  activeDay: null,
+  pages: [ '-1', '0', '1' ],
+  key: 0,
+  showingMonths: '',
+  showingYears: '',
+})

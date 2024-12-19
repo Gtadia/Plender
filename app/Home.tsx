@@ -3,16 +3,12 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
-import DateTimePicker from "react-native-ui-datepicker";
 import dayjs from "dayjs";
-import { useEffect, useState } from "react";
 import Header from "../components/Header";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
-import List from "./tabs/List";
 import BottomSheet from "../components/BottomSheet";
 import {
   SafeAreaView,
@@ -21,21 +17,17 @@ import {
 import AndroidSafeArea from "../components/AndroidSafeArea";
 import { For, Memo, Reactive, useObservable } from "@legendapp/state/react";
 import Modal from "../components/Modal";
-import Animated, { useAnimatedStyle } from "react-native-reanimated";
 import { AutoSizeText, ResizeTextMode } from "react-native-auto-size-text";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 
-import { observable, observe } from "@legendapp/state";
+import { observe } from "@legendapp/state";
 import {
-  openAddMenu$,
   overdueTasks$,
   taskCategory$,
   taskTags$,
   todayTasks$,
   upcomingTasks$,
 } from "../db/LegendApp";
-
-import AntDesign from "@expo/vector-icons/AntDesign";
 
 import AddTags from "../components/Screens/Modals/AddTags";
 import AddCategory from "../components/Screens/Modals/AddCategory";

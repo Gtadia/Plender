@@ -4,6 +4,7 @@ import React from "react";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 import List from "../app/tabs/List";
 import Calendar from "../app/tabs/Calendar";
+import CalendarDatePicker from "./ui/CalendarDatePicker";
 
 const TopTab = () => {
   const Tab = createMaterialTopTabNavigator();
@@ -24,7 +25,8 @@ const TopTab = () => {
       }}
     >
       <Tab.Screen name="List " component={List} />
-      <Tab.Screen name="Calendar " component={Calendar} />
+      {/* <Tab.Screen name="Calendar " component={Calendar} /> */}
+      <Tab.Screen name="Calendar " component={CalendarDatePicker} />
     </Tab.Navigator>
   );
 };

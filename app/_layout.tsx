@@ -12,6 +12,7 @@ import { FontWeight } from "@shopify/react-native-skia";
 import { Memo, useObservable } from "@legendapp/state/react";
 import TimePicker from "../components/Screens/Modals/TimePicker";
 import dayjs from "dayjs";
+import CalendarDatePicker from "../components/ui/CalendarDatePicker";
 enableReactNativeComponents();
 
 const Drawer = createDrawerNavigator();
@@ -60,7 +61,10 @@ export default function RootLayout() {
             defaultValue={hours$.get()}
             legendState={hours$}
           /> */}
-      <Drawer.Navigator
+
+      <CalendarDatePicker />
+
+      {/* <Drawer.Navigator
         initialRouteName="Home"
         screenOptions={{
           headerShown: false,
@@ -88,7 +92,7 @@ export default function RootLayout() {
             drawerIcon: (options) => drawerIcon(options, "settings"),
           }}
         />
-      </Drawer.Navigator>
+      </Drawer.Navigator> */}
     </>
   );
 }

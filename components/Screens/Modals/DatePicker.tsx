@@ -1,5 +1,4 @@
 import {
-  Button,
   Dimensions,
   Pressable,
   StyleSheet,
@@ -11,17 +10,6 @@ import React from "react";
 import { For, Memo, Reactive, useObservable } from "@legendapp/state/react";
 import { AutoSizeText, ResizeTextMode } from "react-native-auto-size-text";
 
-import AntDesign from "@expo/vector-icons/AntDesign";
-import { ScrollView } from "react-native-gesture-handler";
-
-import { taskCategory$, taskTags$ } from "../../../db/LegendApp";
-import ColorPicker, {
-  Panel3,
-  Swatches,
-  Preview,
-  OpacitySlider,
-  HueSlider,
-} from "reanimated-color-picker";
 import { appearance$ } from "../../../db/Settings";
 import { constants, fontSizes, modalConst } from "../../../constants/style";
 import DateTimePicker from "react-native-ui-datepicker";

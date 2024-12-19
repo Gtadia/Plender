@@ -1,6 +1,8 @@
 // Code from https://withfra.me/components/pickers/simple-calendar-date-picker?utm_source=youtube&utm_medium=video&utm_campaign=react-native-5--34&ref=youtube
 // https://www.youtube.com/watch?v=zkNADBWGtBQ
 
+// https://www.youtube.com/watch?v=X3qdu6JuLxs
+
 import React, { useState, useRef } from "react";
 import {
   StyleSheet,
@@ -12,7 +14,6 @@ import {
   TouchableOpacity,
   Pressable,
 } from "react-native";
-import moment from "moment";
 import Swiper from "react-native-swiper";
 import {
   For,
@@ -31,8 +32,6 @@ import { AutoSizeText, ResizeTextMode } from "react-native-auto-size-text";
 import { constants } from "../../constants/style";
 import ItemCard from "../../components/ui/ItemCard";
 import { observable } from "@legendapp/state";
-
-import CalendarStrip from "react-native-calendar-strip";
 
 var isToday = require("dayjs/plugin/isToday");
 
@@ -53,15 +52,6 @@ const Calendar = observer(() => {
     <SafeAreaView style={{ flex: 1 }}>
       <View style={styles.container}>
         {/* <CalendarSwiper /> */}
-        <CalendarStrip
-          scrollable
-          style={{ height: 200, paddingTop: 20, paddingBottom: 10 }}
-          calendarColor={"#3343CE"}
-          calendarHeaderStyle={{ color: "white" }}
-          dateNumberStyle={{ color: "white" }}
-          dateNameStyle={{ color: "white" }}
-          iconContainer={{ flex: 0.1 }}
-        />
 
         <View style={{ flex: 1, paddingHorizontal: 16, paddingVertical: 24 }}>
           <Text style={styles.subtitle}>

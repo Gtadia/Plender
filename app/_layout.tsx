@@ -12,7 +12,7 @@ import { FontWeight } from "@shopify/react-native-skia";
 import { Memo, useObservable } from "@legendapp/state/react";
 import TimePicker from "../components/Screens/Modals/TimePicker";
 import dayjs from "dayjs";
-import CalendarDatePicker from "../components/ui/CalendarDatePicker";
+
 enableReactNativeComponents();
 
 const Drawer = createDrawerNavigator();

@@ -2,7 +2,7 @@ import { Dimensions, StyleSheet, Text, View } from "react-native";
 import React from "react";
 import Calendar from "../../components/Screens/Calendar/Calendar";
 import dayjs from "dayjs";
-import ItemList from "../../components/ui/ItemList";
+import ItemLister from "../../components/ui/ItemLister";
 
 import {
   dateToday$,
@@ -40,9 +40,7 @@ const CalendarDatePicker = () => {
       />
 
       <ScrollView style={[styles.container]}>
-        <ItemList task={todayTasks$} />
-        <ItemList task={overdueTasks$} />
-        <ItemList task={upcomingTasks$} />
+        <ItemLister task={todayTasks$} />
 
         {/* TODO — Come up with a better solution later... */}
         {/* <View style={styles.taskFooterDimension} /> */}

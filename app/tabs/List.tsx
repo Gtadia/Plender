@@ -25,8 +25,8 @@ import Entypo from "@expo/vector-icons/Entypo";
 import { constants, fontSizes } from "../../constants/style";
 import { AutoSizeText, ResizeTextMode } from "react-native-auto-size-text";
 import { ScrollView } from "react-native-gesture-handler";
-import ItemCard from "../../components/ui/ItemCard";
 import CurrentItemFooter from "../../components/ui/CurrentItemFooter";
+import ItemLister from "../../components/ui/ItemLister";
 
 var { width } = Dimensions.get("window");
 
@@ -106,24 +106,7 @@ function ItemList({ task }: any) {
       </TouchableOpacity>
 
       <Show if={show$} else={<></>}>
-        {() => (
-          <View
-            style={[
-              styles.item,
-              !show$.get() && { height: "auto" },
-              { alignItems: "center" },
-            ]}
-            // activeOpacity={1}
-          >
-            <Memo>
-              {() => (
-                <For each={task.data}>
-                  {(item$) => <ItemCard item={item$} />}
-                </For>
-              )}
-            </Memo>
-          </View>
-        )}
+        {() => <ItemLister task={task} />}
       </Show>
     </>
   );

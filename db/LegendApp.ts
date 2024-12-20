@@ -23,6 +23,9 @@ interface tasks {
   repeated: [number] | null    // list of weekdays repeated
 }
 
+// TODO — DELETE THIS!!!
+// Wait, maybe I did this so that when the date changes, it updates? No, but that makes no sense...
+// Just delete it. Find how to subscribe to new date changes.
 export const dateToday$ = observable(dayjs());
 
 // For the create page
@@ -182,4 +185,8 @@ export const swipeableCalendar$ = observable({
   key: 0,
   showingMonths: '',
   showingYears: '',
+})
+
+export const theme$ = observable({
+  accent: 'green',
 })

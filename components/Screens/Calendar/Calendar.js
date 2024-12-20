@@ -3,9 +3,12 @@ import { StyleSheet, View, Text, Dimensions, TouchableOpacity } from 'react-nati
 import Swiper from 'react-native-swiper';
 import dayjs from 'dayjs';
 import PropTypes from 'prop-types';
-import { For, Memo, Reactive, useObservable } from "@legendapp/state/react";
+import { For, Memo, Reactive, Computed } from "@legendapp/state/react";
+import { batch, observe } from "@legendapp/state";
+import { swipeableCalendar$ } from '../../../db/LegendApp';
 
 import isoWeek from 'dayjs/plugin/isoWeek' // ES 2015
+import { size } from '@shopify/react-native-skia';
 
 dayjs.extend(isoWeek);
 
@@ -53,10 +56,9 @@ class Calendar extends Component {
 		startingDate: dayjs(),
 		secondaryColor: 'steelblue',
 		backgroundColor: '#fff',
-		height: 75,
+		height: 100,
 		showMonth: true,
 		showYear: true,
-		activeDayBorderColor: 'steelblue'
 	};
 
 	componentDidMount() {
@@ -65,30 +67,31 @@ class Calendar extends Component {
 		}
 		const weeks = this.getWeeks(this.props.startingDate);
 
-		this.setState({
-			weeks: weeks,
-			activeDay: dayjs(),
-			showingMonths: getShowingHeaderItems(weeks[this.state.pages[1]], 'MMMM'),
-			showingYears: getShowingHeaderItems(weeks[this.state.pages[1]], 'YYYY')
-		});
+		batch(() => {
+			swipeableCalendar$.weeks.set(this.getWeeks(this.props.startingDate));
+			swipeableCalendar$.activeDay.set(dayjs());
+			swipeableCalendar$.showingMonths.set(getShowingHeaderItems(weeks[swipeableCalendar$.pages[1].get()], 'MMMM'));
+			swipeableCalendar$.showingYears.set(getShowingHeaderItems(weeks[swipeableCalendar$.pages[1].get()], 'YYYY'));
+		})
 	}
 
 	getWeeks = (date) => {
 		const weeks = {
-			[parseInt(this.state.pages[0]) - 1]: getWeek(dayjs(date).subtract(2, 'weeks')),
-			[this.state.pages[0]]: getWeek(dayjs(date).subtract(1, 'weeks')),
-			[this.state.pages[1]]: getWeek(dayjs(date)),
-			[this.state.pages[2]]: getWeek(dayjs(date).add(1, 'weeks')),
-			[parseInt(this.state.pages[2]) + 1]: getWeek(dayjs(date).add(2, 'weeks'))
+			[parseInt(swipeableCalendar$.pages[0].get()) - 1]: getWeek(dayjs(date).subtract(2, 'weeks')),
+			[swipeableCalendar$.pages[0].get()]: getWeek(dayjs(date).subtract(1, 'weeks')),
+			[swipeableCalendar$.pages[1].get()]: getWeek(dayjs(date)),
+			[swipeableCalendar$.pages[2].get()]: getWeek(dayjs(date).add(1, 'weeks')),
+			[parseInt(swipeableCalendar$.pages[2].get()) + 1]: getWeek(dayjs(date).add(2, 'weeks'))
 		};
 
 		return weeks;
 	};
 
 	dayPressedHandler = (day) => {
-		this.setState({
-			activeDay: day
-		});
+		// batch(() => {
+		swipeableCalendar$.activeDay.set(day)
+		// })
+
 		if (this.props.dayPressed !== undefined) {
 			this.props.dayPressed(day);
 		}
@@ -98,31 +101,40 @@ class Calendar extends Component {
 		if (prevProps.activeDay !== this.props.activeDay) {
 			this.handleActiveDayChange();
 		}
+		// swipeableCalendar$.keys.set((prev) => prev + 1)
+
+		// observe(() => {
+		// 	console.log("This is an update: ")
+		// 	console.log(swipeableCalendar$.keys.get())
+		// 	if (swipeableCalendar$.keys.get() == 0) {
+		// 		console.log(swipeableCalendar$.weeks.get());
+		// 	}
+		// })
 	}
 
 	handleActiveDayChange = (date) => {
-		const activeWeekNumber = this.state.weeks[this.state.pages[1]][3].format('W');
+		const activeWeekNumber = swipeableCalendar$.weeks[swipeableCalendar$.pages[1].get()][3].get().format('W');
 		const activeDayWeekNumber = this.props.activeDay.format('W');
 
 		if (activeWeekNumber === activeDayWeekNumber) {
-			this.setState({
-				activeDay: this.props.activeDay
-			});
+			// batch(() => {
+				swipeableCalendar$.activeDay.set(this.props.activeDay)
+			// });
 		}
 		if (activeDayWeekNumber - activeWeekNumber === 1 || activeDayWeekNumber - activeWeekNumber === -1) {
 			//this.swiper.scrollBy(activeDayWeekNumber - activeWeekNumber + 1, true);
 			this.swiperScrollHandler(activeDayWeekNumber - activeWeekNumber + 1);
-			this.setState({
-				activeDay: this.props.activeDay
+			batch(() => {
+				swipeableCalendar$.activeDay.set(this.props.activeDay)
 			});
 		}
 		if (Math.abs(activeDayWeekNumber - activeWeekNumber) > 1) {
 			const weeks = this.getWeeks(this.props.activeDay);
-			this.setState({
-				weeks: weeks,
-				activeDay: this.props.activeDay,
-				showingMonths: getShowingHeaderItems(weeks[this.state.pages[1]], 'MMMM'),
-				showingYears: getShowingHeaderItems(weeks[this.state.pages[1]], 'YYYY')
+			batch(() => {
+				swipeableCalendar$.weeks.set(weeks);
+				swipeableCalendar$.activeDay.set(this.props.activeDay);
+				swipeableCalendar$.showingMonths.set(getShowingHeaderItems(weeks[swipeableCalendar$.pages[1].get()], 'MMMM'));
+				swipeableCalendar$.showingYears.set(getShowingHeaderItems(weeks[swipeableCalendar$.pages[1].get()], 'YYYY'));
 			});
 		}
 	};
@@ -132,51 +144,51 @@ class Calendar extends Component {
 			this.props.calendarSwiped(index);
 		}
 		if (index === 0) {
-			const newPages = this.state.pages.map((e) => (parseInt(e) - 1).toString());
-			const newKey = this.state.key + 1;
-			let weeksObjKeys = Object.keys(this.state.weeks);
+			const newPages = swipeableCalendar$.pages.get().map((e) => (parseInt(e) - 1).toString());
+			const newKey = swipeableCalendar$.key.get() + 1;
+			let weeksObjKeys = Object.keys(swipeableCalendar$.weeks.get());
 			const nextKey = Math.min(...weeksObjKeys) - 1;
 			const deleteKey = Math.max(...weeksObjKeys);
 
 			weeks = {
-				...this.state.weeks,
-				[nextKey]: getWeek(dayjs(this.state.weeks[this.state.pages[1]][3]).subtract(3, 'weeks'))
+				...swipeableCalendar$.weeks.get(),
+				[nextKey]: getWeek(dayjs(swipeableCalendar$.weeks[swipeableCalendar$.pages[1].get()][3].get()).subtract(3, 'weeks'))
 			};
 
 			delete weeks[deleteKey];
 
-			const newActiveDay = dayjs(this.state.activeDay).subtract(1, 'weeks');
+			const newActiveDay = dayjs(swipeableCalendar$.activeDay.get()).subtract(1, 'weeks');
 
-			this.setState({
-				key: newKey,
-				pages: newPages,
-				weeks: weeks,
-				//activeDay: newActiveDay,
-				showingMonths: getShowingHeaderItems(weeks[newPages[1]], 'MMMM')
+			batch(() => {
+				swipeableCalendar$.key.set(newKey);
+				swipeableCalendar$.pages.set(newPages);
+				swipeableCalendar$.weeks.set(weeks);
+				// swipeableCalendar$.activeDay.set(newActiveDay);
+				swipeableCalendar$.showingMonths.set(getShowingHeaderItems(weeks[newPages[1]], 'MMMM'));
 			});
 		} else if (index === 2) {
-			const newPages = this.state.pages.map((e) => (parseInt(e) + 1).toString());
-			const newKey = this.state.key + 1;
-			let weeksObjKeys = Object.keys(this.state.weeks);
+			const newPages = swipeableCalendar$.pages.get().map((e) => (parseInt(e) + 1).toString());
+			const newKey = swipeableCalendar$.key.get() + 1;
+			let weeksObjKeys = Object.keys(swipeableCalendar$.weeks.get());
 			const nextKey = Math.max(...weeksObjKeys) + 1;
 			const deleteKey = Math.min(...weeksObjKeys);
 
 			weeks = {
-				...this.state.weeks,
-				[nextKey]: getWeek(dayjs(this.state.weeks[this.state.pages[1]][3]).add(3, 'weeks'))
+				...swipeableCalendar$.weeks.get(),
+				[nextKey]: getWeek(dayjs(swipeableCalendar$.weeks[swipeableCalendar$.pages[1].get()][3].get()).add(3, 'weeks'))
 			};
 
 			delete weeks[deleteKey];
 
-			const newActiveDay = dayjs(this.state.activeDay).add(1, 'weeks');
+			const newActiveDay = dayjs(swipeableCalendar$.activeDay.get()).add(1, 'weeks');
 
-			this.setState({
-				key: newKey,
-				pages: newPages,
-				weeks: weeks,
-				//activeDay: newActiveDay,
-				showingMonths: getShowingHeaderItems(weeks[newPages[1]], 'MMMM'),
-				showingYears: getShowingHeaderItems(weeks[newPages[1]], 'YYYY')
+			batch(() => {
+				swipeableCalendar$.key.set(newKey);
+				swipeableCalendar$.pages.set(newPages);
+				swipeableCalendar$.weeks.set(weeks);
+				// swipeableCalendar$.activeDay.set(newActiveDay);
+				swipeableCalendar$.showingMonths.set(getShowingHeaderItems(weeks[newPages[1]], 'MMMM'));
+				swipeableCalendar$.showingYears.set(getShowingHeaderItems(weeks[newPages[1]], 'YYYY'))
 			});
 		}
 	};
@@ -184,38 +196,43 @@ class Calendar extends Component {
 	render() {
 		return (
 			<View style={[ { height: this.props.height }, { ...this.props.style } ]}>
+				<Memo>
+					{() =>
 				<Header
 					headerStyle={this.props.headerStyle}
 					headerText={this.props.headerText}
-					showingMonths={this.state.showingMonths}
-					showingYears={this.state.showingYears}
+					showingMonths={swipeableCalendar$.showingMonths.get()}
+					showingYears={swipeableCalendar$.showingYears.get()}
 					showYear={this.props.showYear}
 					showMonth={this.props.showMonth}
 				/>
-				{this.state.weeks !== null ? (
+					}
+				</Memo>
+
+				<Memo>{() =>
+				swipeableCalendar$.weeks.get() !== null ? (
 					<Swiper
 						ref={(ref) => (this.swiper = ref)}
-						key={this.state.key}
+						key={swipeableCalendar$.key.get()}
 						onIndexChanged={this.swiperScrollHandler}
 						showsPagination={false}
 						loop={false}
 						index={1}
 					>
-						{this.state.pages.map((page, index) => {
+						{swipeableCalendar$.pages.get().map((page, index) => {
 							return (
 								<View key={index} style={{ flexDirection: 'row' }}>
-									{this.state.weeks[page].map((day, index) => {
+									{swipeableCalendar$.weeks[page].get().map((day, index) => {
 										return (
 											<Day
 												click={() => this.dayPressedHandler(day)}
 												active={
 													dayjs(day).format('MM-DD-YYYY') ===
-													this.state.activeDay.format('MM-DD-YYYY')
+													swipeableCalendar$.activeDay.get().format('MM-DD-YYYY')
 												}
 												key={index}
 												dayNumber={dayjs(day).format('D')}
 												dayInWeekName={dayjs(day).format('ddd')}
-												activeDayBorderColor={this.props.activeDayBorderColor}
 												dateNameStyle={this.props.dateNameStyle}
 												dateNumberStyle={this.props.dateNumberStyle}
 											/>
@@ -225,7 +242,9 @@ class Calendar extends Component {
 							);
 						})}
 					</Swiper>
-				) : null}
+				) : null
+	}
+				</Memo>
 			</View>
 		);
 	}
@@ -235,12 +254,12 @@ const Day = (props) => {
 	return (
 		<TouchableOpacity
 			onPress={props.click}
-			style={[ styles.Day, props.active ? { borderBottomColor: props.activeDayBorderColor } : null ]}
+			style={[ styles.Day, props.active ? { backgroundColor: "black" } : null ]}
 		>
-			<Text style={[ { color: 'steelblue', fontSize: 12 }, { ...props.dateNameStyle } ]}>
+			<Text style={[ { color: props.active ? 'white': 'black', fontSize: 18, fontWeight: "bold", marginBottom: 4, }, { ...props.dateNameStyle } ]}>
 				{props.dayInWeekName}
 			</Text>
-			<Text style={[ { fontSize: 15 }, { ...props.dateNumberStyle } ]}>{props.dayNumber}</Text>
+			<Text style={[ { color: props.active ? 'white': 'black', fontSize: 18, fontWeight: "bold" }, { ...props.dateNumberStyle } ]}>{props.dayNumber}</Text>
 		</TouchableOpacity>
 	);
 };
@@ -276,20 +295,25 @@ Calendar.propTypes = {
 
 const styles = StyleSheet.create({
 	Day: {
-		width: windowWidth / 7,
+		width: (windowWidth / 7) - 4 * 2,
+		marginHorizontal: 4,
 		alignItems: 'center',
 		justifyContent: 'center',
 		borderBottomWidth: 2,
-		borderBottomColor: 'rgba(0, 0, 0, 0)'
+		borderBottomColor: 'transparent',
+		borderRadius: 10,
+		height: 65,
 	},
 	HeaderWrapper: {
 		justifyContent: 'center',
-		paddingVertical: 5,
+		paddingTop: 5,
+		paddingBottom: 8,
 		flexDirection: 'row'
 	},
 	HeaderText: {
-		fontSize: 12,
-		color: 'rgba(0, 0, 0, .7)'
+		fontSize: 15,
+		color: 'rgba(0, 0, 0, .8)',
+		fontWeight: "bold",
 	}
 });
 

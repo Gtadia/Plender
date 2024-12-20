@@ -62,9 +62,7 @@ export default function RootLayout() {
             legendState={hours$}
           /> */}
 
-      <CalendarDatePicker />
-
-      {/* <Drawer.Navigator
+      <Drawer.Navigator
         initialRouteName="Home"
         screenOptions={{
           headerShown: false,
@@ -92,7 +90,7 @@ export default function RootLayout() {
             drawerIcon: (options) => drawerIcon(options, "settings"),
           }}
         />
-      </Drawer.Navigator> */}
+      </Drawer.Navigator>
     </>
   );
 }

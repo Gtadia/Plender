@@ -25,8 +25,8 @@ const TopTab = () => {
       }}
     >
       <Tab.Screen name="List " component={List} />
-      {/* <Tab.Screen name="Calendar " component={Calendar} /> */}
-      <Tab.Screen name="Calendar " component={CalendarDatePicker} />
+      <Tab.Screen name="Calendar " component={Calendar} />
+      {/* <Tab.Screen name="Calendar " component={CalendarDatePicker} /> */}
     </Tab.Navigator>
   );
 };

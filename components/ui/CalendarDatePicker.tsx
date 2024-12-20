@@ -11,9 +11,9 @@ const CalendarDatePicker = () => {
   // todo — remove (any) type
   return (
     <View>
-      <View style={{ height: 100 }} />
+      {/* <View style={{ height: 100 }} /> */}
       <Calendar
-        height={75} //height of the strip -- default 75
+        height={100} //height of the strip -- default 75
         dayPressed={(day: any) => console.log(day)} //executes when day is pressed
         showMonth={true} //accepts boolean -- default = true
         showYear={true} //accepts boolean -- default = true

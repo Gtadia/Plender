@@ -3,12 +3,11 @@ import { StyleSheet, View, Text, Dimensions, TouchableOpacity } from 'react-nati
 import Swiper from 'react-native-swiper';
 import dayjs from 'dayjs';
 import PropTypes from 'prop-types';
-import { For, Memo, Reactive, Computed } from "@legendapp/state/react";
+import { For, Memo, Reactive, Show } from "@legendapp/state/react";
 import { batch, observe } from "@legendapp/state";
 import { swipeableCalendar$ } from '../../../db/LegendApp';
 
 import isoWeek from 'dayjs/plugin/isoWeek' // ES 2015
-import { size } from '@shopify/react-native-skia';
 
 dayjs.extend(isoWeek);
 
@@ -42,7 +41,7 @@ const getShowingHeaderItems = (week, format) => {
 	return firstVar + '/' + lastVar;
 };
 
-class Calendar extends Component {
+class SwipeCalendar extends Component {
 	state = {
 		weeks: null,
 		activeDay: null,
@@ -209,42 +208,45 @@ class Calendar extends Component {
 					}
 				</Memo>
 
-				<Memo>{() =>
-				swipeableCalendar$.weeks.get() !== null ? (
-					<Swiper
-						ref={(ref) => (this.swiper = ref)}
-						key={swipeableCalendar$.key.get()}
-						onIndexChanged={this.swiperScrollHandler}
-						showsPagination={false}
-						loop={false}
-						index={1}
-					>
-						{swipeableCalendar$.pages.get().map((page, index) => {
-							return (
-								<View key={index} style={{ flexDirection: 'row' }}>
-									{swipeableCalendar$.weeks[page].get().map((day, index) => {
+				<Show if={() => swipeableCalendar$.weeks.get() !== null} else={<></>}>
+					{() =>
+						<Memo>
+							{() =>
+								<Swiper
+									ref={(ref) => (this.swiper = ref)}
+									key={swipeableCalendar$.key.get()}
+									onIndexChanged={this.swiperScrollHandler}
+									showsPagination={false}
+									loop={false}
+									index={1}
+								>
+									{swipeableCalendar$.pages.get().map((page, index) => {
 										return (
-											<Day
-												click={() => this.dayPressedHandler(day)}
-												active={
-													dayjs(day).format('MM-DD-YYYY') ===
-													swipeableCalendar$.activeDay.get().format('MM-DD-YYYY')
-												}
-												key={index}
-												dayNumber={dayjs(day).format('D')}
-												dayInWeekName={dayjs(day).format('ddd')}
-												dateNameStyle={this.props.dateNameStyle}
-												dateNumberStyle={this.props.dateNumberStyle}
-											/>
+											<View key={index} style={{ flexDirection: 'row', justifyContent:'center' }}>
+												{swipeableCalendar$.weeks[page].get().map((day, index) => {
+													return (
+														<Day
+															click={() => this.dayPressedHandler(day)}
+															active={
+																dayjs(day).format('MM-DD-YYYY') ===
+																swipeableCalendar$.activeDay.get().format('MM-DD-YYYY')
+															}
+															key={index}
+															dayNumber={dayjs(day).format('D')}
+															dayInWeekName={dayjs(day).format('ddd')}
+															dateNameStyle={this.props.dateNameStyle}
+															dateNumberStyle={this.props.dateNumberStyle}
+														/>
+													);
+												})}
+											</View>
 										);
 									})}
-								</View>
-							);
-						})}
-					</Swiper>
-				) : null
-	}
-				</Memo>
+								</Swiper>
+							}
+						</Memo>
+					}
+				</Show>
 			</View>
 		);
 	}
@@ -282,7 +284,7 @@ const Header = (props) => {
 	);
 };
 
-Calendar.propTypes = {
+SwipeCalendar.propTypes = {
 	startingDate: PropTypes.instanceOf(dayjs),
 	height: PropTypes.number,
 	showHeader: PropTypes.bool,
@@ -295,7 +297,7 @@ Calendar.propTypes = {
 
 const styles = StyleSheet.create({
 	Day: {
-		width: (windowWidth / 7) - 4 * 2,
+		width: ((windowWidth * 0.9) / 7) - 4 * 2,
 		marginHorizontal: 4,
 		alignItems: 'center',
 		justifyContent: 'center',
@@ -317,4 +319,4 @@ const styles = StyleSheet.create({
 	}
 });
 
-export default Calendar;
+export default SwipeCalendar;

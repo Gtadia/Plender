@@ -1,6 +1,6 @@
 import { Dimensions, StyleSheet, Text, View } from "react-native";
 import React from "react";
-import Calendar from "../../components/Screens/Calendar/Calendar";
+import SwipeCalendar from "../../components/Screens/Calendar/SwipeCalendar";
 import dayjs from "dayjs";
 import ItemLister from "../../components/ui/ItemLister";
 
@@ -15,7 +15,7 @@ import { ScrollView } from "react-native-gesture-handler";
 
 var { width } = Dimensions.get("window");
 
-const CalendarDatePicker = () => {
+const Calendar = () => {
   const datesBlacklistFunc = (date: any) => {
     return date.isoWeekday() === 6; // disable Saturdays
   };
@@ -23,8 +23,7 @@ const CalendarDatePicker = () => {
   // todo — remove (any) type
   return (
     <>
-      {/* <View style={{ height: 100 }} /> */}
-      <Calendar
+      <SwipeCalendar
         height={100} //height of the strip -- default 75
         dayPressed={(day: any) => console.log(day)} //executes when day is pressed
         showMonth={true} //accepts boolean -- default = true
@@ -49,7 +48,7 @@ const CalendarDatePicker = () => {
   );
 };
 
-export default CalendarDatePicker;
+export default Calendar;
 
 const styles = StyleSheet.create({
   container: {

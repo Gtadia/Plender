@@ -3,6 +3,7 @@ import React from "react";
 import SwipeCalendar from "../../components/Screens/Calendar/SwipeCalendar";
 import dayjs from "dayjs";
 import ItemLister from "../../components/ui/ItemLister";
+import { swipeableCalendar$, taskList$ } from "../../db/LegendApp";
 
 import {
   dateToday$,
@@ -12,8 +13,14 @@ import {
 } from "../../db/LegendApp";
 
 import { ScrollView } from "react-native-gesture-handler";
+import { Memo } from "@legendapp/state/react";
 
 var { width } = Dimensions.get("window");
+
+const calendarDateSearcher = (date) => {
+  // array of tasks completed that day
+  return null;
+};
 
 const Calendar = () => {
   const datesBlacklistFunc = (date: any) => {
@@ -29,7 +36,8 @@ const Calendar = () => {
         showMonth={true} //accepts boolean -- default = true
         showYear={true} //accepts boolean -- default = true
         startingDate={dayjs()} //accepts Date or dayjs date format -- default = dayjs()
-        activeDay={dayjs().add(1, "day")} //accepts Date/Moment date format
+        // TODO — why do we .add(1, "day")?
+        activeDay={dayjs()} //accepts Date/Moment date format
         onMount={() => console.log("calendar did mount")}
         calendarSwiped={(direction: any) =>
           direction == 0
@@ -39,8 +47,7 @@ const Calendar = () => {
       />
 
       <ScrollView style={[styles.container]}>
-        <ItemLister task={todayTasks$} />
-
+        <Memo>{() => <ItemLister task={todayTasks$} />}</Memo>
         {/* TODO — Come up with a better solution later... */}
         {/* <View style={styles.taskFooterDimension} /> */}
       </ScrollView>

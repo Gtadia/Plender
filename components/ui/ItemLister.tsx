@@ -4,7 +4,7 @@ import ItemCard from "./ItemCard";
 
 var { width } = Dimensions.get("window");
 
-const ItemLister = ({ task }: any) => {
+const ItemLister = ({ task }: any, filter = null) => {
   return (
     <View
       style={[styles.item, { height: "auto" }, { alignItems: "center" }]}

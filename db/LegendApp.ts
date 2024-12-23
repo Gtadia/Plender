@@ -152,6 +152,11 @@ export const overdueTasks$ = observable({
   ]
 })
 
+export const taskList$ = observable({})
+/*
+date:
+*/
+
 // TODO - Just link the task from today/upcoming/overdue here
 export const currentTask$ = observable({
   task: todayTasks$.data[1].get()

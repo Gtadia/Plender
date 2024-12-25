@@ -1,6 +1,6 @@
 export interface Event {
   label: string,
-  description: string,   // optional
+  description?: string,   // optional
   // created_date ==> use today's date
   due_date?: Date,
   repeated_date?: Repeated_Date,
@@ -30,11 +30,16 @@ export interface UpdateEvent {  //todo — if the entire thing is null, just ret
   category_id: number,
 }
 
+export interface dateRange {
+  start: string,
+  end?: string
+}
+
 export interface FilterEvent {
   event_id: number,
   label: string,
-  due_date: {start: Date, end: Date},
-  created_date: {start: Date, end: Date},
+  due_or_repeated_dates: dateRange,
+  created_dates: dateRange,
   tag_ids: number[],
   category_ids: number[]
 }

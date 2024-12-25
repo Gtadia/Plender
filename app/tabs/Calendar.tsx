@@ -1,4 +1,4 @@
-import { Dimensions, StyleSheet, Text, View } from "react-native";
+import { Button, Dimensions, StyleSheet, Text, View } from "react-native";
 import React from "react";
 import SwipeCalendar from "../../components/Screens/Calendar/SwipeCalendar";
 import dayjs from "dayjs";
@@ -14,19 +14,13 @@ import {
 
 import { ScrollView } from "react-native-gesture-handler";
 import { Memo } from "@legendapp/state/react";
+import { useSQLiteContext } from "expo-sqlite";
+import { addEvent, getEvent } from "../../utils/database";
 
 var { width } = Dimensions.get("window");
 
-const calendarDateSearcher = (date) => {
-  // array of tasks completed that day
-  return null;
-};
-
 const Calendar = () => {
-  const datesBlacklistFunc = (date: any) => {
-    return date.isoWeekday() === 6; // disable Saturdays
-  };
-
+  const db = useSQLiteContext();
   // todo — remove (any) type
   return (
     <>
@@ -46,10 +40,56 @@ const Calendar = () => {
         }
       />
 
+      <Button
+        title="Add to Event"
+        onPress={async () => {
+          const event = {
+            label: "Test Event",
+            due_date: dayjs(),
+            goal_time: 230,
+          };
+          console.log("What2");
+          const result = await addEvent(db, event);
+
+          console.log("event added: " + result);
+        }}
+      />
+
+      <Button
+        title="Print Event"
+        onPress={async () => {
+          const filter = {
+            due_or_repeated_dates: {
+              start: swipeableCalendar$.activeDay.get().format("YYYY-MM-DD"),
+            },
+          };
+          const result = await getEvent(db, filter);
+
+          console.log(result);
+
+          console.log(await getEvent(db, {}));
+        }}
+      />
+
+      <Button
+        title="Print Event"
+        onPress={async () => {
+          const filter = {
+            due_or_repeated_dates: {
+              start: swipeableCalendar$.activeDay.get().format("YYYY-MM-DD"),
+            },
+          };
+          const result = await getEvent(db, filter);
+
+          console.log(result);
+
+          console.log(await getEvent(db, {}));
+        }}
+      />
+
       <ScrollView style={[styles.container]}>
-        <Memo>{() => <ItemLister task={todayTasks$} />}</Memo>
-        {/* TODO — Come up with a better solution later... */}
-        {/* <View style={styles.taskFooterDimension} /> */}
+        // todo — replace this
+        {/* <Memo>{() => getEventsOnDate(swipeableCalendar$.activeDay.get())}</Memo> */}
       </ScrollView>
     </>
   );

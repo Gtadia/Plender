@@ -1,22 +1,23 @@
 import { SQLiteDatabase } from "expo-sqlite";
-import { Category, Event, FilterEvent, Tag, UpdateEvent, UpdateTag } from "./interface";
+import { Category, dateRange, Event, FilterEvent, Tag, UpdateEvent, UpdateTag } from "./interface";
 
 export async function migrateDbIfNeeded(db: SQLiteDatabase) {
   const DATABASE_VERSION = 1;
   let result = await db.getFirstAsync<{user_version: number}>('PRAGMA user_version');
   let currentDbVersion = result?.user_version??0;
+  currentDbVersion = 0;
 
   if (currentDbVersion >= DATABASE_VERSION) {
     console.log("current DB version: " + currentDbVersion);
-    const result = await db.execAsync(`
-      PRAGMA journal_mode = 'wal';
+    // const result = await db.execAsync(`
+    //   PRAGMA journal_mode = 'wal';
 
-      DROP TABLE IF EXISTS event;
-      DROP TABLE IF EXISTS tag;
-      DROP TABLE IF EXISTS category;
-      DROP TABLE IF EXISTS tagevent;
-      DROP TABLE IF EXISTS event_tag;
-    `);
+    //   DROP TABLE IF EXISTS event;
+    //   DROP TABLE IF EXISTS tag;
+    //   DROP TABLE IF EXISTS category;
+    //   DROP TABLE IF EXISTS tagevent;
+    //   DROP TABLE IF EXISTS event_tag;
+    // `);
     return;
   }
   if (currentDbVersion === 0) {
@@ -38,19 +39,19 @@ export async function migrateDbIfNeeded(db: SQLiteDatabase) {
         repeated_date TEXT NULL,
         goal_time INTEGER NOT NULL,   -- seconds
         progress_time INTEGER NOT NULL,   -- seconds
-        categoryID INTEGER NULL
+        categoryID INTEGER
       );
 
       CREATE TABLE tag (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         label TEXT NOT NULL,
-        color TEXT NULL       -- (#hexRGB code)
+        color TEXT       -- (#hexRGB code)
       );
 
       CREATE TABLE category (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         label TEXT NOT NULL,
-        color TEXT NULL       -- (#hexRGB code)
+        color TEXT       -- (#hexRGB code)
       );
 
       CREATE TABLE event_tag (
@@ -63,7 +64,7 @@ export async function migrateDbIfNeeded(db: SQLiteDatabase) {
           ON DELETE CASCADE
       );
     `);
-    console.log(result);
+    console.log("created tables:", result);
 
     currentDbVersion = 1;
   }
@@ -73,23 +74,64 @@ export async function migrateDbIfNeeded(db: SQLiteDatabase) {
   await db.execAsync(`PRAGMA user_version = ${DATABASE_VERSION}`);
 }
 
+/**
+ * Formatting ISO date string to a format that SQLite can understand
+ * @param date
+ * @returns 
+ */
+const formatDateForSQLite = (date?: Date) => {
+  if (date) {
+    return date.toISOString().replace('T', ' ').split('.')[0];
+  }
+  return;
+};
+
+/**
+ * Formatting dateRange object to be one that can be searched in SQLite
+ * @param dates
+ * @returns 
+ */
+const formatDateForSQLiteSearching = (dates: dateRange) => {
+  const result = {start: dates.start, end: ''};
+
+  if (!dates.end) {
+    result.end = dates.start;
+  }
+
+  if (result.start.split(' ').length !== 2) {
+    result.start += ' 00:00:00';
+  }
+  if (result.end.split(' ').length !== 2) {
+    result.end += ' 23:59:59';
+  }
+
+  return result;
+}
+
+
 export const addEvent = async (db: SQLiteDatabase, event:Event) => {
   const { label, description, due_date, repeated_date, goal_time, tag_ids, category_id } = event;
-  await db.runAsync(`
-    INSERT INTO event (label, description, due_date, repeated_date, goal_time, progress_time, category_id)
-      VALUES (?, ?, ?, ?, ?, ?, ?);
-    `,
-    [
-      label,
-      description || '',
-      // created_date ==> automatically inserted
-      due_date?.toISOString() || null,
-      repeated_date ? JSON.stringify(repeated_date) : null,
-      goal_time,
-      0,  // progress_time ==> set to 0
-      category_id || null
-    ]
-  );
+  try {
+    const result = await db.runAsync(`
+      INSERT INTO event (label, description, due_date, repeated_date, goal_time, progress_time, categoryID)
+        VALUES (?, ?, ?, ?, ?, ?, ?);
+      `,
+      [
+        label,
+        description || '',
+        // created_date ==> automatically inserted
+        formatDateForSQLite(due_date) || null,
+        repeated_date ? JSON.stringify(repeated_date) : null,
+        goal_time,
+        0,  // progress_time ==> set to 0
+        category_id || null
+      ]
+    );
+    console.log("finished:", result.rows);
+  } catch (error) {
+    console.error("errorL", error);
+  }
+
 };
 
 export const deleteEvent = async (db: SQLiteDatabase, eventID: number) => {
@@ -150,14 +192,16 @@ export const getEvent = async (db: SQLiteDatabase, filter: Partial<FilterEvent>)
   const {
     event_id,
     label,
-    due_date,
-    created_date,
+    due_or_repeated_dates,
+    created_dates,
     tag_ids,
     category_ids
   } = filter;
 
   let query = `SELECT * FROM event`;
   const params: any[] = [];
+
+  console.warn(filter);
 
   const conditions: string[] = [];
   if (event_id) {
@@ -168,13 +212,21 @@ export const getEvent = async (db: SQLiteDatabase, filter: Partial<FilterEvent>)
     conditions.push('label LIKE ?');
     params.push(`%${label}%`);  // Use wildcards for partial matches
   }
-  if (due_date) {
+  if (due_or_repeated_dates) {
+    const {
+      start,
+      end
+    } = formatDateForSQLiteSearching(due_or_repeated_dates);
+
     conditions.push('due_date BETWEEN ? AND ?');
-    params.push(due_date.start, due_date.end);
+    params.push(start, end);
+
+
+    // todo — implement case for repeated dates
   }
-  if (created_date) {
+  if (created_dates) {
     conditions.push('created_date BETWEEN ? AND ?');
-    params.push(created_date.start, created_date.end);
+    params.push(created_dates.start, created_dates.end);
   }
   if (category_ids) {
     const placeholders = category_ids.map(() => '?').join(', ');
@@ -185,6 +237,16 @@ export const getEvent = async (db: SQLiteDatabase, filter: Partial<FilterEvent>)
     const placeholders = tag_ids.map(() => '?').join(', ');
     conditions.push(`et.tag_id IN (${placeholders})`);
     params.push(...tag_ids);
+  }
+
+  if (conditions.length > 0) {
+    query += ' WHERE ' + conditions.join(' AND ');
+  }
+
+  try {
+    return (await db.getAllAsync<Event>(query, params));
+  } catch (error) {
+    console.error("error with getEvent:", error);
   }
 }
 

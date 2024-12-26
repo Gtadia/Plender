@@ -40,53 +40,6 @@ const Calendar = () => {
         }
       />
 
-      <Button
-        title="Add to Event"
-        onPress={async () => {
-          const event = {
-            label: "Test Event",
-            due_date: dayjs(),
-            goal_time: 230,
-          };
-          console.log("What2");
-          const result = await addEvent(db, event);
-
-          console.log("event added: " + result);
-        }}
-      />
-
-      <Button
-        title="Print Event"
-        onPress={async () => {
-          const filter = {
-            due_or_repeated_dates: {
-              start: swipeableCalendar$.activeDay.get().format("YYYY-MM-DD"),
-            },
-          };
-          const result = await getEvent(db, filter);
-
-          console.log(result);
-
-          console.log(await getEvent(db, {}));
-        }}
-      />
-
-      <Button
-        title="Print Event"
-        onPress={async () => {
-          const filter = {
-            due_or_repeated_dates: {
-              start: swipeableCalendar$.activeDay.get().format("YYYY-MM-DD"),
-            },
-          };
-          const result = await getEvent(db, filter);
-
-          console.log(result);
-
-          console.log(await getEvent(db, {}));
-        }}
-      />
-
       <ScrollView style={[styles.container]}>
         // todo — replace this
         {/* <Memo>{() => getEventsOnDate(swipeableCalendar$.activeDay.get())}</Memo> */}

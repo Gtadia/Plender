@@ -11,7 +11,7 @@ export async function migrateDbIfNeeded(db: SQLiteDatabase) {
   if (currentDbVersion >= DATABASE_VERSION) {
     console.log("current DB version: " + currentDbVersion);
     // const result = await db.execAsync(`
-    //   PRAGMA journal_mode = 'wal';
+    //   PRAGMA journal_mode = 'wal';https://www.youtube.com/watch?v=bY7Tkh9Vz8I
 
     //   DROP TABLE IF EXISTS event;
     //   DROP TABLE IF EXISTS tag;

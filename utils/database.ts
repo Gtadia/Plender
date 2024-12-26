@@ -1,5 +1,6 @@
 import { SQLiteDatabase } from "expo-sqlite";
 import { Category, dateRange, Event, FilterEvent, Tag, UpdateEvent, UpdateTag } from "./interface";
+import { Dayjs } from "dayjs";
 
 export async function migrateDbIfNeeded(db: SQLiteDatabase) {
   const DATABASE_VERSION = 1;
@@ -79,11 +80,11 @@ export async function migrateDbIfNeeded(db: SQLiteDatabase) {
  * @param date
  * @returns 
  */
-const formatDateForSQLite = (date?: Date) => {
+const formatDateForSQLite = (date?: Dayjs) => {
   if (date) {
     return date.toISOString().replace('T', ' ').split('.')[0];
   }
-  return;
+  return null;
 };
 
 /**
@@ -92,7 +93,7 @@ const formatDateForSQLite = (date?: Date) => {
  * @returns 
  */
 const formatDateForSQLiteSearching = (dates: dateRange) => {
-  const result = {start: dates.start, end: ''};
+  const result = {start: dates.start, end: dates.end || ''};
 
   if (!dates.end) {
     result.end = dates.start;
@@ -110,7 +111,7 @@ const formatDateForSQLiteSearching = (dates: dateRange) => {
 
 
 export const addEvent = async (db: SQLiteDatabase, event:Event) => {
-  const { label, description, due_date, repeated_date, goal_time, tag_ids, category_id } = event;
+  const { label, description, due_date, repeated_date, goal_time, tagIDs, categoryID } = event;
   try {
     const result = await db.runAsync(`
       INSERT INTO event (label, description, due_date, repeated_date, goal_time, progress_time, categoryID)
@@ -124,18 +125,20 @@ export const addEvent = async (db: SQLiteDatabase, event:Event) => {
         repeated_date ? JSON.stringify(repeated_date) : null,
         goal_time,
         0,  // progress_time ==> set to 0
-        category_id || null
+        categoryID || null
       ]
     );
-    console.log("finished:", result.rows);
   } catch (error) {
-    console.error("errorL", error);
+    console.error("error with addEvent:", error);
   }
-
 };
 
 export const deleteEvent = async (db: SQLiteDatabase, eventID: number) => {
-  const result = await db.runAsync(`DELETE FROM event WHERE id = ?`, eventID);
+  try {
+    await db.runAsync(`DELETE FROM event WHERE id = ?`, eventID);
+  } catch (error) {
+    console.error("error with deleteEvent", error)
+  }
 
   // todo — NOT NECESSARY but you can come back to this later
   // if (result.rowsAffected === 0) {
@@ -151,8 +154,8 @@ export const updateEvent = async (db: SQLiteDatabase, eventID: number, updates: 
     repeated_date,
     goal_time,
     progress_time,
-    tag_ids,
-    category_id,
+    tagIDs,
+    categoryID,
   } = updates;
 
   const result = await db.runAsync(
@@ -171,17 +174,16 @@ export const updateEvent = async (db: SQLiteDatabase, eventID: number, updates: 
     [
       label || null,
       description || null,
-      due_date ? due_date.toISOString() : null,
+      formatDateForSQLite(due_date),
       repeated_date ? JSON.stringify(repeated_date) : null,
       goal_time || null,
       progress_time || null,
-      category_id || null,
+      categoryID || null,
       eventID,
     ]
   )
 
-  addTagToEvent(db, eventID, tag_ids);
-  console.log("Delete completed: " + result);
+  addTagToEvent(db, eventID, tagIDs);
 }
 
 export const startEvent = async (db: SQLiteDatabase, eventID: number) => {
@@ -194,16 +196,13 @@ export const getEvent = async (db: SQLiteDatabase, filter: Partial<FilterEvent>)
     label,
     due_or_repeated_dates,
     created_dates,
-    tag_ids,
-    category_ids
+    tagIDs,
+    categoryIDs
   } = filter;
-
   let query = `SELECT * FROM event`;
   const params: any[] = [];
-
-  console.warn(filter);
-
   const conditions: string[] = [];
+
   if (event_id) {
     conditions.push('id = ?');
     params.push(event_id)
@@ -220,29 +219,30 @@ export const getEvent = async (db: SQLiteDatabase, filter: Partial<FilterEvent>)
 
     conditions.push('due_date BETWEEN ? AND ?');
     params.push(start, end);
-
-
-    // todo — implement case for repeated dates
+    // todo — implement case for repeated dates (repeats)
+    // do a separate search that finds tasks that...
+    // 1. has a repeated !== null
+    // 2. created before start date
+    // 3. just look it up honestly
   }
   if (created_dates) {
     conditions.push('created_date BETWEEN ? AND ?');
     params.push(created_dates.start, created_dates.end);
   }
-  if (category_ids) {
-    const placeholders = category_ids.map(() => '?').join(', ');
+  if (categoryIDs) {
+    const placeholders = categoryIDs.map(() => '?').join(', ');
     conditions.push(`categoryID IN (${placeholders})`);
-    params.push(...category_ids);
+    params.push(...categoryIDs);
   }
-  if (tag_ids && tag_ids.length > 0) {
-    const placeholders = tag_ids.map(() => '?').join(', ');
-    conditions.push(`et.tag_id IN (${placeholders})`);
-    params.push(...tag_ids);
+  if (tagIDs && tagIDs.length > 0) {
+    const placeholders = tagIDs.map(() => '?').join(', ');
+    conditions.push(`et.tagID IN (${placeholders})`);
+    params.push(...tagIDs);
   }
 
   if (conditions.length > 0) {
     query += ' WHERE ' + conditions.join(' AND ');
   }
-
   try {
     return (await db.getAllAsync<Event>(query, params));
   } catch (error) {
@@ -272,20 +272,181 @@ const addTagToEvent = async (db: SQLiteDatabase, eventID: number, tagIDs?: numbe
   console.log(`Tags [${tagIDs}] added to event with ID ${eventID}.`);
 };
 
-export const addTag = async (db: SQLiteDatabase, tag: Tag) => {}
-export const deleteTag = async (db: SQLiteDatabase, tagID: number) => {}
-export const updateTag = async (db: SQLiteDatabase, tagID: number, updates: UpdateTag) => {}
-export const getTag = async (db: SQLiteDatabase, filter: {tagID?: number, label?: string}) => {}
-export const getTagWithID = async (db: SQLiteDatabase, tagID: number) => {
-  // This is how we ourselves (internally in the code) we're going to find tags
+/**
+ * Adds a new tag to the `tag` table
+ * @param db
+ * @param tag 
+ */
+export const addTag = async (db: SQLiteDatabase, tag: Tag) => {
+  const { label, color } = tag;
+
+  // Check for duplicates
+  const existing = await db.getAllAsync<Event>(`SELECT * FROM tag WHERE label = ?`, label);
+  if (existing.length > 0) {
+    console.log(`Tag with label "${label}" already exists.`);
+    // todo — implement other functionality
+    return;
+  }
+
+  try {
+    await db.runAsync(`
+      INSERT INTO tag (label, color)
+        VALUES (?, ?);
+      `,
+      [
+        label,
+        color
+      ]
+    );
+  } catch (error) {
+    console.error("error with addTag:", error);
+  }
 }
-export const getTagWithLabel = async (db: SQLiteDatabase, label: string) => {
-  // This is how the user is mainly going to find tags
+export const deleteTag = async (db: SQLiteDatabase, tagID: number) => {
+  try {
+    await db.runAsync(`DELETE FROM tag WHERE id = ?`, tagID);
+  } catch (error) {
+    console.error("error with deleteTag:", error)
+  }
+}
+export const updateTag = async (db: SQLiteDatabase, tagID: number, updates: UpdateTag) => {
+  const {
+    label,
+    color
+  } = updates;
+
+  try {
+    await db.runAsync(
+      `
+        UPDATE tag
+        SET
+          label = COALESCE(?, label),
+          color = COALESCE(?, color)
+        WHERE id = ?
+      `,
+      [
+        label || null,
+        color || null,
+        tagID
+      ]
+    )
+  } catch (error) {
+    console.error("error with updateTag:", error)
+  }
+}
+export const getTag = async (db: SQLiteDatabase, filter: Partial<{tagID: number, label: string}>) => {
+  const {
+    tagID,
+    label
+  } = filter;
+  let query = `SELECT * FROM tag`;
+  const params: any[] = [];
+  const conditions: string[] = [];
+
+  if (tagID) {
+    conditions.push('id = ?')
+    params.push(tagID)
+  }
+  if (label) {
+    conditions.push('label LIKE ?')
+    params.push(`%${label}%`);  // Use wildcards for partial matches
+  }
+
+  if (conditions.length > 0) {
+    query += ' WHERE ' + conditions.join(' AND ');
+  }
+  try {
+    return (await db.getAllAsync<Tag>(query, params));
+  } catch (error) {
+    console.error("error with getTags:", error);
+  }
 }
 
-export const addCategory = async (db: SQLiteDatabase, category: Category) => {}
-export const deleteCategory = async (db: SQLiteDatabase, categoryID: number) => {}
-export const updateCategory = async (db: SQLiteDatabase, categoryID: number, updates: UpdateTag) => {}
-export const getCategory = async (db: SQLiteDatabase, filter: {categoryID?: number, label?: string}) => {}
-export const getCategoryWithID = async (db: SQLiteDatabase, categoryID: number) => {}
-export const getCategoryWithLabel = async (db: SQLiteDatabase, label: string) => {}
+export const addCategory = async (db: SQLiteDatabase, category: Category) => {
+  const { label, color } = category;
+
+  // Check for duplicates
+  const existing = await db.getAllAsync<Event>(`SELECT * FROM category WHERE label = ?`, label);
+  if (existing.length > 0) {
+    console.log(`Category with label "${label}" already exists.`);
+    // todo — implement other functionality
+    return;
+  }
+
+  try {
+    await db.runAsync(`
+      INSERT INTO category (label, color)
+        VALUES (?, ?);
+      `,
+      [
+        label,
+        color
+      ]
+    );
+  } catch (error) {
+    console.error("error with addCategory:", error);
+  }
+}
+export const deleteCategory = async (db: SQLiteDatabase, categoryID: number) => {
+  try {
+    await db.runAsync(`DELETE FROM category WHERE id = ?`, categoryID);
+  } catch (error) {
+    console.error("error with deleteCategory:", error)
+  }
+}
+export const updateCategory = async (db: SQLiteDatabase, categoryID: number, updates: UpdateTag) => {
+  const {
+    label,
+    color
+  } = updates;
+
+  try {
+    await db.runAsync(
+      `
+        UPDATE category
+        SET
+          label = COALESCE(?, label),
+          color = COALESCE(?, color)
+        WHERE id = ?
+      `,
+      [
+        label || null,
+        color || null,
+        categoryID
+      ]
+    )
+  } catch (error) {
+    console.error("error with updateCategory:", error);
+  }
+}
+export const getCategory = async (db: SQLiteDatabase, filter: {categoryID?: number, label?: string}) => {
+  const {
+    categoryID,
+    label
+  } = filter;
+  let query = `SELECT * FROM category`;
+  const params: any[] = [];
+  const conditions: string[] = [];
+
+  if (categoryID) {
+    conditions.push('id = ?')
+    params.push(categoryID)
+  }
+  if (label) {
+    conditions.push('label LIKE ?')
+    params.push(`%${label}%`);  // Use wildcards for partial matches
+  }
+
+  if (conditions.length > 0) {
+    query += ' WHERE ' + conditions.join(' AND ');
+  }
+  try {
+    return (await db.getAllAsync<Tag>(query, params));
+  } catch (error) {
+    console.error("error with getCategory:", error);
+  }
+}
+
+export const getEventTag = async (db: SQLiteDatabase, filter: any) => {
+  // todo — This prints from the junction table
+}

@@ -24,10 +24,14 @@ import ColorPicker, {
 } from "reanimated-color-picker";
 import { appearance$ } from "../../../db/Settings";
 import { fontSizes } from "../../../constants/style";
+import { Tags$ } from "../../../utils/stateManager";
+import { addTag } from "../../../utils/database";
+import { useSQLiteContext } from "expo-sqlite";
 
 var { width } = Dimensions.get("window");
 
 const CreateNewTag = ({ modalToggle, tags }: any) => {
+  const db = useSQLiteContext();
   const title$ = useObservable("");
   const tagColor$ = useObservable("red");
 
@@ -36,18 +40,19 @@ const CreateNewTag = ({ modalToggle, tags }: any) => {
     tagColor$.set(hex);
   };
 
-  const createHandler = () => {
+  const createHandler = async () => {
     if (title$.get() && tagColor$.get()) {
-      const indexNum = taskTags$.list.get().length + 1;
-      taskTags$.addToList({
+      const tag = { label: title$.get(), color: tagColor$.get() };
+      const id = await addTag(db, tag);
+
+      Tags$.addToList(id, {
         label: title$.get(),
-        value: indexNum,
         color: tagColor$.get(),
       });
       modalToggle.set(false);
       tags.set((prev: any) => prev.concat(indexNum));
     } else {
-      // TODO — Warn the user
+      // TODO — Warn the user (w/ error popup)
       console.log("warn the user somehow (red line somewhere, I think)");
     }
   };

@@ -1,7 +1,7 @@
 import { Button, Dimensions, StyleSheet, Text, View } from "react-native";
 import React from "react";
 import SwipeCalendar from "../../components/Screens/Calendar/SwipeCalendar";
-import dayjs from "dayjs";
+import dayjs, { Dayjs } from "dayjs";
 import ItemLister from "../../components/ui/ItemLister";
 import { swipeableCalendar$, taskList$ } from "../../db/LegendApp";
 
@@ -13,14 +13,44 @@ import {
 } from "../../db/LegendApp";
 
 import { ScrollView } from "react-native-gesture-handler";
-import { Memo } from "@legendapp/state/react";
+import { Memo, observer, useObservable } from "@legendapp/state/react";
 import { useSQLiteContext } from "expo-sqlite";
 import { addEvent, getEvent } from "../../utils/database";
+import { observable, observe, when } from "@legendapp/state";
+import { SQLiteAnyDatabase } from "expo-sqlite/build/NativeStatement";
 
 var { width } = Dimensions.get("window");
 
 const Calendar = () => {
   const db = useSQLiteContext();
+  const events = useObservable<Event[]>();
+
+  const loadEvents = async (date: Dayjs | null) => {
+    const filter = {
+      due_or_repeated_dates: {
+        start: date?.format("MM-DD-YYYY") || null,
+      },
+    };
+
+    const result = await getEvent(db, filter);
+    events.set(result);
+    console.log("Load Events", result);
+  };
+
+  observe(() => {
+    // Basically useEffect
+    loadEvents(swipeableCalendar$.activeDay.get());
+  });
+
+  const hi = async () =>
+    await addEvent(db, {
+      label: "Hello",
+      goal_time: 23,
+      due_date: dayjs(),
+    });
+
+  hi();
+
   // todo — remove (any) type
   return (
     <>
@@ -42,7 +72,14 @@ const Calendar = () => {
 
       <ScrollView style={[styles.container]}>
         // todo — replace this
-        {/* <Memo>{() => getEventsOnDate(swipeableCalendar$.activeDay.get())}</Memo> */}
+        <Memo>
+          {() => {
+            events.get()?.forEach((event) => {
+              console.warn("event", event);
+            });
+            console.error("This is working");
+          }}
+        </Memo>
       </ScrollView>
     </>
   );

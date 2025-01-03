@@ -20,7 +20,7 @@ import Modal from "../components/Modal";
 import { AutoSizeText, ResizeTextMode } from "react-native-auto-size-text";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 
-import { observe } from "@legendapp/state";
+import { Observable, observable, observe } from "@legendapp/state";
 import {
   overdueTasks$,
   taskCategory$,
@@ -36,6 +36,10 @@ import TimePicker from "../components/Screens/Modals/TimePicker";
 import { constants, fontSizes, padding } from "../constants/style";
 import Calendar from "./tabs/Calendar";
 import TopTab from "../components/TopTab";
+import { addEvent } from "../utils/database";
+import { useSQLiteContext } from "expo-sqlite";
+import { Tags$ } from "../utils/stateManager";
+import { newEvent$, toggle$ } from "../utils/newEventState";
 
 var isToday = require("dayjs/plugin/isToday");
 // import isToday from 'dayjs/plugin/isToday' // ES 2015
@@ -45,107 +49,47 @@ const Tab = createMaterialTopTabNavigator();
 var { width } = Dimensions.get("window");
 
 export default function Home({ navigation }: any) {
+  const db = useSQLiteContext();
   dayjs.extend(isToday);
   const insets = useSafeAreaInsets();
 
-  const closeSheet$ = useObservable(false);
-  const tagModalToggle$ = useObservable(false);
-  const categoryModalToggle$ = useObservable(false);
-  const dateModalToggle$ = useObservable(false);
-  const timeModalToggle$ = useObservable(false);
-
-  const title$ = useObservable("");
-  const tags$ = useObservable([]);
-  const category$ = useObservable(0);
-  const dateDue$ = useObservable(dayjs()); // TODO — Allow user to choose how to format date
-  const dateCreated$ = useObservable(dayjs());
-  const timeGoal$ = useObservable({ hours: 0, minutes: 0, total: 0 });
-  const timeGoalDefault$ = useObservable({ hours: 0, minutes: 0 });
-  const repeated$ = useObservable([
-    { day: "Sunday", abbrev: "Sun.", initial: "S", selected: false },
-    { day: "Monday", abbrev: "Mon.", initial: "M", selected: false },
-    { day: "Tuesday", abbrev: "Tues.", initial: "T", selected: false },
-    { day: "Wednesday", abbrev: "Wed.", initial: "W", selected: false },
-    { day: "Thursday", abbrev: "Thurs.", initial: "T", selected: false },
-    { day: "Friday", abbrev: "Fri.", initial: "F", selected: false },
-    { day: "Saturday", abbrev: "Sat.", initial: "S", selected: false },
-  ]);
-
   const clearForm = () => {
-    title$.set("");
-    tags$.set([]); // TODO — Does this function work (or should I just clear it here manually)
-    category$.set(0);
-    timeGoal$.set({ hours: 0, minutes: 0, total: 0 });
-    timeGoalDefault$.set({ hours: 0, minutes: 0 });
-    dateDue$.set(dayjs()); // TODO — Actually set dateDue() everytime + is pressed
-    repeated$.set([
-      { day: "Sunday", abbrev: "Sun.", initial: "S", selected: false },
-      { day: "Monday", abbrev: "Mon.", initial: "M", selected: false },
-      { day: "Tuesday", abbrev: "Tues.", initial: "T", selected: false },
-      { day: "Wednesday", abbrev: "Wed.", initial: "W", selected: false },
-      { day: "Thursday", abbrev: "Thurs.", initial: "T", selected: false },
-      { day: "Friday", abbrev: "Fri.", initial: "F", selected: false },
-      { day: "Saturday", abbrev: "Sat.", initial: "S", selected: false },
-    ]);
+    newEvent$.set({
+      label: "",
+      description: "",
+      tags: [],
+      category: 0,
+      due_date: dayjs(),
+      goal_time: 0,
+    });
   };
 
   const createTask = () => {
-    // There is no error for .isToday()
-    console.log(
-      "This is it ",
-      dateDue$.get().format("YY, MM, DD") > dayjs().format("YY, MM, DD")
-    );
-    // console.log("This is it ", dateDue$.get().diff(dayjs(), "day"));
-    if (dateDue$.get().isToday()) {
-      todayTasks$.data.push({
-        title: title$.get(),
-        tags: tags$.get(),
-        category: taskCategory$.list[category$.get()], // TODO — Does clearing get rid of category -> Yes it does
-        due: dateDue$.get(), // TODO — This is a DAYJS() object!!!
-        created: dateCreated$.get(),
-        time_goal: timeGoal$.get(),
-        time_spent: { hours: 0, minutes: 0, seconds: 0, total: 0 },
-        repeated: repeated$.get(),
-      });
-    } else if (
-      dateDue$.get().format("YY, MM, DD") > dayjs().format("YY, MM, DD")
-    ) {
-      upcomingTasks$.data.push({
-        title: title$.get(),
-        tags: tags$.get(),
-        category: taskCategory$.list[category$.get()], // TODO — Does clearing get rid of category -> Yes it does
-        due: dateDue$.get(), // TODO — This is a DAYJS() object!!!
-        created: dateCreated$.get(),
-        time_goal: timeGoal$.get(),
-        time_spent: { hours: 0, minutes: 0, seconds: 0, total: 0 },
-        repeated: repeated$.get(),
-      });
-    } else if (
-      dateDue$.get().format("YY, MM, DD") < dayjs().format("YY, MM, DD")
-    ) {
-      overdueTasks$.data.push({
-        title: title$.get(),
-        tags: tags$.get(),
-        category: taskCategory$.list[category$.get()], // TODO — Does clearing get rid of category -> Yes it does
-        due: dateDue$.get(), // TODO — This is a DAYJS() object!!!
-        created: dateCreated$.get(),
-        time_goal: timeGoal$.get(),
-        time_spent: { hours: 0, minutes: 0, seconds: 0, total: 0 },
-        repeated: repeated$.get(),
-      });
-    }
+    const event = {
+      label: newEvent$.label.get(),
+      description: newEvent$.description.get(),
+      tags: newEvent$.tags.get(), // number[]
+      category: newEvent$.category.get(), // number
+      due_date: newEvent$.due_date.get(), // TODO — This is a DAYJS() object!!!
+      created_date: dayjs(),
+      goal_time: newEvent$.goal_time.get(),
+      progress_time: 0,
+    };
+
+    async () => {
+      await addEvent(db, event);
+    };
   };
 
-  observe(() => {
-    console.log(dateDue$.get());
-  });
-
+  /**
+   * Title View
+   */
   const TitleView = (
     <>
       <View style={{ alignSelf: "flex-start" }}>
         {/* TODO — The Text input font size should be bigger than the subcategories */}
         <Reactive.TextInput
-          $value={title$}
+          $value={newEvent$.label}
           style={styles.taskInput}
           placeholder="Title"
         />
@@ -154,19 +98,26 @@ export default function Home({ navigation }: any) {
     </>
   );
 
+  /**
+   * Tag View
+   *
+   * WARNING:
+   * id == 0  does not get read by the `For Each` loop.
+   * Make sure that SQLite starts the id at 1.
+   */
   const TagsView = (
     <>
       <View style={{ flexDirection: "row", width: "100%", flexWrap: "wrap" }}>
-        <For each={tags$} optimized>
-          {(item$) => (
+        <For each={newEvent$.tags} optimized>
+          {(item$: Observable<number>) => (
             <View style={{ marginRight: 15 }}>
               <Text
                 style={[
-                  { color: taskTags$.list[item$.get() - 1].color.get() },
+                  { color: Tags$.list[item$.get()].color.get() },
                   { fontSize: fontSizes.regular, fontWeight: "600" },
                 ]}
               >
-                # {taskTags$.list[item$.get() - 1].label.get()}
+                # {Tags$.list[item$.get()].label.get()}
               </Text>
             </View>
             // TODO — Touchable Opacity to pop-up delete panel
@@ -174,7 +125,7 @@ export default function Home({ navigation }: any) {
         </For>
       </View>
       <View style={{ alignSelf: "flex-start", marginTop: 5 }}>
-        <TouchableOpacity onPress={() => tagModalToggle$.set(true)}>
+        <TouchableOpacity onPress={() => toggle$.tagModal.set(true)}>
           <AutoSizeText
             fontSize={fontSizes.regular}
             numberOfLines={1}
@@ -202,12 +153,12 @@ export default function Home({ navigation }: any) {
         <Memo>
           {() => (
             <TouchableOpacity
-              onPress={() => categoryModalToggle$.set(true)}
+              onPress={() => toggle$.categoryModal.set(true)}
               style={[
                 styles.pillTouchable,
                 {
                   backgroundColor:
-                    taskCategory$.list[category$.get()].color.get(),
+                    taskCategory$.list[newEvent$.category.get()].color.get(),
                 },
               ]}
               // TODO — Change the background color ('wrap all of TouchableOpacity in Memo')
@@ -223,7 +174,7 @@ export default function Home({ navigation }: any) {
                 ]}
               >
                 {/* TODO — Character Limit */}
-                {taskCategory$.list[category$.get()].label.get()}
+                {taskCategory$.list[newEvent$.category.get()].label.get()}
               </AutoSizeText>
             </TouchableOpacity>
           )}
@@ -244,7 +195,7 @@ export default function Home({ navigation }: any) {
       </AutoSizeText>
       <View style={styles.alignSelf}>
         <TouchableOpacity
-          onPress={() => dateModalToggle$.set(true)}
+          onPress={() => toggle$.dateModal.set(true)}
           style={[styles.pillTouchable, styles.pillOutline]}
         >
           <AutoSizeText
@@ -253,7 +204,7 @@ export default function Home({ navigation }: any) {
             mode={ResizeTextMode.max_lines}
             style={[styles.pillPadding, { fontWeight: "bold" }]}
           >
-            <Memo>{() => dateDue$.get().format("MMM DD, YYYY")}</Memo>
+            <Memo>{() => newEvent$.due_date.get().format("MMM DD, YYYY")}</Memo>
           </AutoSizeText>
         </TouchableOpacity>
       </View>
@@ -274,11 +225,7 @@ export default function Home({ navigation }: any) {
         <View style={styles.alignSelf}>
           <TouchableOpacity
             onPress={() => {
-              timeModalToggle$.set(true);
-              timeGoalDefault$.assign({
-                hours: timeGoal$.hours.get(),
-                minutes: timeGoal$.minutes.get(),
-              });
+              toggle$.timeModal.set(true);
             }}
             style={[styles.pillTouchable, styles.pillOutline]}
           >
@@ -289,11 +236,11 @@ export default function Home({ navigation }: any) {
               style={[styles.pillPadding, { fontWeight: "bold" }]}
             >
               <Memo>
-                {() =>
-                  `${timeGoal$.hours.get()} : ${
-                    timeGoal$.minutes.get() < 10 ? "0" : ""
-                  }${timeGoal$.minutes.get()}`
-                }
+                {() => {
+                  const time = newEvent$.goal_time.get();
+
+                  `${time % 3600} : ${time % 60 < 10 ? "0" : ""}${time % 60}`;
+                }}
               </Memo>
             </AutoSizeText>
           </TouchableOpacity>
@@ -327,10 +274,9 @@ export default function Home({ navigation }: any) {
         }}
         onPress={() => {
           // TODO — Clear Selected Category,
-          dateCreated$.set(dayjs());
           createTask();
           clearForm();
-          closeSheet$.set((prev) => !prev);
+          toggle$.closeSheet.set((prev) => !prev);
         }}
       >
         <AutoSizeText
@@ -372,33 +318,33 @@ export default function Home({ navigation }: any) {
         name="Home"
         toggleNav={navigation.openDrawer}
         enableRightBtn={true}
-        setNewDueDate={dateDue$}
+        setNewDueDate={newEvent$.due_date}
       />
       <View style={{ height: padding.regularPlus }} />
       <TopTab />
 
-      <BottomSheet close={closeSheet$}>{CreateTaskPage}</BottomSheet>
+      <BottomSheet close={toggle$.closeSheet}>{CreateTaskPage}</BottomSheet>
 
       <Memo>
         {() => (
           <Modal
-            isOpen={tagModalToggle$.get()}
+            isOpen={toggle$.tagModal.get()}
             withInput
             // onRequestClose={() => {
-            //   tagModalToggle$.set(false)
+            //   toggle$.tagModal.set(false)
             // }}
           >
-            <AddTags modalToggle={tagModalToggle$} tags={tags$} />
+            <AddTags />
           </Modal>
         )}
       </Memo>
 
       <Memo>
         {() => (
-          <Modal isOpen={categoryModalToggle$.get()} withInput>
+          <Modal isOpen={toggle$.categoryModal.get()} withInput>
             <AddCategory
-              modalToggle={categoryModalToggle$}
-              category={category$}
+              modalToggle={toggle$.categoryModal}
+              category={newEvent$.category}
             />
           </Modal>
         )}
@@ -406,19 +352,22 @@ export default function Home({ navigation }: any) {
 
       <Memo>
         {() => (
-          <Modal isOpen={dateModalToggle$.get()}>
-            <DatePicker modalToggle={dateModalToggle$} date={dateDue$} />
+          <Modal isOpen={toggle$.dateModal.get()}>
+            <DatePicker
+              modalToggle={toggle$.dateModal}
+              date={newEvent$.due_date}
+            />
           </Modal>
         )}
       </Memo>
 
       <Memo>
         {() => (
-          <Modal isOpen={timeModalToggle$.get()}>
+          <Modal isOpen={toggle$.timeModal.get()}>
             <TimePicker
-              modalToggle={timeModalToggle$}
-              time={timeGoal$}
-              timeDefault={timeGoalDefault$}
+              modalToggle={toggle$.timeModal}
+              time={null} // todo — I need to adapt this to work with NUMBERS, not an object
+              timeDefault={null} // todo — remove this
             />
           </Modal>
         )}

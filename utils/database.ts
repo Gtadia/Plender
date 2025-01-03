@@ -1,5 +1,5 @@
 import { SQLiteDatabase } from "expo-sqlite";
-import { Category, dateRange, Event, FilterEvent, Tag, UpdateEvent, UpdateTag } from "./interface";
+import { Category, dateRange, dateRangeString, Event, Event_Tag, FilterEvent, Tag, UpdateEvent, UpdateTag } from "./interface";
 import { Dayjs } from "dayjs";
 
 export async function migrateDbIfNeeded(db: SQLiteDatabase) {
@@ -37,7 +37,6 @@ export async function migrateDbIfNeeded(db: SQLiteDatabase) {
         description TEXT NULL,
         created_date DATE NOT NULL DEFAULT CURRENT_DATE,
         due_date DATE,
-        repeated_date TEXT NULL,
         goal_time INTEGER NOT NULL,   -- seconds
         progress_time INTEGER NOT NULL,   -- seconds
         categoryID INTEGER
@@ -72,7 +71,7 @@ export async function migrateDbIfNeeded(db: SQLiteDatabase) {
   // if (currentDbVersion === 1) {
   //   Add more migrations
   // }
-  await db.execAsync(`PRAGMA user_version = ${DATABASE_VERSION}`);
+  await db.execAsync(`PRAGMA user_version = ${DATABASE_VERSION }`);
 }
 
 /**
@@ -82,7 +81,7 @@ export async function migrateDbIfNeeded(db: SQLiteDatabase) {
  */
 const formatDateForSQLite = (date?: Dayjs) => {
   if (date) {
-    return date.toISOString().replace('T', ' ').split('.')[0];
+    return date.format('MM-DD-YYYY h:mm:ss');
   }
   return null;
 };
@@ -92,7 +91,7 @@ const formatDateForSQLite = (date?: Dayjs) => {
  * @param dates
  * @returns 
  */
-const formatDateForSQLiteSearching = (dates: dateRange) => {
+const formatDateForSQLiteSearching = (dates: dateRangeString) => {
   const result = {start: dates.start, end: dates.end || ''};
 
   if (!dates.end) {
@@ -111,23 +110,32 @@ const formatDateForSQLiteSearching = (dates: dateRange) => {
 
 
 export const addEvent = async (db: SQLiteDatabase, event:Event) => {
-  const { label, description, due_date, repeated_date, goal_time, tagIDs, categoryID } = event;
+  const { label, description, due_date, goal_time, tagIDs, categoryID } = event;
   try {
     const result = await db.runAsync(`
-      INSERT INTO event (label, description, due_date, repeated_date, goal_time, progress_time, categoryID)
-        VALUES (?, ?, ?, ?, ?, ?, ?);
+      INSERT INTO event (label, description, due_date, goal_time, progress_time, categoryID)
+        VALUES (?, ?, ?, ?, ?, ?);
       `,
       [
         label,
         description || '',
         // created_date ==> automatically inserted
         formatDateForSQLite(due_date) || null,
-        repeated_date ? JSON.stringify(repeated_date) : null,
+        // repeated_date ? JSON.stringify(repeated_date) : null,
         goal_time,
         0,  // progress_time ==> set to 0
         categoryID || null
       ]
     );
+
+    // Get the last inserted row ID
+    const eventIDResult = await db.runAsync(`SELECT last_insert_rowid() as id`);
+    const eventID = eventIDResult[0]?.id;
+
+    // Add tags to the event
+    if (eventID && tagIDs && tagIDs.length > 0) {
+      await addTagToEvent(db, eventID, tagIDs);
+    }
   } catch (error) {
     console.error("error with addEvent:", error);
   }
@@ -151,7 +159,6 @@ export const updateEvent = async (db: SQLiteDatabase, eventID: number, updates: 
     label,
     description,
     due_date,
-    repeated_date,
     goal_time,
     progress_time,
     tagIDs,
@@ -165,7 +172,6 @@ export const updateEvent = async (db: SQLiteDatabase, eventID: number, updates: 
         label = COALESCE(?, label),
         description = COALESCE(?, description),
         due_date = COALESCE(?, due_date),
-        repeated_date = COALESCE(?, repeated_date),
         goal_time = COALESCE(?, goal_time),
         progress_time = COALESCE(?, progress_time),
         categoryID = COALESCE(?, categoryID)
@@ -175,7 +181,7 @@ export const updateEvent = async (db: SQLiteDatabase, eventID: number, updates: 
       label || null,
       description || null,
       formatDateForSQLite(due_date),
-      repeated_date ? JSON.stringify(repeated_date) : null,
+      // repeated_date ? JSON.stringify(repeated_date) : null,
       goal_time || null,
       progress_time || null,
       categoryID || null,
@@ -243,6 +249,8 @@ export const getEvent = async (db: SQLiteDatabase, filter: Partial<FilterEvent>)
   if (conditions.length > 0) {
     query += ' WHERE ' + conditions.join(' AND ');
   }
+
+  console.warn(query, params);
   try {
     return (await db.getAllAsync<Event>(query, params));
   } catch (error) {
@@ -289,6 +297,7 @@ export const addTag = async (db: SQLiteDatabase, tag: Tag) => {
   }
 
   try {
+    // Insert the tag into the database
     await db.runAsync(`
       INSERT INTO tag (label, color)
         VALUES (?, ?);
@@ -298,6 +307,13 @@ export const addTag = async (db: SQLiteDatabase, tag: Tag) => {
         color
       ]
     );
+
+    // Retrieve the ID of the inserted tag
+    const result: Tag[] = await db.getAllAsync(`SELECT last_insert_rowid() as id`);
+    const tagID = result[0]?.id;
+
+    console.log(`Tag added with ID: ${tagID}`);
+    return tagID; // Return the ID for further use
   } catch (error) {
     console.error("error with addTag:", error);
   }
@@ -447,6 +463,30 @@ export const getCategory = async (db: SQLiteDatabase, filter: {categoryID?: numb
   }
 }
 
-export const getEventTag = async (db: SQLiteDatabase, filter: any) => {
-  // todo — This prints from the junction table
+export const getEventTag = async (db: SQLiteDatabase, filter: Partial<Event_Tag>) => {
+  const {
+    tagID,
+    eventID
+  } = filter;
+  let query = `SELECT * FROM category`;
+  const params: any[] = [];
+  const conditions: string[] = [];
+
+  if (tagID) {
+    conditions.push('id = ?')
+    params.push(tagID)
+  }
+  if (eventID) {
+    conditions.push('id = ?')
+    params.push(eventID)
+  }
+
+  if (conditions.length > 0) {
+    query += ' WHERE ' + conditions.join(' AND ');
+  }
+  try {
+    return (await db.getAllAsync<Tag>(query, params));
+  } catch (error) {
+    console.error("error with getCategory:", error);
+  }
 }

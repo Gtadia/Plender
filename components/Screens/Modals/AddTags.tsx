@@ -7,70 +7,22 @@ import {
 } from "react-native";
 import React from "react";
 import { AutoSizeText, ResizeTextMode } from "react-native-auto-size-text";
-import { taskTags$ } from "../../../db/LegendApp";
 
-import { MultiSelect } from "react-native-element-dropdown";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import { observer, useObservable } from "@legendapp/state/react";
 import Modal from "../../Modal";
 import CreateNewTag from "./CreateNewTag";
 import { appearance$ } from "../../../db/Settings";
 import { constants, fontSizes, modalConst } from "../../../constants/style";
+import { Tags$ } from "../../../utils/stateManager";
+import { newEvent$, toggle$ } from "../../../utils/newEventState";
+import DropDownPicker from "react-native-dropdown-picker";
 
 var { width } = Dimensions.get("window");
 
-const AddTags = observer(({ modalToggle, tags }: any) => {
+const AddTags = observer(() => {
   const isCreateModalOpen$ = useObservable(false);
-
-  const renderItem = (item: any) => {
-    return (
-      <View style={dropdownStyles.item}>
-        <Text style={[dropdownStyles.selectedTextStyle, { color: item.color }]}>
-          {item.label}
-        </Text>
-        {tags.get().includes(item.value) ? (
-          <View
-            style={{
-              justifyContent: "center",
-              alignItems: "center",
-              borderWidth: 2,
-              borderRadius: 4,
-              width: 20,
-              height: 20,
-            }}
-          >
-            <AntDesign name="check" size={20} color="green" />
-          </View>
-        ) : (
-          <View
-            style={{
-              justifyContent: "center",
-              alignItems: "center",
-              borderWidth: 2,
-              borderRadius: 4,
-              width: 20,
-              height: 20,
-            }}
-          ></View>
-        )}
-      </View>
-    );
-  };
-
-  const RenderSelectedItem = ({ item, unSelect }: any) => {
-    return (
-      <TouchableOpacity onPress={() => unSelect && unSelect(item)}>
-        <View style={dropdownStyles.selectedStyle}>
-          <Text
-            style={[dropdownStyles.textSelectedStyle, { color: item.color }]}
-          >
-            # {item.label}
-          </Text>
-          <AntDesign color="black" name="close" size={17} />
-        </View>
-      </TouchableOpacity>
-    );
-  };
+  const open$ = useObservable(false);
 
   return (
     <View
@@ -93,26 +45,22 @@ const AddTags = observer(({ modalToggle, tags }: any) => {
       </AutoSizeText>
 
       <View style={dropdownStyles.container}>
-        <MultiSelect
+        <DropDownPicker
+          open={open$.get()}
+          setOpen={(item) => open$.set(item)}
+          multiple={true}
           style={dropdownStyles.dropdown}
           placeholderStyle={dropdownStyles.placeholderStyle}
-          selectedTextStyle={dropdownStyles.selectedTextStyle}
-          inputSearchStyle={dropdownStyles.inputSearchStyle}
-          iconStyle={dropdownStyles.iconStyle}
-          data={taskTags$.list.get()}
-          labelField="label"
-          valueField="value"
-          placeholder="Select Tag(s)"
-          value={tags.get()}
-          search
-          searchPlaceholder="Search..."
-          onChange={(item) => {
-            tags.set(item);
+          // selectedTextStyle={dropdownStyles.selectedTextStyle}
+          // inputSearchStyle={dropdownStyles.inputSearchStyle}
+          // iconStyle={dropdownStyles.iconStyle}
+          itemKey="id"
+          items={Object.values(Tags$.list.get())}
+          value={newEvent$.tags.get()}
+          setValue={(item) => newEvent$.tags.set(item)}
+          onChangeValue={(value) => {
+            console.log(value);
           }}
-          renderItem={renderItem}
-          renderSelectedItem={(item, unSelect) => (
-            <RenderSelectedItem item={item} unSelect={unSelect} />
-          )}
         />
         <TouchableOpacity
           style={{
@@ -151,7 +99,7 @@ const AddTags = observer(({ modalToggle, tags }: any) => {
           justifyContent: "center",
           alignItems: "center",
         }}
-        onPress={() => modalToggle.set(false)}
+        onPress={() => toggle$.tagModal.set(false)}
       >
         <AutoSizeText
           fontSize={24}
@@ -164,7 +112,7 @@ const AddTags = observer(({ modalToggle, tags }: any) => {
       </TouchableOpacity>
 
       <Modal isOpen={isCreateModalOpen$.get()} withInput>
-        <CreateNewTag modalToggle={isCreateModalOpen$} tags={tags} />
+        <CreateNewTag modalToggle={isCreateModalOpen$} tags={newEvent$.tags} />
       </Modal>
     </View>
   );

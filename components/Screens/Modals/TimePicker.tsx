@@ -6,9 +6,11 @@ import { AutoSizeText, ResizeTextMode } from "react-native-auto-size-text";
 import Picker from "../../TimeCarousel/Picker";
 import { fontSizes } from "../../../constants/style";
 import { appearance$ } from "../../../db/Settings";
+import { newEvent$, toggle$ } from "../../../utils/newEventState";
 
 const { width } = Dimensions.get("window");
 
+// Array of minutes and hours for carousel
 const minutes = new Array(60).fill({ value: 0, label: 0 }).map((_, index) => ({
   value: index,
   label: index < 10 ? `0${index}` : `${index}`,
@@ -17,7 +19,28 @@ const hours = new Array(24)
   .fill({ value: 0, label: 0 })
   .map((_, index) => ({ value: index, label: index }));
 
-const TimePicker = observer(({ modalToggle, time, timeDefault }: any) => {
+/**
+ * Converts {hours: number, minutes: number} to an integer (seconds)
+ */
+const timeObjectToSeconds = (timeObject: { hours: number; minutes: number }) =>
+  timeObject.hours * 3600 + timeObject.minutes * 60;
+
+/**
+ * The main object to be returned
+ */
+const TimePicker = observer(() => {
+  /**
+   * The time object to be displayed on the carousel
+   */
+  const timeObject = useObservable(() => {
+    const seconds = newEvent$.goal_time.get();
+
+    return {
+      hours: Math.floor(seconds / 3600),
+      minutes: Math.floor((seconds % 3600) / 60),
+    };
+  });
+
   return (
     <View
       style={{
@@ -57,8 +80,8 @@ const TimePicker = observer(({ modalToggle, time, timeDefault }: any) => {
             secondaryColor: "gray",
           }}
           ITEM_HEIGHT={72}
-          defaultValue={timeDefault.hours}
-          legendState={time.hours}
+          defaultValue={timeObject.hours}
+          legendState={timeObject.hours}
           width={125}
         />
         <Text
@@ -84,8 +107,8 @@ const TimePicker = observer(({ modalToggle, time, timeDefault }: any) => {
             secondaryColor: "gray",
           }}
           ITEM_HEIGHT={72}
-          defaultValue={timeDefault.minutes}
-          legendState={time.minutes}
+          defaultValue={timeObject.minutes}
+          legendState={timeObject.minutes}
           width={125}
         />
       </View>
@@ -103,9 +126,13 @@ const TimePicker = observer(({ modalToggle, time, timeDefault }: any) => {
           alignItems: "center",
         }}
         onPress={() => {
-          modalToggle.set(false);
-          time.total.set(time.hours.get() * 3600 + time.minutes.get() * 60);
-          console.log(time.hours.get(), time.minutes.get(), time.total.get());
+          toggle$.timeModal.set(false);
+          newEvent$.goal_time.set(timeObjectToSeconds(timeObject.get()));
+          console.log(
+            timeObject.hours.get(),
+            timeObject.minutes.get(),
+            newEvent$.goal_time.get()
+          );
         }}
       >
         <AutoSizeText

@@ -14,86 +14,12 @@ import { appearance$ } from "../../../db/Settings";
 import { constants, fontSizes, modalConst } from "../../../constants/style";
 import DateTimePicker from "react-native-ui-datepicker";
 import { Dropdown } from "react-native-element-dropdown";
+import { newEvent$, toggle$ } from "../../../utils/newEventState";
+import dayjs from "dayjs";
 
 var { width } = Dimensions.get("window");
 
-const CreateNewCategory = ({ modalToggle, date }: any) => {
-  const repeatOptions = useObservable([
-    { label: "None" },
-    { label: "Until" },
-    { label: "Forever" },
-  ]);
-  const repeatSelected = useObservable("None");
-  const repeated$ = useObservable([
-    { day: "Sunday", abbrev: "Sun.", initial: "S", selected: false },
-    { day: "Monday", abbrev: "Mon.", initial: "M", selected: false },
-    { day: "Tuesday", abbrev: "Tues.", initial: "T", selected: false },
-    { day: "Wednesday", abbrev: "Wed.", initial: "W", selected: false },
-    { day: "Thursday", abbrev: "Thurs.", initial: "T", selected: false },
-    { day: "Friday", abbrev: "Fri.", initial: "F", selected: false },
-    { day: "Saturday", abbrev: "Sat.", initial: "S", selected: false },
-  ]);
-
-  const renderItem = (item: any) => {
-    return (
-      <View style={dropdownStyles.item}>
-        <Text style={[dropdownStyles.selectedTextStyle]}>{item.label}</Text>
-      </View>
-    );
-  };
-
-  const RepeatView = (
-    <>
-      <View
-        style={[
-          {
-            borderRadius: constants.smallRadius,
-            flexDirection: "row",
-            justifyContent: "space-between",
-          },
-          styles.pillOutline,
-          styles.pillPadding,
-        ]}
-      >
-        <For each={repeated$} optimized>
-          {(item$) => (
-            <Pressable
-              onPress={() => {
-                item$.selected.set((prev: boolean) => !prev);
-              }}
-            >
-              <Memo>
-                {() => (
-                  <View
-                    style={{
-                      width: 40,
-                      aspectRatio: 1,
-                      justifyContent: "center",
-                      alignItems: "center",
-                      borderRadius: 20,
-                      backgroundColor: item$.selected.get()
-                        ? "red"
-                        : "rgba(0, 0, 0, 0)",
-                    }}
-                  >
-                    <AutoSizeText
-                      fontSize={fontSizes.big}
-                      numberOfLines={1}
-                      mode={ResizeTextMode.max_lines}
-                      style={{ color: "white", fontWeight: "600" }}
-                    >
-                      {item$.initial.get()}
-                    </AutoSizeText>
-                  </View>
-                )}
-              </Memo>
-            </Pressable>
-          )}
-        </For>
-      </View>
-    </>
-  );
-
+const CreateNewCategory = () => {
   return (
     <View
       style={{
@@ -133,101 +59,45 @@ const CreateNewCategory = ({ modalToggle, date }: any) => {
           Repeat
         </AutoSizeText>
 
-        <View style={dropdownStyles.container}>
-          <Dropdown
-            style={dropdownStyles.dropdown}
-            placeholderStyle={dropdownStyles.placeholderStyle}
-            selectedTextStyle={dropdownStyles.selectedTextStyle}
-            inputSearchStyle={dropdownStyles.inputSearchStyle}
-            iconStyle={dropdownStyles.iconStyle}
-            data={repeatOptions.get()}
-            maxHeight={200}
-            labelField="label"
-            valueField="value"
-            placeholder={repeatSelected.get()}
-            value={repeatSelected.get()}
-            onChange={(item) => {
-              repeatSelected.set(item.label);
-            }}
-            renderItem={renderItem}
-          />
-        </View>
+        <AutoSizeText
+          fontSize={fontSizes.bigMinus}
+          numberOfLines={1}
+          mode={ResizeTextMode.max_lines}
+          style={{
+            color: appearance$.primaryWhite.get(),
+            fontWeight: "bold",
+          }}
+        >
+          Coming Soon!
+        </AutoSizeText>
       </View>
 
       <Memo>
-        {() =>
-          repeatSelected.get() === "None" ||
-          repeatSelected.get() === "Until" ? (
-            <>
-              <AutoSizeText
-                fontSize={fontSizes.bigMinus}
-                numberOfLines={1}
-                mode={ResizeTextMode.max_lines}
-                style={{
-                  color: appearance$.primaryWhite.get(),
-                  fontWeight: "bold",
-                  marginBottom: modalConst.paddingBetween1,
+        {() => (
+          <>
+            <View
+              style={{
+                backgroundColor: "white",
+                borderRadius: constants.regularMinusRadius,
+                paddingTop: 15,
+              }}
+            >
+              <DateTimePicker
+                mode="single"
+                date={newEvent$.due_date.get()}
+                onChange={(params) =>
+                  newEvent$.due_date.set(dayjs(params.date))
+                }
+                headerTextContainerStyle={{
+                  backgroundColor: "#F0F2F7",
+                  paddingHorizontal: 16,
+                  paddingVertical: 8,
+                  borderRadius: 5,
                 }}
-              >
-                <Memo>
-                  {() =>
-                    repeatSelected.get() === "None"
-                      ? "Pick Due Date"
-                      : "Repeat Until"
-                  }
-                </Memo>
-              </AutoSizeText>
-
-              <View
-                style={{
-                  backgroundColor: "white",
-                  borderRadius: constants.regularMinusRadius,
-                  paddingTop: 15,
-                }}
-              >
-                <DateTimePicker
-                  mode="single"
-                  date={date.get()}
-                  onChange={(params) => date.set(params.date)}
-                  headerTextContainerStyle={{
-                    backgroundColor: "#F0F2F7",
-                    paddingHorizontal: 16,
-                    paddingVertical: 8,
-                    borderRadius: 5,
-                  }}
-                />
-              </View>
-            </>
-          ) : (
-            <></>
-          )
-        }
-      </Memo>
-
-      <Memo>
-        {() =>
-          repeatSelected.get() === "Until" ||
-          repeatSelected.get() === "Forever" ? (
-            <>
-              <AutoSizeText
-                fontSize={fontSizes.bigMinus}
-                numberOfLines={1}
-                mode={ResizeTextMode.max_lines}
-                style={{
-                  color: appearance$.primaryWhite.get(),
-                  fontWeight: "bold",
-                  marginTop: modalConst.paddingBetween1,
-                  marginBottom: modalConst.smallPadding,
-                }}
-              >
-                Repeat On
-              </AutoSizeText>
-              {RepeatView}
-            </>
-          ) : (
-            <></>
-          )
-        }
+              />
+            </View>
+          </>
+        )}
       </Memo>
 
       <TouchableOpacity
@@ -241,7 +111,7 @@ const CreateNewCategory = ({ modalToggle, date }: any) => {
           alignItems: "center",
           marginTop: 15,
         }}
-        onPress={() => modalToggle.set(false)}
+        onPress={() => toggle$.dateModal.set(false)}
       >
         <AutoSizeText
           fontSize={24}

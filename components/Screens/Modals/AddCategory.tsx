@@ -16,46 +16,15 @@ import Modal from "../../Modal";
 import { appearance$ } from "../../../db/Settings";
 import { constants, fontSizes, modalConst } from "../../../constants/style";
 import CreateNewCategory from "./CreateNewCategory";
+import DropDownPicker from "react-native-dropdown-picker";
+import { Categories$ } from "../../../utils/stateManager";
+import { newEvent$, toggle$ } from "../../../utils/newEventState";
 
 var { width } = Dimensions.get("window");
 
-const AddCategory = observer(({ modalToggle, category }: any) => {
+const AddCategory = observer(() => {
   const isCreateModalOpen$ = useObservable(false);
-
-  const renderItem = (item: any) => {
-    return (
-      <View style={styles.item}>
-        <Text style={[styles.selectedTextStyle, { color: item.color }]}>
-          {item.label}
-        </Text>
-        {category.get() === item.value ? (
-          <View
-            style={{
-              justifyContent: "center",
-              alignItems: "center",
-              borderWidth: 2,
-              borderRadius: 4,
-              width: 20,
-              height: 20,
-            }}
-          >
-            <AntDesign name="check" size={20} color="green" />
-          </View>
-        ) : (
-          <View
-            style={{
-              justifyContent: "center",
-              alignItems: "center",
-              borderWidth: 2,
-              borderRadius: 4,
-              width: 20,
-              height: 20,
-            }}
-          ></View>
-        )}
-      </View>
-    );
-  };
+  const open$ = useObservable(false);
 
   return (
     <View
@@ -78,24 +47,21 @@ const AddCategory = observer(({ modalToggle, category }: any) => {
       </AutoSizeText>
 
       <View style={styles.container}>
-        <Dropdown
-          style={styles.dropdown}
-          placeholderStyle={styles.placeholderStyle}
-          selectedTextStyle={styles.selectedTextStyle}
-          inputSearchStyle={styles.inputSearchStyle}
-          iconStyle={styles.iconStyle}
-          data={taskCategory$.list.get()}
-          search
-          maxHeight={300}
-          labelField="label"
-          valueField="value"
-          placeholder="Select Category"
-          searchPlaceholder="Search..."
-          value={category.get()}
-          onChange={(item) => {
-            category.set(taskCategory$.list.get().indexOf(item));
+        <DropDownPicker
+          open={open$.get()}
+          setOpen={(item) => open$.set(item)}
+          // style={dropdownStyles.dropdown}
+          // placeholderStyle={dropdownStyles.placeholderStyle}
+          // selectedTextStyle={dropdownStyles.selectedTextStyle}
+          // inputSearchStyle={dropdownStyles.inputSearchStyle}
+          // iconStyle={dropdownStyles.iconStyle}
+          itemKey="id"
+          items={Object.values(Categories$.list.get())}
+          value={newEvent$.category.get()}
+          setValue={(item) => newEvent$.category.set(item)}
+          onChangeValue={(value) => {
+            console.log("Category selected", value);
           }}
-          renderItem={renderItem}
         />
         <TouchableOpacity
           style={{
@@ -134,7 +100,7 @@ const AddCategory = observer(({ modalToggle, category }: any) => {
           justifyContent: "center",
           alignItems: "center",
         }}
-        onPress={() => modalToggle.set(false)}
+        onPress={() => toggle$.categoryModal.set(false)}
       >
         <AutoSizeText
           fontSize={24}

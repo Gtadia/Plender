@@ -38,7 +38,7 @@ import Calendar from "./tabs/Calendar";
 import TopTab from "../components/TopTab";
 import { addEvent } from "../utils/database";
 import { useSQLiteContext } from "expo-sqlite";
-import { Tags$ } from "../utils/stateManager";
+import { Tags$, Categories$ } from "../utils/stateManager";
 import { newEvent$, toggle$ } from "../utils/newEventState";
 
 var isToday = require("dayjs/plugin/isToday");
@@ -158,7 +158,7 @@ export default function Home({ navigation }: any) {
                 styles.pillTouchable,
                 {
                   backgroundColor:
-                    taskCategory$.list[newEvent$.category.get()].color.get(),
+                    Categories$.list[newEvent$.category.get()].color.get(),
                 },
               ]}
               // TODO — Change the background color ('wrap all of TouchableOpacity in Memo')
@@ -174,7 +174,7 @@ export default function Home({ navigation }: any) {
                 ]}
               >
                 {/* TODO — Character Limit */}
-                {taskCategory$.list[newEvent$.category.get()].label.get()}
+                {Categories$.list[newEvent$.category.get()].label.get()}
               </AutoSizeText>
             </TouchableOpacity>
           )}
@@ -238,8 +238,12 @@ export default function Home({ navigation }: any) {
               <Memo>
                 {() => {
                   const time = newEvent$.goal_time.get();
+                  const hours = Math.floor(time / 3600);
+                  const minutes = Math.floor((time % 3600) / 60);
 
-                  `${time % 3600} : ${time % 60 < 10 ? "0" : ""}${time % 60}`;
+                  console.warn(hours, minutes, time);
+
+                  return `${hours} : ${minutes < 10 ? `0${minutes}` : minutes}`;
                 }}
               </Memo>
             </AutoSizeText>
@@ -342,10 +346,7 @@ export default function Home({ navigation }: any) {
       <Memo>
         {() => (
           <Modal isOpen={toggle$.categoryModal.get()} withInput>
-            <AddCategory
-              modalToggle={toggle$.categoryModal}
-              category={newEvent$.category}
-            />
+            <AddCategory />
           </Modal>
         )}
       </Memo>
@@ -353,10 +354,7 @@ export default function Home({ navigation }: any) {
       <Memo>
         {() => (
           <Modal isOpen={toggle$.dateModal.get()}>
-            <DatePicker
-              modalToggle={toggle$.dateModal}
-              date={newEvent$.due_date}
-            />
+            <DatePicker />
           </Modal>
         )}
       </Memo>
@@ -364,11 +362,7 @@ export default function Home({ navigation }: any) {
       <Memo>
         {() => (
           <Modal isOpen={toggle$.timeModal.get()}>
-            <TimePicker
-              modalToggle={toggle$.timeModal}
-              time={null} // todo — I need to adapt this to work with NUMBERS, not an object
-              timeDefault={null} // todo — remove this
-            />
+            <TimePicker />
           </Modal>
         )}
       </Memo>

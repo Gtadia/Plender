@@ -29,14 +29,62 @@ import CurrentItemFooter from "../../components/ui/CurrentItemFooter";
 import ItemLister from "../../components/ui/ItemLister";
 import { SQLiteDatabase, useSQLiteContext } from "expo-sqlite";
 import dayjs from "dayjs";
+import { getEvent } from "../../utils/database";
 
 var { width } = Dimensions.get("window");
 
+/**
+ * Returns events due today from SQLite database
+ * @param db
+ * @returns
+ */
 const getToday = async (db: SQLiteDatabase) => {
   const filter = {
     due_or_repeated_dates: { start: dayjs().format("MM-DD-YYYY") },
   };
-  await getEvent(db, filter);
+  const result = await getEvent(db, filter);
+
+  if (!result) {
+    return [];
+  }
+  console.log(`List: ${result}`);
+  return result;
+};
+
+/**
+ * Returns overdue events from SQLite database
+ * @param db
+ * @returns
+ */
+const getOverdue = async (db: SQLiteDatabase) => {
+  const filter = {
+    due_or_repeated_dates: { start: dayjs().format("MM-DD-YYYY") },
+  };
+  const result = await getEvent(db, filter);
+
+  if (!result) {
+    return [];
+  }
+  console.log(`List: ${result}`);
+  return result;
+};
+
+/**
+ * Returns upcoming events from SQLite database
+ * @param db
+ * @returns
+ */
+const getUpcoming = async (db: SQLiteDatabase) => {
+  const filter = {
+    due_or_repeated_dates: { start: dayjs().format("MM-DD-YYYY") },
+  };
+  const result = await getEvent(db, filter);
+
+  if (!result) {
+    return [];
+  }
+  console.log(`List: ${result}`);
+  return result;
 };
 
 const List = observer(() => {
@@ -61,9 +109,9 @@ const List = observer(() => {
             </Memo>
           </View>
 
-          <ItemList task={todayTasks$} />
-          <ItemList task={overdueTasks$} />
-          <ItemList task={upcomingTasks$} />
+          <ItemList task={getToday(db)} title={"Today"} />
+          <ItemList task={getToday(db)} title={"Overdue"} />
+          <ItemList task={getToday(db)} title={"Upcoming"} />
 
           {/* TODO — Come up with a better solution later... */}
           {/* <View style={styles.taskFooterDimension} /> */}
@@ -75,14 +123,14 @@ const List = observer(() => {
   );
 });
 
-function ItemList({ task }: any) {
+function ItemList(props: { task: Event[]; title: string }) {
   const show$ = useObservable(true);
   const onPress = () => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     show$.set((prev) => !prev);
   };
 
-  if (task.data.get().length == 0) {
+  if (props.task.length == 0) {
     return;
   }
 
@@ -102,7 +150,8 @@ function ItemList({ task }: any) {
             paddingRight: constants.small,
           }}
         >
-          <Memo>{() => task.title.get()}</Memo>
+          {/* <Memo>{() => task.title.get()}</Memo> */}
+          {props.title}
         </Text>
 
         <Memo>
@@ -117,7 +166,7 @@ function ItemList({ task }: any) {
       </TouchableOpacity>
 
       <Show if={show$} else={<></>}>
-        {() => <ItemLister task={task} />}
+        {() => <ItemLister task={props.task} />}
       </Show>
     </>
   );

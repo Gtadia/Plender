@@ -9,7 +9,7 @@ import React from "react";
 import { AutoSizeText, ResizeTextMode } from "react-native-auto-size-text";
 
 import AntDesign from "@expo/vector-icons/AntDesign";
-import { observer, useObservable } from "@legendapp/state/react";
+import { Memo, observer, useObservable } from "@legendapp/state/react";
 import Modal from "../../Modal";
 import CreateNewTag from "./CreateNewTag";
 import { appearance$ } from "../../../db/Settings";
@@ -45,23 +45,30 @@ const AddTags = observer(() => {
       </AutoSizeText>
 
       <View style={dropdownStyles.container}>
-        <DropDownPicker
-          open={open$.get()}
-          setOpen={(item) => open$.set(item)}
-          multiple={true}
-          style={dropdownStyles.dropdown}
-          placeholderStyle={dropdownStyles.placeholderStyle}
-          // selectedTextStyle={dropdownStyles.selectedTextStyle}
-          // inputSearchStyle={dropdownStyles.inputSearchStyle}
-          // iconStyle={dropdownStyles.iconStyle}
-          itemKey="value"
-          items={Object.values(Tags$.list.get())}
-          value={newEvent$.tagIDs.get()}
-          setValue={(item) => newEvent$.tagIDs.set(item)}
-          onChangeValue={(value) => {
-            console.log(value);
+        <Memo>
+          {() => {
+            console.log("AddTags: dropdown updated", newEvent$.tagIDs.get());
+            return (
+              <DropDownPicker
+                open={open$.get()}
+                setOpen={(item) => open$.set(item)}
+                multiple={true}
+                style={dropdownStyles.dropdown}
+                placeholderStyle={dropdownStyles.placeholderStyle}
+                // selectedTextStyle={dropdownStyles.selectedTextStyle}
+                // inputSearchStyle={dropdownStyles.inputSearchStyle}
+                // iconStyle={dropdownStyles.iconStyle}
+                itemKey="value"
+                items={Object.values(Tags$.list.get())}
+                value={newEvent$.tagIDs.get()} // TODO — NOT SHOWING UPDATE when new tags are created and added to list of selected values
+                setValue={(item) => newEvent$.tagIDs.set(item)}
+                onChangeValue={(value) => {
+                  console.log(value);
+                }}
+              />
+            );
           }}
-        />
+        </Memo>
         <TouchableOpacity
           style={{
             justifyContent: "center",

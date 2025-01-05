@@ -51,7 +51,22 @@ const CreateNewTag = (props: { modalToggle: Observable<boolean> }) => {
         console.log("CreateNewTag: Created New Tag", await getTag(db));
         if (id) {
           Tags$.addToList(id, tag);
-          newEvent$.tagIDs.join(id);
+          if (newEvent$.tagIDs.includes(id)) {
+            throw Error("the ID already exists?!?!"); // TODO — handle this later
+          }
+          newEvent$.tagIDs.push(id);
+          //   newEvent$.tagIDs.set((prev) => {
+          //     const newTag: number[] = [];
+          //     if (prev) {
+          //       prev.forEach((item) => {
+          //         if (!newTag.includes(item)) {
+          //           newTag.push(item);
+          //         }
+          //       });
+          //     }
+          //     newTag.push(id);
+          //     return newTag;
+          //   });
         }
         props.modalToggle.set(false);
       }

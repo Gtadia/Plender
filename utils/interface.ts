@@ -53,7 +53,7 @@ export interface FilterEvent {
 }
 
 export interface Tag {
-  id?: number, 
+  id?: number,
   label: string,
   color: string,    // EX: "#F23A6B"
 }

@@ -1,36 +1,33 @@
 import {
-  Button,
   Dimensions,
-  Pressable,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
 import React from "react";
-import { For, Memo, Reactive, useObservable } from "@legendapp/state/react";
+import { Memo, Reactive, useObservable } from "@legendapp/state/react";
 import { AutoSizeText, ResizeTextMode } from "react-native-auto-size-text";
 
-import AntDesign from "@expo/vector-icons/AntDesign";
 import { ScrollView } from "react-native-gesture-handler";
 
-import { taskTags$ } from "../../../db/LegendApp";
-import ColorPicker, {
-  Panel3,
-  Swatches,
-  Preview,
-  OpacitySlider,
-  HueSlider,
-} from "reanimated-color-picker";
+import ColorPicker, { Panel3, Swatches } from "reanimated-color-picker";
 import { appearance$ } from "../../../db/Settings";
 import { fontSizes } from "../../../constants/style";
 import { Tags$ } from "../../../utils/stateManager";
-import { addTag } from "../../../utils/database";
+import { addTag, getTag } from "../../../utils/database";
 import { useSQLiteContext } from "expo-sqlite";
+import { Observable } from "@legendapp/state";
+import { newEvent$ } from "../../../utils/newEventState";
 
 var { width } = Dimensions.get("window");
 
-const CreateNewTag = ({ modalToggle, tags }: any) => {
+/**
+ *
+ * @param props ModalToggle ==> Legend Data Observable ==> open/close modal
+ * @returns UI to print inside of modal
+ */
+const CreateNewTag = (props: { modalToggle: Observable<boolean> }) => {
   const db = useSQLiteContext();
   const title$ = useObservable("");
   const tagColor$ = useObservable("red");
@@ -41,19 +38,29 @@ const CreateNewTag = ({ modalToggle, tags }: any) => {
   };
 
   const createHandler = async () => {
-    if (title$.get() && tagColor$.get()) {
-      const tag = { label: title$.get(), color: tagColor$.get() };
-      const id = await addTag(db, tag);
+    try {
+      console.warn("CreateNewTag: new tag created");
+      if (title$.get() !== "" && tagColor$.get()) {
+        const tag = { label: title$.get(), color: tagColor$.get() };
+        const id = await addTag(db, tag);
 
-      Tags$.addToList(id, {
-        label: title$.get(),
-        color: tagColor$.get(),
-      });
-      modalToggle.set(false);
-      tags.set((prev: any) => prev.concat(indexNum));
-    } else {
+        if (id && id < 0) {
+          console.error("CreateNewTag: Label Already Created. Try Again");
+          // todo — implement something
+        }
+        console.log("CreateNewTag: Created New Tag", await getTag(db));
+        if (id) {
+          Tags$.addToList(id, tag);
+          newEvent$.tagIDs.join(id);
+        }
+        props.modalToggle.set(false);
+      }
+    } catch (e) {
       // TODO — Warn the user (w/ error popup)
-      console.log("warn the user somehow (red line somewhere, I think)");
+      console.error(
+        "CreateNewTag: warn the user somehow (red line somewhere, I think)",
+        e
+      );
     }
   };
 

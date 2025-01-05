@@ -7,9 +7,6 @@ export const Tags$ = observable({
     2: {label: 'bro', color: 'red', value: 2},
     3: {label: 'what', color: 'blue', value: 3}
   },
-  searchById: (id: number) => {
-    return Tags$.list[id]
-  },
   addToList: (id: number, tagItem: { label: string, color: string }) => {
     Tags$.list.set((prev) => ({
       ...prev,
@@ -28,9 +25,6 @@ export const Categories$ = observable({
     6: { label: 'Item 6', value: 6, color: 'blue' },
     7: { label: 'Item 7', value: 7, color: 'pink' },
     8: { label: 'Item 8', value: 8, color: 'purple' },
-  },
-  searchById: (id: number) => {
-    return Categories$.list[id]
   },
   addToList: (id: number, tagItem: { label: string, color: string }) => {
     Categories$.list.set((prev) => ({

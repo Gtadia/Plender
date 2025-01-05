@@ -196,7 +196,7 @@ export const startEvent = async (db: SQLiteDatabase, eventID: number) => {
   // todo — implement this later
 }
 
-export const getEvent = async (db: SQLiteDatabase, filter: Partial<FilterEvent>) => {
+export const getEvent = async (db: SQLiteDatabase, filter: Partial<FilterEvent> = {}) => {
   const {
     event_id,
     label,
@@ -291,9 +291,9 @@ export const addTag = async (db: SQLiteDatabase, tag: Tag) => {
   // Check for duplicates
   const existing = await db.getAllAsync<Event>(`SELECT * FROM tag WHERE label = ?`, label);
   if (existing.length > 0) {
-    console.log(`Tag with label "${label}" already exists.`);
+    console.log(`DATABASE: Tag with label "${label}" already exists.`);
     // todo — implement other functionality
-    return;
+    return -1;    // return -1 to indicate error
   }
 
   try {
@@ -312,17 +312,17 @@ export const addTag = async (db: SQLiteDatabase, tag: Tag) => {
     const result: Tag[] = await db.getAllAsync(`SELECT last_insert_rowid() as id`);
     const tagID = result[0]?.id;
 
-    console.log(`Tag added with ID: ${tagID}`);
+    console.log(`DATABASE: Tag added with ID: ${tagID}`);
     return tagID; // Return the ID for further use
   } catch (error) {
-    console.error("error with addTag:", error);
+    console.error("DATABASE: error with addTag:", error);
   }
 }
 export const deleteTag = async (db: SQLiteDatabase, tagID: number) => {
   try {
     await db.runAsync(`DELETE FROM tag WHERE id = ?`, tagID);
   } catch (error) {
-    console.error("error with deleteTag:", error)
+    console.error("DATABASE: error with deleteTag:", error)
   }
 }
 export const updateTag = async (db: SQLiteDatabase, tagID: number, updates: UpdateTag) => {
@@ -350,7 +350,7 @@ export const updateTag = async (db: SQLiteDatabase, tagID: number, updates: Upda
     console.error("error with updateTag:", error)
   }
 }
-export const getTag = async (db: SQLiteDatabase, filter: Partial<{tagID: number, label: string}>) => {
+export const getTag = async (db: SQLiteDatabase, filter: Partial<{tagID: number, label: string}> = {}) => {
   const {
     tagID,
     label
@@ -384,12 +384,13 @@ export const addCategory = async (db: SQLiteDatabase, category: Category) => {
   // Check for duplicates
   const existing = await db.getAllAsync<Event>(`SELECT * FROM category WHERE label = ?`, label);
   if (existing.length > 0) {
-    console.log(`Category with label "${label}" already exists.`);
+    console.log(`DATABASE: Category with label "${label}" already exists.`);
     // todo — implement other functionality
-    return;
+    return -1;    // return -1 to indicate error
   }
 
   try {
+    // Insert the cateogry into the database
     await db.runAsync(`
       INSERT INTO category (label, color)
         VALUES (?, ?);
@@ -399,8 +400,15 @@ export const addCategory = async (db: SQLiteDatabase, category: Category) => {
         color
       ]
     );
+
+    // Retrieve the ID of the inserted category
+    const result: Tag[] = await db.getAllAsync(`SELECT last_insert_rowid() as id`);
+    const id = result[0]?.id;
+
+    console.log(`DATABASE: Category added with ID: ${id}`);
+    return id;
   } catch (error) {
-    console.error("error with addCategory:", error);
+    console.error("DATABASE: error with addCategory:", error);
   }
 }
 export const deleteCategory = async (db: SQLiteDatabase, categoryID: number) => {
@@ -435,7 +443,7 @@ export const updateCategory = async (db: SQLiteDatabase, categoryID: number, upd
     console.error("error with updateCategory:", error);
   }
 }
-export const getCategory = async (db: SQLiteDatabase, filter: {categoryID?: number, label?: string}) => {
+export const getCategory = async (db: SQLiteDatabase, filter: {categoryID?: number, label?: string} = {}) => {
   const {
     categoryID,
     label

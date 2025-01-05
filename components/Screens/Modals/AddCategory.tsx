@@ -55,10 +55,10 @@ const AddCategory = observer(() => {
           // selectedTextStyle={dropdownStyles.selectedTextStyle}
           // inputSearchStyle={dropdownStyles.inputSearchStyle}
           // iconStyle={dropdownStyles.iconStyle}
-          itemKey="id"
+          itemKey="value"
           items={Object.values(Categories$.list.get())}
-          value={newEvent$.category.get()}
-          setValue={(item) => newEvent$.category.set(item)}
+          value={newEvent$.categoryID.get()}
+          setValue={(item) => newEvent$.categoryID.set(item)}
           onChangeValue={(value) => {
             console.log("Category selected", value);
           }}

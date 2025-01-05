@@ -36,7 +36,7 @@ import TimePicker from "../components/Screens/Modals/TimePicker";
 import { constants, fontSizes, padding } from "../constants/style";
 import Calendar from "./tabs/Calendar";
 import TopTab from "../components/TopTab";
-import { addEvent } from "../utils/database";
+import { addEvent, getEvent } from "../utils/database";
 import { useSQLiteContext } from "expo-sqlite";
 import { Tags$, Categories$ } from "../utils/stateManager";
 import { newEvent$, toggle$ } from "../utils/newEventState";
@@ -68,17 +68,21 @@ export default function Home({ navigation }: any) {
     const event = {
       label: newEvent$.label.get(),
       description: newEvent$.description.get(),
-      tags: newEvent$.tags.get(), // number[]
-      category: newEvent$.category.get(), // number
       due_date: newEvent$.due_date.get(), // TODO — This is a DAYJS() object!!!
-      created_date: dayjs(),
       goal_time: newEvent$.goal_time.get(),
-      progress_time: 0,
+      tagIDs: newEvent$.tagIDs.get(), // number[]
+      categoryID: newEvent$.categoryID.get(), // number
+      // created_date: dayjs(),
+      // progress_time: 0,
     };
 
-    async () => {
+    const run = async () => {
       await addEvent(db, event);
+      // todo — remove this
+      // Test — print SQL and Legend States
+      console.warn("SQL", await getEvent(db));
     };
+    run();
   };
 
   /**
@@ -108,7 +112,7 @@ export default function Home({ navigation }: any) {
   const TagsView = (
     <>
       <View style={{ flexDirection: "row", width: "100%", flexWrap: "wrap" }}>
-        <For each={newEvent$.tags} optimized>
+        <For each={newEvent$.tagIDs} optimized>
           {(item$: Observable<number>) => (
             <View style={{ marginRight: 15 }}>
               <Text
@@ -158,7 +162,7 @@ export default function Home({ navigation }: any) {
                 styles.pillTouchable,
                 {
                   backgroundColor:
-                    Categories$.list[newEvent$.category.get()].color.get(),
+                    Categories$.list[newEvent$.categoryID.get()].color.get(),
                 },
               ]}
               // TODO — Change the background color ('wrap all of TouchableOpacity in Memo')
@@ -174,7 +178,7 @@ export default function Home({ navigation }: any) {
                 ]}
               >
                 {/* TODO — Character Limit */}
-                {Categories$.list[newEvent$.category.get()].label.get()}
+                {Categories$.list[newEvent$.categoryID.get()].label.get()}
               </AutoSizeText>
             </TouchableOpacity>
           )}

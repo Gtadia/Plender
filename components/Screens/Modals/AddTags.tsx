@@ -54,10 +54,10 @@ const AddTags = observer(() => {
           // selectedTextStyle={dropdownStyles.selectedTextStyle}
           // inputSearchStyle={dropdownStyles.inputSearchStyle}
           // iconStyle={dropdownStyles.iconStyle}
-          itemKey="id"
+          itemKey="value"
           items={Object.values(Tags$.list.get())}
-          value={newEvent$.tags.get()}
-          setValue={(item) => newEvent$.tags.set(item)}
+          value={newEvent$.tagIDs.get()}
+          setValue={(item) => newEvent$.tagIDs.set(item)}
           onChangeValue={(value) => {
             console.log(value);
           }}
@@ -112,7 +112,7 @@ const AddTags = observer(() => {
       </TouchableOpacity>
 
       <Modal isOpen={isCreateModalOpen$.get()} withInput>
-        <CreateNewTag modalToggle={isCreateModalOpen$} tags={newEvent$.tags} />
+        <CreateNewTag modalToggle={isCreateModalOpen$} />
       </Modal>
     </View>
   );

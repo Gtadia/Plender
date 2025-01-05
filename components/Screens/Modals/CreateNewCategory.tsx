@@ -1,33 +1,24 @@
-import {
-  Button,
-  Dimensions,
-  Pressable,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Dimensions, StyleSheet, TouchableOpacity, View } from "react-native";
 import React from "react";
-import { For, Memo, Reactive, useObservable } from "@legendapp/state/react";
+import { Memo, Reactive, useObservable } from "@legendapp/state/react";
 import { AutoSizeText, ResizeTextMode } from "react-native-auto-size-text";
 
-import AntDesign from "@expo/vector-icons/AntDesign";
 import { ScrollView } from "react-native-gesture-handler";
 
 import { taskTags$ } from "../../../db/LegendApp";
-import ColorPicker, {
-  Panel3,
-  Swatches,
-  Preview,
-  OpacitySlider,
-  HueSlider,
-} from "reanimated-color-picker";
+import ColorPicker, { Panel3, Swatches } from "reanimated-color-picker";
 import { appearance$ } from "../../../db/Settings";
 import { fontSizes } from "../../../constants/style";
+import { Observable } from "@legendapp/state";
+import { Categories$ } from "../../../utils/stateManager";
+import { addCategory, getCategory } from "../../../utils/database";
+import { useSQLiteContext } from "expo-sqlite";
+import { newEvent$ } from "../../../utils/newEventState";
 
 var { width } = Dimensions.get("window");
 
-const CreateNewCategory = ({ modalToggle, tags }: any) => {
+const CreateNewCategory = (props: { modalToggle: Observable<boolean> }) => {
+  const db = useSQLiteContext();
   const title$ = useObservable("");
   const tagColor$ = useObservable("red");
 
@@ -36,19 +27,33 @@ const CreateNewCategory = ({ modalToggle, tags }: any) => {
     tagColor$.set(hex);
   };
 
-  const createHandler = () => {
-    if (title$.get() && tagColor$.get()) {
-      const indexNum = taskTags$.list.get().length + 1;
-      taskTags$.addToList({
-        label: title$.get(),
-        value: indexNum,
-        color: tagColor$.get(),
-      });
-      modalToggle.set(false);
-      tags.set((prev: any) => prev.concat(indexNum));
-    } else {
+  const createHandler = async () => {
+    try {
+      if (title$.get() && tagColor$.get()) {
+        const category = { label: title$.get(), color: tagColor$.get() };
+        const id = await addCategory(db, category);
+
+        if (id && id < 0) {
+          console.error("CreateNewCategory: Label Already Created. Try Again");
+          // todo — implement something
+        }
+        console.log(
+          "CreateNewCategory: Created New Tag",
+          await getCategory(db)
+        );
+
+        if (id) {
+          Categories$.addToList(id, category);
+          newEvent$.categoryID.set(id);
+        }
+        props.modalToggle.set(false);
+      }
+    } catch (e) {
       // TODO — Warn the user
-      console.log("warn the user somehow (red line somewhere, I think)");
+      console.log(
+        "CreateNewCategory: warn the user somehow (red line somewhere, I think)",
+        e
+      );
     }
   };
 
@@ -124,7 +129,7 @@ const CreateNewCategory = ({ modalToggle, tags }: any) => {
           alignItems: "center",
           marginTop: 15,
         }}
-        onPress={() => modalToggle.set(false)}
+        onPress={createHandler}
       >
         <AutoSizeText
           fontSize={24}

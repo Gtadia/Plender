@@ -17,11 +17,9 @@ const TopTab = () => {
         tabBarLabelStyle: styles.label,
         tabBarActiveTintColor: "black",
         tabBarInactiveTintColor: "rgba(255, 255, 255, 0.5)",
+        sceneStyle: { backgroundColor: "rgba(0, 0, 0, 0)" },
       }}
       style={{ backgroundColor: "rgba(0, 0, 0, 0)" }}
-      sceneContainerStyle={{
-        backgroundColor: "rgba(0, 0, 0, 0)",
-      }}
     >
       <Tab.Screen name="List " component={List} />
       <Tab.Screen name="Calendar " component={Calendar} />

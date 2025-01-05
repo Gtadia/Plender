@@ -1,5 +1,6 @@
 import { observable } from "@legendapp/state";
-import dayjs from "dayjs";
+import dayjs, { Dayjs } from "dayjs";
+import { Event } from "./interface";
 
 export const toggle$ = observable({
   closeSheet: false,
@@ -9,11 +10,11 @@ export const toggle$ = observable({
   timeModal: false,
 })
 
-export const newEvent$ = observable({
+export const newEvent$ = observable<Event>({
   label: "",
   description: "",
-  tags: [], // {label: string, color: string, id: number} // todo — or can I do number[]
-  category: 1,
+  tagIDs: [],  // number[]
+  categoryID: 1,
   due_date: dayjs(),
   goal_time: 0,
 });

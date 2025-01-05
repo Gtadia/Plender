@@ -27,10 +27,21 @@ import { AutoSizeText, ResizeTextMode } from "react-native-auto-size-text";
 import { ScrollView } from "react-native-gesture-handler";
 import CurrentItemFooter from "../../components/ui/CurrentItemFooter";
 import ItemLister from "../../components/ui/ItemLister";
+import { SQLiteDatabase, useSQLiteContext } from "expo-sqlite";
+import dayjs from "dayjs";
 
 var { width } = Dimensions.get("window");
 
+const getToday = async (db: SQLiteDatabase) => {
+  const filter = {
+    due_or_repeated_dates: { start: dayjs().format("MM-DD-YYYY") },
+  };
+  await getEvent(db, filter);
+};
+
 const List = observer(() => {
+  const db = useSQLiteContext();
+
   return (
     <>
       <View style={{ flex: 1 }}>

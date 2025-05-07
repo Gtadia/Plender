@@ -34,20 +34,27 @@ import { getEvent } from "../../utils/database";
 var { width } = Dimensions.get("window");
 
 /**
- * Returns events due today from SQLite database
+ * Returns events due today, overdue, or upcoming from SQLite database
  * @param db
  * @returns
  */
-const getToday = async (db: SQLiteDatabase) => {
+const getToday = async (db: SQLiteDatabase, dateType: string = "today") => {
+  // todo — Create an observable to store today/past/future events
+  // todo — Only use observables to get events, set a different page to update the observables.
   const filter = {
     due_or_repeated_dates: { start: dayjs().format("MM-DD-YYYY") },
   };
+  if (dateType == "upcoming") {
+    // todo — use SQLite's ability to only pull x number of events
+    // filter.due_or_repeated_dates = {start: }
+  }
+
   const result = await getEvent(db, filter);
 
   if (!result) {
     return [];
   }
-  console.log(`List: ${result}`);
+  console.log(`List: ${result.length}`);
   return result;
 };
 

@@ -1,4 +1,5 @@
 import { observable } from "@legendapp/state";
+import { fonts } from '../constants/types';
 
 export const Tags$ = observable({
   list: { // `value` ==> `id`
@@ -15,21 +16,21 @@ export const Tags$ = observable({
   }
 })
 
-export const Categories$ = observable({
-  list: {
-    1: { label: 'No Category', value: 1, color: 'gray' },
-    2: { label: 'Item 2', value: 2, color: 'red' },
-    3: { label: 'Item 3', value: 3, color: 'orange' },
-    4: { label: 'Item 4', value: 4, color: 'yellow' },
-    5: { label: 'Item 5', value: 5, color: 'green' },
-    6: { label: 'Item 6', value: 6, color: 'blue' },
-    7: { label: 'Item 7', value: 7, color: 'pink' },
-    8: { label: 'Item 8', value: 8, color: 'purple' },
+
+export const colorTheme$ = observable({
+  colorTheme: 'catuppcin-latte',  // default theme
+  colors: {
+    primary: 'rgb(10, 132, 255)',
+    secondary: 'rgb(255, 69, 58)',
+    accent: 'rgb(255, 69, 58)',
+    background: 'rgb(1, 1, 1)', // light/dark
+    card: 'rgb(18, 18, 18)',  // pop up menu?
+    text: 'rgb(229, 229, 231)',
+    subtext: 'rgb(255, 255, 255)',
+    border: 'rgb(39, 39, 41)',
+    notification: 'rgb(255, 69, 58)',
+    // Add more colors as needed
   },
-  addToList: (id: number, tagItem: { label: string, color: string }) => {
-    Categories$.list.set((prev) => ({
-      ...prev,
-      [id]: {...tagItem, value: id}, // Add/Update the tag with the provided ID
-    }));
-  }
-})
+  fonts,
+
+});

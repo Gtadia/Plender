@@ -8,6 +8,7 @@ import 'react-native-reanimated';
 
 // import { useColorScheme } from '@/components/useColorScheme';
 import { useColorScheme } from 'react-native';
+import { colorTheme$ } from '@/utils/stateManager';
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -47,11 +48,12 @@ export default function RootLayout() {
 }
 
 function RootLayoutNav() {
-  const colorScheme = useColorScheme();
+  // const colorScheme = useColorScheme();
   // const colorScheme = 'dark'; // Force dark mode for testing
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+    // <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+    <ThemeProvider value={colorTheme$.nativeTheme.get()}>
       <Stack>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="modal" options={{ presentation: 'modal' }} />

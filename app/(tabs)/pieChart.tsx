@@ -1,13 +1,11 @@
 import { StyleSheet } from 'react-native';
-
-import { Text, View } from '@/components/Themed';
+import { Text, ScreenView } from '@/components/Themed';
 
 export default function PieChartScreen() {
   return (
-    <View style={styles.container}>
+    <ScreenView style={styles.container}>
       <Text style={styles.title}>Pie Chart</Text>
-      <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,0,0.1)" />
-    </View>
+    </ScreenView>
   );
 }
 

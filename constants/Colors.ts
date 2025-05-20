@@ -1,27 +1,7 @@
-const tintColorLight = '#2f95dc';
-const tintColorDark = '#fff';
-
-export default {
-  light: {
-    text: '#000',
-    background: '#fff',
-    tint: tintColorLight,
-    tabIconDefault: '#ccc',
-    tabIconSelected: tintColorLight,
-  },
-  dark: {
-    text: '#fff',
-    background: '#000',
-    tint: tintColorDark,
-    tabIconDefault: '#ccc',
-    tabIconSelected: tintColorDark,
-  },
-};
-
-
 export const colorTheme = {
   catppuccin: {
     latte: {
+      theme: "catppuccin-latte",
       rosewater: '#dc8a78',
       flamingo: '#dd7878',
       pink: '#ea76cb',
@@ -50,6 +30,7 @@ export const colorTheme = {
       crust: '#dce0e8'
     },
     frappe: {
+      theme: "catppuccin-frappe",
       rosewater: '#f2d5cf',
       flamingo: '#eebebe',
       pink: '#f4b8e4',
@@ -78,6 +59,7 @@ export const colorTheme = {
       crust: '#232634'
     },
     macchiato: {
+      theme: "catppuccin-macchiato",
       rosewater: '#f4dbd6',
       flamingo: '#f0c6c6',
       pink: '#f5bde6',
@@ -106,6 +88,7 @@ export const colorTheme = {
       crust: '#181926'
     },
     mocha: {
+      theme: "catppuccin-mocha",
       rosewater: '#f5e0dc',
       flamingo: '#f2cdcd',
       pink: '#f5c2e7',

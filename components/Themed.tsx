@@ -3,9 +3,9 @@
  * https://docs.expo.io/guides/color-schemes/
  */
 
+import { colorTheme$ } from '@/utils/stateManager';
 import { Text as DefaultText, View as DefaultView } from 'react-native';
 
-import Colors from '@/constants/Colors';
 // import { useColorScheme } from './useColorScheme';
 import { useColorScheme } from 'react-native';
 
@@ -14,33 +14,59 @@ type ThemeProps = {
   darkColor?: string;
 };
 
-export type TextProps = ThemeProps & DefaultText['props'];
+type TextTheme = {
+  fontColor?: string;
+  fontSize?: string;
+}
+
+export type TextProps = TextTheme & DefaultText['props'];
 export type ViewProps = ThemeProps & DefaultView['props'];
 
-export function useThemeColor(
-  props: { light?: string; dark?: string },
-  colorName: keyof typeof Colors.light & keyof typeof Colors.dark
-) {
-  const theme = useColorScheme() ?? 'light';
-  const colorFromProps = props[theme];
-
-  if (colorFromProps) {
-    return colorFromProps;
-  } else {
-    return Colors[theme][colorName];
-  }
-}
 
 export function Text(props: TextProps) {
-  const { style, lightColor, darkColor, ...otherProps } = props;
-  const color = useThemeColor({ light: lightColor, dark: darkColor }, 'text');
+  const { style, fontColor, fontSize, ...otherProps } = props;
+  const extraStyle = {
+    color: fontColor || colorTheme$.nativeTheme.colors.text.get(),
+    fontSize: 16
+  };
 
-  return <DefaultText style={[{ color }, style]} {...otherProps} />;
+  // font color logic
+  switch (fontColor) {
+    case 'subtext0': {
+      extraStyle.color = colorTheme$.colors.subtext0.get();
+      break;
+    }
+    case 'subtext1': {
+      extraStyle.color = colorTheme$.colors.subtext1.get();
+      break;
+    }
+    default: {
+      extraStyle.color = colorTheme$.nativeTheme.colors.text.get();
+      break;
+    }
+  }
+
+  // font size logic
+  switch (fontSize) {
+    case 'small': {
+      extraStyle.fontSize = 12;
+      break;
+    }
+    case 'medium': {
+      extraStyle.fontSize = 16;
+      break;
+    }
+  }
+
+  return <DefaultText style={[extraStyle, style]} {...otherProps} />;
 }
 
-export function View(props: ViewProps) {
-  const { style, lightColor, darkColor, ...otherProps } = props;
-  const backgroundColor = useThemeColor({ light: lightColor, dark: darkColor }, 'background');
+export function ScreenView(props: ViewProps) {
+  const { style, ...otherProps } = props;
 
-  return <DefaultView style={[{ backgroundColor }, style]} {...otherProps} />;
+  const screenTheme = {
+    backgroundColor: colorTheme$.colors.background.get(),
+  }
+
+  return <DefaultView style={[ screenTheme, style]} {...otherProps} />;
 }

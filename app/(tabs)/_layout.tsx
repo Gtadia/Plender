@@ -7,6 +7,9 @@ import { View } from 'react-native';
 import { useColorScheme } from 'react-native';
 // import { useClientOnlyValue } from '@/components/useClientOnlyValue';
 import { Ionicons } from '@expo/vector-icons';
+import { colorTheme } from '@/constants/Colors';
+import { colorTheme$ } from '@/utils/stateManager';
+import TabBar from '@/components/TabBar';
 
 // You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
 function TabBarIcon(props: {
@@ -20,20 +23,37 @@ export default function TabLayout() {
   // const colorScheme = useColorScheme();
   return (
     <Tabs
+      tabBar={props => <TabBar {...props} />}
       screenOptions={({ route }) => ({
-        tabBarShowLabel: false,
+        // tabBarShowLabel: false,
         headerShown: false,
-        tabBarStyle: {
-          // backgroundColor: '#333', // dark background
-          borderTopWidth: 0,
-          height: 80,
-        },
-        tabBarIcon: ({ focused, color, size }) => {
+
+        // tabBarActiveTintColor: colorTheme$.colors.accent.get(),
+        // tabBarStyle: {
+        //   // backgroundColor: '#333', // dark background
+        //   borderTopWidth: 0,
+        //   height: 100,
+        //   marginBottom: 20, // Make room for iOS home bar
+        //   borderWidth: 5,
+        //   borderColor: 'red'
+        // },
+        // tabBarItemStyle: {
+        //   justifyContent: 'center',
+        //   alignItems: 'center',
+        //   flex: 1,
+        // },
+      })}>
+        {/* tabBarIcon: ({ focused, color, size }) => {
           let iconName;
 
           if (route.name === 'index') {
             iconName = 'home';
-            return <FontAwesome name={iconName} size={28} color={focused ? 'white' : 'gray'} />;
+            return (
+              <View style={{ justifyContent: 'center', alignItems: 'center', height: 100, borderWidth: 2, borderColor: 'red' }}>
+                <FontAwesome name={iconName} size={28} color={focused ? 'white' : 'gray'} />
+              </View>
+            );
+            // return <FontAwesome name={iconName} size={28} color={focused ? 'white' : 'gray'} />;
           } else if (route.name === 'pieChart') {
             iconName = 'pie-chart';
             return <FontAwesome name={iconName} size={28} color={focused ? 'white' : 'gray'} />;
@@ -57,8 +77,7 @@ export default function TabLayout() {
           }
 
           return null;
-        },
-      })}
-    />
+        }, */}
+      </Tabs>
   );
 }

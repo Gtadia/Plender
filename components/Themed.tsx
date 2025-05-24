@@ -3,15 +3,14 @@
  * https://docs.expo.io/guides/color-schemes/
  */
 
-import { colorTheme$ } from '@/utils/stateManager';
+import { colorTheme$, styling$ } from '@/utils/stateManager';
 import { Text as DefaultText, View as DefaultView } from 'react-native';
 
 // import { useColorScheme } from './useColorScheme';
 import { useColorScheme } from 'react-native';
 
 type ThemeProps = {
-  lightColor?: string;
-  darkColor?: string;
+  radius?: number;
 };
 
 type TextTheme = {
@@ -62,10 +61,11 @@ export function Text(props: TextProps) {
 }
 
 export function ScreenView(props: ViewProps) {
-  const { style, ...otherProps } = props;
+  const { style, radius, ...otherProps } = props;
 
   const screenTheme = {
     backgroundColor: colorTheme$.colors.background.get(),
+    borderRadius: radius || styling$.mainContentRadius.get(),
   }
 
   return <DefaultView style={[ screenTheme, style]} {...otherProps} />;

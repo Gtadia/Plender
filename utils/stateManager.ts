@@ -53,7 +53,7 @@ export const colorTheme$ = observable({
   },
 });
 
-export const styling = observable({
-  mainContentRadius: 55,  // 55 is the radius of iphone 14 pro max corners
+export const styling$ = observable({
+  mainContentRadius: 0,  // 55 is the radius of iphone 14 pro max corners
 
 });
